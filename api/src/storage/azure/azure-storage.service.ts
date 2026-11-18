@@ -1,10 +1,10 @@
 import type { Readable } from 'node:stream'
 import { BlobServiceClient, type ContainerClient } from '@azure/storage-blob'
-import { Logger } from '@nestjs/common'
-
+import { Injectable, Logger } from '@nestjs/common'
 import { EnvService } from '../../env/env.service.js'
 import { StorageService } from '../storage.interface.js'
 
+@Injectable()
 export class AzureStorageService implements StorageService {
 	private readonly container: ContainerClient
 	private readonly logger = new Logger(AzureStorageService.name)

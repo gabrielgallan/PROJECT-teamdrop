@@ -1,3 +1,6 @@
+import { Injectable } from "@nestjs/common";
+
+@Injectable()
 export abstract class StorageService {
 	abstract upload(key: string, data: Buffer, mimeType: string): Promise<void>
 

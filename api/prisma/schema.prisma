@@ -24,6 +24,7 @@ model User {
   owns_teams Team[]
   invites    Invite[]
   files      File[]
+  accounts   Account[]
 
   @@map("users")
 }
@@ -77,6 +78,22 @@ model Invite {
 
   @@index([teamId])
   @@map("invites")
+}
+
+enum AccountProvider {
+  GOOGLE
+}
+
+model Account {
+  id                String          @id @default(uuid(7)) @db.Uuid
+  provider          AccountProvider
+  providerAccountId String?         @unique @map("provider_account_id")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id") @db.Uuid
+
+  @@unique([provider, userId])
+  @@map("accounts")
 }
 
 model File {

@@ -1,9 +1,8 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { envSchema } from './env/env.js'
 import { EnvModule } from './env/env.module.js'
-import { HealthModule } from './health/health.module.js'
-import { LoggingMiddleware } from './middlewares/logging/logging.middleware.js'
+import { HttpMoodule } from './http/http.module.js'
 
 @Module({
 	imports: [
@@ -12,13 +11,7 @@ import { LoggingMiddleware } from './middlewares/logging/logging.middleware.js'
 			isGlobal: true,
 			validate: (env) => envSchema.parse(env),
 		}),
-		HealthModule,
+		HttpMoodule
 	],
-	controllers: [],
-	providers: [],
 })
-export class AppModule {
-	configure(consumer: MiddlewareConsumer): void {
-		consumer.apply(LoggingMiddleware).forRoutes('/api')
-	}
-}
+export class AppModule {}
