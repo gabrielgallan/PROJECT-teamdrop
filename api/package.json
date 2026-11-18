@@ -7,9 +7,15 @@
 		"start": "nest start",
 		"start:dev": "nest start --watch",
 		"start:debug": "nest start --debug --watch",
-		"start:prod": "node dist/main"
+		"start:prod": "node dist/main",
+		"db:dev": "prisma migrate dev",
+		"db:prod": "prisma migrate deploy",
+		"db:push": "prisma db push",
+		"db:generate": "prisma generate",
+		"test": "nest start --entryFile src/test"
 	},
 	"dependencies": {
+		"@azure/storage-blob": "^12.34.0",
 		"@nestjs/common": "11.0.1",
 		"@nestjs/config": "12.0.1",
 		"@nestjs/core": "11.0.1",

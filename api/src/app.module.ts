@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { envSchema } from './env/env.js'
 import { EnvModule } from './env/env.module.js'
+import { HealthModule } from './health/health.module.js'
 import { LoggingMiddleware } from './middlewares/logging/logging.middleware.js'
 
 @Module({
@@ -11,6 +12,7 @@ import { LoggingMiddleware } from './middlewares/logging/logging.middleware.js'
 			isGlobal: true,
 			validate: (env) => envSchema.parse(env),
 		}),
+		HealthModule,
 	],
 	controllers: [],
 	providers: [],
