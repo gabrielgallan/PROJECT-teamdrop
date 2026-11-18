@@ -13,19 +13,21 @@ interface GoogleRequestInit {
 
 interface GoogleOAuthCallbackData {
     code: string
+	codeVerifier: string
 }
 
 @Injectable()
 export class GoogleOAuthService {
 	constructor(private env: EnvService) {}
 
-	async authenticate({ code: OAuthCode }: GoogleOAuthCallbackData) {
+	async authenticate({ code: OAuthCode, codeVerifier }: GoogleOAuthCallbackData) {
 		const googleOAuthBody = new URLSearchParams({
 			code: OAuthCode,
 			client_id: this.env.get('GOOGLE_OAUTH_CLIENT_ID'),
 			client_secret: this.env.get('GOOGLE_OAUTH_CLIENT_SECRET'),
 			redirect_uri: this.env.get('GOOGLE_OAUTH_CLIENT_REDIRECT_URI'),
 			grant_type: 'authorization_code',
+			code_verifier: codeVerifier,
 		})
 
 		const googleOAuthTokenResponse = await this.request(GOOGLE_TOKEN_URL, {
@@ -97,6 +99,20 @@ export class GoogleOAuthService {
 		}
 	}
 
+	getAuthUrl(state: string, codeChallenge: string): string {
+		const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
+
+		url.searchParams.set('client_id', this.env.get('GOOGLE_OAUTH_CLIENT_ID'))
+		url.searchParams.set('redirect_uri', this.env.get('GOOGLE_OAUTH_CLIENT_REDIRECT_URI'))
+		url.searchParams.set('response_type', 'code')
+		url.searchParams.set('scope', 'openid email profile')
+		url.searchParams.set('state', state)
+		url.searchParams.set('code_challenge', codeChallenge)
+		url.searchParams.set('code_challenge_method', 'S256')
+
+		return url.toString()
+	}
+
 	private async request(
 		url: string,
 		{ method = 'GET', headers, body }: GoogleRequestInit = {},
@@ -120,9 +136,11 @@ export class GoogleOAuthService {
 		}
 
 		if (!response.ok) {
+			console.log(await response.text())
 			throw new BadGatewayException({
 				message: `Google API responded with status ${response.status}`,
 			})
+
 		}
 
 		try {

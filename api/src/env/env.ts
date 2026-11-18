@@ -6,6 +6,7 @@ export const envSchema = z.object({
 	PORT: z.coerce.number().default(8430),
 	CORS_ORIGINS: z.string().default('*'),
 	DATABASE_URL: z.url(),
+	REDIS_URL: z.url(),
 	AZURE_STORAGE_CONTAINER: z.string(),
 	AZURE_STORAGE_CONNECTION_STRING: z.string(),
 	GOOGLE_OAUTH_CLIENT_ID: z.string(),

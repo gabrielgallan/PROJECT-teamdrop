@@ -19,7 +19,11 @@
 		"skipLibCheck": true,
 
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true
+		"emitDecoratorMetadata": true,
+
+		"paths": {
+			"@/*": ["./src/*"]
+		}
 	},
 
 	"exclude": ["node_modules", "src/test", "dist", "**/*spec.ts"]
