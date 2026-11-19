@@ -8,6 +8,12 @@ export const configureSwagger = (app: INestApplication): void => {
 		.setTitle('Team Drop API')
 		.setDescription('')
 		.setVersion('1.0')
+		.addBearerAuth({
+			type: 'http',
+			scheme: 'bearer',
+			bearerFormat: 'JWT',
+			description: 'Teamdrop access token (15 minutes)',
+		})
 		.setLicense('MIT', 'https://opensource.org/licenses/MIT')
 		.build()
 

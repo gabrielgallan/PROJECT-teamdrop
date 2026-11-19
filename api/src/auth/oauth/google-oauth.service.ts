@@ -12,7 +12,7 @@ interface GoogleRequestInit {
 }
 
 interface GoogleOAuthCallbackData {
-    code: string
+	code: string
 	codeVerifier: string
 }
 
@@ -128,6 +128,7 @@ export class GoogleOAuthService {
 					...headers,
 				},
 				body,
+				signal: AbortSignal.timeout(10_000),
 			})
 		} catch {
 			throw new BadGatewayException({
@@ -136,11 +137,9 @@ export class GoogleOAuthService {
 		}
 
 		if (!response.ok) {
-			console.log(await response.text())
 			throw new BadGatewayException({
 				message: `Google API responded with status ${response.status}`,
 			})
-
 		}
 
 		try {

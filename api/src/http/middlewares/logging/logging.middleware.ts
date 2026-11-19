@@ -6,7 +6,9 @@ export class LoggingMiddleware implements NestMiddleware {
 	private logger = new Logger('HTTP')
 
 	use(req: Request, res: Response, next: () => void) {
-		const { method, originalUrl, ip } = req
+		const { method, ip } = req
+		// OAuth callback query strings contain authorization codes and state.
+		const originalUrl = req.originalUrl.split('?')[0]
 		const userAgent = req.get('user-agent') || ''
 		const startTime = Date.now()
 

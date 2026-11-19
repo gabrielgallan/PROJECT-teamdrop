@@ -12,13 +12,15 @@
 		"db:prod": "prisma migrate deploy",
 		"db:push": "prisma db push",
 		"db:generate": "prisma generate",
-		"test": "nest start --entryFile src/test"
+		"test": "nest start --entryFile src/test",
+		"test:auth": "pnpm build && node --test tests/auth.test.mjs"
 	},
 	"dependencies": {
 		"@azure/storage-blob": "^12.34.0",
 		"@nestjs/common": "11.0.1",
 		"@nestjs/config": "12.0.1",
 		"@nestjs/core": "11.0.1",
+		"@nestjs/jwt": "12.0.5",
 		"@nestjs/platform-express": "11.0.1",
 		"@nestjs/swagger": "11.2.0",
 		"@prisma/adapter-pg": "7.10.1",
