@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod auth;
 #[cfg(windows)]
 mod window_frame;
 
@@ -14,6 +15,24 @@ const TRAY_ID: &str = "widget";
 const TRAY_GAP: f64 = 8.0;
 
 #[tauri::command]
+fn open_google_login(app: AppHandle, url: String) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    let parsed = tauri::Url::parse(&url).map_err(|_| "Invalid login URL")?;
+    if parsed.scheme() != "https"
+        || parsed.host_str() != Some("accounts.google.com")
+        || parsed.path() != "/o/oauth2/v2/auth"
+        || parsed.port().is_some()
+        || !parsed.username().is_empty()
+        || parsed.password().is_some()
+    {
+        return Err("Invalid login URL".into());
+    }
+    app.opener()
+        .open_url(parsed.as_str(), None::<&str>)
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
 fn quit_app(app: AppHandle) {
     app.exit(0);
 }
@@ -21,7 +40,17 @@ fn quit_app(app: AppHandle) {
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![quit_app])
+        .plugin(tauri_plugin_opener::init())
+        .manage(auth::SessionManager::default())
+        .invoke_handler(tauri::generate_handler![
+            quit_app,
+            open_google_login,
+            auth::auth_restore_session,
+            auth::auth_exchange_login,
+            auth::auth_get_access_token,
+            auth::auth_cancel_login,
+            auth::auth_logout
+        ])
         .setup(|app| {
             #[cfg(windows)]
             if let Some(window) = app.get_webview_window(MAIN_WINDOW)
