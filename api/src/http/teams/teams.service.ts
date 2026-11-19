@@ -2,10 +2,11 @@ import { ConflictException, ForbiddenException, GoneException, Injectable, NotFo
 import { PrismaService } from '../../database/prisma/prisma.service.js';
 import { CreateTeamServiceInput } from './dtos/create-team.dto.js';
 import { slugify } from '../../common/utils/slugify.js';
-import { AcceptTeamInviteServiceInput } from './dtos/accept-team-invite.dto.js';
 import { ListUserTeamsServiceInput } from './dtos/list-user-teams.dto.js';
 import { UpdateTeamServiceInput } from './dtos/update-team.dto.js';
 import { UsersService } from '../users/users.service.js';
+import { CreateTeamInviteServiceInput } from './dtos/create-team-invite.dto.js';
+import { createHash, randomBytes } from 'node:crypto';
 
 @Injectable()
 export class TeamsService {
@@ -112,20 +113,50 @@ export class TeamsService {
         return updatedTeam
     }
 
-    async findTeamById(teamId: string) {
+    async createTeamInvite({
+        teamSlug,
+        userId,
+        maxUses,
+        expiresIn,
+    }: CreateTeamInviteServiceInput) {
         const team = await this.prisma.team.findUnique({
-            where: {
-                id: teamId
-            }
+            where: { slug: teamSlug },
+            select: { id: true, ownerId: true },
         })
 
         if (!team) {
             throw new NotFoundException({
                 message: 'Team not found',
-                statusCode: 404,
             })
         }
 
-        return team
+        if (team.ownerId !== userId) {
+            throw new ForbiddenException({
+                message: 'You cannot create invites for this team',
+            })
+        }
+
+        const token = randomBytes(32).toString('base64url')
+
+        const tokenHash = createHash('sha256')
+            .update(token)
+            .digest('hex')
+
+        const expiresAt = new Date(Date.now() + expiresIn * 1000)
+
+        const invite = await this.prisma.invite.create({
+            data: {
+                tokenHash,
+                maxUses,
+                expiresAt,
+                authorId: userId,
+                teamId: team.id,
+            }
+        })
+
+        return {
+            ...invite,
+            token,
+        }
     }
 }

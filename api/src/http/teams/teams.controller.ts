@@ -6,6 +6,7 @@ import { TeamsService } from './teams.service.js';
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js';
 import { CreateTeamDto, createTeamSchema } from './dtos/create-team.dto.js';
 import { UpdateTeamBodyDto, updateTeamBodySchema, UpdateTeamParamDto, updateTeamParamSchema } from './dtos/update-team.dto.js';
+import { CreateTeamInviteBodyDto, createTeamInviteBodySchema, CreateTeamInviteParamsDto, createTeamInviteParamsSchema } from './dtos/create-team-invite.dto.js';
 
 @ApiTags('Teams')
 @Controller('api/teams')
@@ -50,6 +51,24 @@ export class TeamsController {
             userId: user.userId,
             teamSlug: slug,
             newName,
+        })
+    }
+
+    @Post(':slug/invites')
+    @HttpCode(201)
+    async createTeamInvite(
+        @CurrentUser() user: AuthenticatedUser,
+        @Body(new ZodValidationPipe(createTeamInviteBodySchema)) body: CreateTeamInviteBodyDto,
+        @Param(new ZodValidationPipe(createTeamInviteParamsSchema)) param: CreateTeamInviteParamsDto
+    ) {
+        const { maxUses, expiresIn } = body
+        const { slug } = param
+
+        return this.teamsService.createTeamInvite({
+            userId: user.userId,
+            teamSlug: slug,
+            maxUses,
+            expiresIn
         })
     }
 }
