@@ -1,12 +1,37 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { CacheRepository } from '../cache/cache.interface.js'
-import { PrismaService } from '../database/prisma/prisma.service.js'
-import { generateToken, hashToken } from './auth.crypto.js'
+import type { Request } from 'express'
+import { CacheRepository } from '../../cache/cache.interface.js'
+import { PrismaService } from '../../database/prisma/prisma.service.js'
+import { GoogleOAuthService } from '../oauth/google-oauth.service.js'
+import { CryptoService } from './crypto.service.js'
 import { DesktopTicketService, LOGIN_TTL_SECONDS } from './desktop-ticket.service.js'
-import { GoogleOAuthService } from './oauth/google-oauth.service.js'
 import { SessionService } from './session.service.js'
 
 const userSelect = { id: true, email: true, name: true, avatarUrl: true } as const
+
+export interface AuthenticatedUser {
+	userId: string
+	sessionId: string
+}
+
+export interface AccessTokenClaims {
+	sub: string
+	sid: string
+	iss: string
+	aud: string
+	iat: number
+	exp: number
+}
+
+export type AuthenticatedRequest = Request & { user: AuthenticatedUser }
+
+export interface TokenPair {
+	accessToken: string
+	refreshToken: string
+	tokenType: 'Bearer'
+	expiresIn: number
+	refreshExpiresAt: string
+}
 
 @Injectable()
 export class AuthService {
@@ -16,27 +41,29 @@ export class AuthService {
 		private cache: CacheRepository,
 		private tickets: DesktopTicketService,
 		private sessions: SessionService,
+		private cryptoService: CryptoService
 	) {}
 
 	async startDesktopLogin(codeChallenge: string) {
-		const state = generateToken()
-		const codeVerifier = generateToken()
+		const state = this.cryptoService.generateToken()
+		const codeVerifier = this.cryptoService.generateToken()
 		const ticket = await this.tickets.create(codeChallenge)
+
 		await this.cache.set(
-			`auth:oauth:${hashToken(state)}`,
+			`auth:oauth:${this.cryptoService.hashToken(state)}`,
 			JSON.stringify({ codeVerifier, ticket }),
 			LOGIN_TTL_SECONDS,
 		)
 		return {
 			ticket,
-			authorizationUrl: this.googleOAuth.getAuthUrl(state, hashToken(codeVerifier)),
+			authorizationUrl: this.googleOAuth.getAuthUrl(state, this.cryptoService.hashToken(codeVerifier)),
 			expiresIn: LOGIN_TTL_SECONDS,
 			interval: 2,
 		}
 	}
 
 	async completeGoogleLogin(state: string, code?: string, error?: string) {
-		const attempt = await this.cache.getDel(`auth:oauth:${hashToken(state)}`)
+		const attempt = await this.cache.getDel(`auth:oauth:${this.cryptoService.hashToken(state)}`)
 		if (!attempt) throw new UnauthorizedException('Invalid or expired OAuth state')
 		const { codeVerifier, ticket } = JSON.parse(attempt) as { codeVerifier: string; ticket: string }
 		if (error || !code) {

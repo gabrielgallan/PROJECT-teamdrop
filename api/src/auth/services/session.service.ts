@@ -1,24 +1,24 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { PrismaService } from '../database/prisma/prisma.service.js'
+import { PrismaService } from '../../database/prisma/prisma.service.js'
 import { AccessTokenService } from './access-token.service.js'
-import { SESSION_TTL_SECONDS } from './auth.constants.js'
-import { generateToken, hashToken } from './auth.crypto.js'
-import type { TokenPair } from './auth.types.js'
+import { TokenPair } from './auth.service.js'
+import { CryptoService } from './crypto.service.js'
 
 @Injectable()
 export class SessionService {
 	constructor(
 		private prisma: PrismaService,
 		private accessTokens: AccessTokenService,
+		private cryptoService: CryptoService
 	) {}
 
 	async create(userId: string): Promise<TokenPair> {
-		const refreshToken = generateToken()
-		const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000)
+		const refreshToken = this.cryptoService.generateToken()
+		const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 
 		return this.prisma.$transaction(async (db) => {
 			const session = await db.session.create({
-				data: { userId, refreshTokenHash: hashToken(refreshToken), expiresAt },
+				data: { userId, refreshTokenHash: this.cryptoService.hashToken(refreshToken), expiresAt },
 			})
 			return {
 				...(await this.accessTokens.sign(userId, session.id, expiresAt)),
@@ -30,7 +30,7 @@ export class SessionService {
 	}
 
 	async rotate(refreshToken: string): Promise<TokenPair> {
-		const previousHash = hashToken(refreshToken)
+		const previousHash = this.cryptoService.hashToken(refreshToken)
 		const session = await this.prisma.session.findUnique({
 			where: { refreshTokenHash: previousHash },
 		})
@@ -38,7 +38,7 @@ export class SessionService {
 			throw this.invalidRefreshToken()
 		}
 
-		const nextRefreshToken = generateToken()
+		const nextRefreshToken = this.cryptoService.generateToken()
 		// Sign before consuming the refresh so a signing failure does not destroy the session.
 		const access = await this.accessTokens.sign(session.userId, session.id, session.expiresAt)
 		const updated = await this.prisma.session.updateMany({
@@ -47,7 +47,7 @@ export class SessionService {
 				refreshTokenHash: previousHash,
 				expiresAt: { gt: new Date() },
 			},
-			data: { refreshTokenHash: hashToken(nextRefreshToken) },
+			data: { refreshTokenHash: this.cryptoService.hashToken(nextRefreshToken) },
 		})
 		// PostgreSQL rechecks this condition after concurrent updates: only one refresh wins.
 		if (updated.count !== 1) throw this.invalidRefreshToken()
@@ -62,7 +62,7 @@ export class SessionService {
 
 	async revoke(refreshToken: string): Promise<void> {
 		await this.prisma.session.deleteMany({
-			where: { refreshTokenHash: hashToken(refreshToken) },
+			where: { refreshTokenHash: this.cryptoService.hashToken(refreshToken) },
 		})
 	}
 

@@ -1,13 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService, TokenExpiredError } from '@nestjs/jwt'
 import { z } from 'zod'
-import {
-	ACCESS_TOKEN_TTL_SECONDS,
-	JWT_ALGORITHM,
-	JWT_AUDIENCE,
-	JWT_ISSUER,
-} from './auth.constants.js'
-import type { AccessTokenClaims, AuthenticatedUser } from './auth.types.js'
+import { AccessTokenClaims, AuthenticatedUser } from './auth.service.js'
+
+const JWT_ALGORITHM = 'HS256'
+const JWT_ISSUER = 'teamdrop-api'
+const JWT_AUDIENCE = 'teamdrop-api'
 
 const claimsSchema = z
 	.object({
@@ -26,13 +24,16 @@ export class AccessTokenService {
 
 	async sign(userId: string, sessionId: string, sessionExpiresAt: Date) {
 		const now = Math.floor(Date.now() / 1000)
+
 		const expiresAt = Math.min(
-			now + ACCESS_TOKEN_TTL_SECONDS,
+			now + 15 * 60,
 			Math.floor(sessionExpiresAt.getTime() / 1000),
 		)
+
 		if (expiresAt <= now) {
 			throw new UnauthorizedException({ code: 'INVALID_REFRESH_TOKEN', message: 'Session expired' })
 		}
+
 		const accessToken = await this.jwt.signAsync(
 			{
 				sub: userId,

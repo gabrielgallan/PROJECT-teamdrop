@@ -11,7 +11,6 @@ import { UsersModule } from "./users/users.module.js";
         DatabaseModule,
         HealthModule,
         UsersModule,
-
     ],
     controllers: [],
     providers: [],

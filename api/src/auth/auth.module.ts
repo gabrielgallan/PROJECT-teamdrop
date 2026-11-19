@@ -5,13 +5,14 @@ import { CacheModule } from '../cache/cache.module.js'
 import { DatabaseModule } from '../database/database.module.js'
 import { EnvModule } from '../env/env.module.js'
 import { EnvService } from '../env/env.service.js'
-import { AccessTokenService } from './access-token.service.js'
 import { AuthController } from './auth.controller.js'
-import { AuthService } from './auth.service.js'
-import { DesktopTicketService } from './desktop-ticket.service.js'
 import { AccessTokenGuard } from './guards/access-token.guard.js'
 import { GoogleOAuthService } from './oauth/google-oauth.service.js'
-import { SessionService } from './session.service.js'
+import { AccessTokenService } from './services/access-token.service.js'
+import { AuthService } from './services/auth.service.js'
+import { CryptoService } from './services/crypto.service.js'
+import { DesktopTicketService } from './services/desktop-ticket.service.js'
+import { SessionService } from './services/session.service.js'
 
 @Module({
 	imports: [
@@ -24,13 +25,14 @@ import { SessionService } from './session.service.js'
 			useFactory: (env: EnvService) => ({ secret: env.get('JWT_SECRET') }),
 		}),
 	],
-	exports: [GoogleOAuthService],
+	exports: [AuthService, GoogleOAuthService],
 	providers: [
 		GoogleOAuthService,
 		DesktopTicketService,
 		AccessTokenService,
 		SessionService,
 		AuthService,
+		CryptoService,
 		{ provide: APP_GUARD, useClass: AccessTokenGuard },
 	],
 	controllers: [AuthController],

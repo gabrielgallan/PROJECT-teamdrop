@@ -6,14 +6,12 @@
 		"build": "nest build",
 		"start": "nest start",
 		"start:dev": "nest start --watch",
-		"start:debug": "nest start --debug --watch",
 		"start:prod": "node dist/main",
 		"db:dev": "prisma migrate dev",
 		"db:prod": "prisma migrate deploy",
 		"db:push": "prisma db push",
 		"db:generate": "prisma generate",
-		"test": "nest start --entryFile src/test",
-		"test:auth": "pnpm build && node --test tests/auth.test.mjs"
+		"jwt:generate": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('base64url'))\""
 	},
 	"dependencies": {
 		"@azure/storage-blob": "^12.34.0",

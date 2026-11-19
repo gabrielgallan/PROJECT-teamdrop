@@ -1,14 +1,15 @@
 import { randomBytes } from 'node:crypto'
 import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { CacheRepository } from '../cache/cache.interface.js'
-import { hashToken } from './auth.crypto.js'
+import { CacheRepository } from '../../cache/cache.interface.js';
+import { CryptoService } from './crypto.service.js';
 
 export const LOGIN_TTL_SECONDS = 300
+
 type Ticket = { challenge: string; status: 'pending' | 'complete' | 'denied'; userId?: string }
 
 @Injectable()
 export class DesktopTicketService {
-	constructor(private cache: CacheRepository) {}
+	constructor(private cache: CacheRepository, private cryptoService: CryptoService) {}
 
 	async create(challenge: string) {
 		const ticket = randomBytes(32).toString('base64url')
@@ -37,7 +38,7 @@ export class DesktopTicketService {
 		const value = await this.cache.get(key)
 		if (!value) throw new UnauthorizedException('Invalid or expired login')
 		const record: Ticket = JSON.parse(value)
-		if (record.challenge !== hashToken(verifier))
+		if (record.challenge !== this.cryptoService.hashToken(verifier))
 			throw new UnauthorizedException('Invalid login verifier')
 		if (record.status === 'pending') return null
 		// Only consume after proof validation and completion; GETDEL prevents replay.
@@ -50,6 +51,6 @@ export class DesktopTicketService {
 	}
 
 	private key(ticket: string) {
-		return `auth:desktop:${hashToken(ticket)}`
+		return `auth:desktop:${this.cryptoService.hashToken(ticket)}`
 	}
 }
