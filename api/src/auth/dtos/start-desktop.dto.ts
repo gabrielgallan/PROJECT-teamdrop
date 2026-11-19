@@ -1,16 +1,18 @@
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 
-const secretSchema = z
+const codeChallengeSchema = z
   .string()
-  .regex(/^[A-Za-z0-9_-]{43}$/)
+  .min(43)
+  .max(128)
+  .regex(/^[A-Za-z0-9_-]+$/)
 
 // Request
 export const startDesktopLoginSchema = z.object({
-  codeChallenge: secretSchema.meta({
+  codeChallenge: codeChallengeSchema.meta({
     description: 'BASE64URL(SHA256(desktop verifier))',
   }),
-}).strict()
+})
 
 export class StartDesktopLoginDto extends createZodDto(
   startDesktopLoginSchema,

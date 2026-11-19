@@ -4,6 +4,7 @@ import { StorageModule } from "../storage/storage.module.js";
 import { HealthModule } from "./health/health.module.js";
 import { LoggingMiddleware } from "./middlewares/logging/logging.middleware.js";
 import { UsersModule } from "./users/users.module.js";
+import { TeamsModule } from "./teams/teams.module.js";
 
 @Module({
     imports: [
@@ -11,6 +12,7 @@ import { UsersModule } from "./users/users.module.js";
         DatabaseModule,
         HealthModule,
         UsersModule,
+        TeamsModule
     ],
     controllers: [],
     providers: [],
