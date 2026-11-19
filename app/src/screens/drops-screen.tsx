@@ -6,7 +6,19 @@ import { RecentFiles } from '../components/recent-files'
 import { Separator } from '../components/separator'
 import { useDrops } from '../hooks/use-drops'
 
-export function DropsScreen() {
+export function DropsScreen({
+	onLogout,
+	authBusy,
+	authError,
+	authNeedsLogin,
+	onAuthRetry,
+}: {
+	onLogout: () => void
+	authBusy: boolean
+	authError: string
+	authNeedsLogin: boolean
+	onAuthRetry: () => void
+}) {
 	const {
 		files,
 		pending,
@@ -86,6 +98,9 @@ export function DropsScreen() {
 								Sair
 								<span className="ml-auto text-xs text-white/55">Ctrl+Q</span>
 							</MenuItem>
+							<MenuItem onClick={onLogout} disabled={authBusy}>
+								Encerrar sessão
+							</MenuItem>
 						</div>
 						<div className="mx-4 flex items-center justify-between border-t border-white/8 pb-1 pt-4">
 							<h2 className="text-xs font-medium text-white/75">Drops do time</h2>
@@ -93,6 +108,19 @@ export function DropsScreen() {
 					</div>
 					<RecentFiles files={files} now={now} onPreview={openPreview} onCopy={copyLink} />
 				</>
+			)}
+			{authError && (
+				<div role="alert" className="px-4 py-2 text-xs text-red-300">
+					<p>{authError}</p>
+					<button
+						type="button"
+						disabled={authBusy}
+						onClick={onAuthRetry}
+						className="mt-2 underline"
+					>
+						{authNeedsLogin ? 'Entrar novamente' : 'Tentar novamente'}
+					</button>
+				</div>
 			)}
 			{error && (
 				<div

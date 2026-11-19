@@ -1,12 +1,24 @@
-import { useState } from 'react'
-import { currentUser } from '../mocks/team'
-import type { Member } from '../types/team'
+import { useEffect, useSyncExternalStore } from 'react'
+import {
+	cancelLogin,
+	getSessionSnapshot,
+	initializeSession,
+	restoreSession,
+	signInWithGoogle,
+	signOut,
+	subscribeSession,
+} from '../services/auth'
 
 export function useSession() {
-	const [session, setSession] = useState<{ user: Member } | null>(null)
-
+	const state = useSyncExternalStore(subscribeSession, getSessionSnapshot)
+	useEffect(() => {
+		void initializeSession()
+	}, [])
 	return {
-		session,
-		enterDemo: () => setSession({ user: currentUser }),
+		...state,
+		login: signInWithGoogle,
+		logout: signOut,
+		cancel: cancelLogin,
+		retry: restoreSession,
 	}
 }
