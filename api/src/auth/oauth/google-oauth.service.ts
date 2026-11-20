@@ -1,3 +1,4 @@
+import { setTimeout as delay } from 'node:timers/promises'
 import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common'
 import { z } from 'zod'
 import { EnvService } from '../../env/env.service.js'
@@ -119,21 +120,40 @@ export class GoogleOAuthService {
 	): Promise<unknown> {
 		let response: Response
 
-		try {
-			response = await fetch(url, {
-				method,
-				headers: {
-					Accept: 'application/json',
-					...(body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
-					...headers,
-				},
-				body,
-				signal: AbortSignal.timeout(10_000),
-			})
-		} catch {
-			throw new BadGatewayException({
-				message: 'Failed to connect with Google API',
-			})
+		for (let attempt = 0; ; attempt++) {
+			try {
+				response = await fetch(url, {
+					method,
+					headers: {
+						Accept: 'application/json',
+						...(body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+						...headers,
+					},
+					body,
+					signal: AbortSignal.timeout(attempt === 0 ? 10_000 : 20_000),
+				})
+				break
+			} catch (error) {
+				// Only retry the profile lookup; authorization codes must not be exchanged twice.
+				if (
+					url === GOOGLE_USERINFO_URL &&
+					method === 'GET' &&
+					attempt === 0 &&
+					error instanceof Error &&
+					error.name === 'TimeoutError'
+				) {
+					console.warn('Google profile request timed out; retrying in 1s with a 20s timeout')
+					await delay(1_000)
+					continue
+				}
+				console.error('Google API request failed:', { url, method })
+				console.dir(error, { depth: 5 })
+
+				throw new BadGatewayException(
+					{ message: 'Failed to connect with Google API' },
+					{ cause: error },
+				)
+			}
 		}
 
 		if (!response.ok) {

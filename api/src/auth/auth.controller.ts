@@ -73,6 +73,8 @@ export class AuthController {
 
 		const success = await this.authService.completeGoogleLogin(state, code, error)
 
+		console.log('Google callback success:', success)
+
 		const message = success
 			? 'Login concluído. Você pode fechar esta aba e voltar ao Teamdrop.'
 			: 'Não foi possível concluir o login. Volte ao Teamdrop e tente novamente.'

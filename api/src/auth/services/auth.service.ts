@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import type { Request } from 'express'
 import { CacheRepository } from '../../cache/cache.interface.js'
+import { CryptographyService } from '../../cryptography/cryptography.service.js'
 import { PrismaService } from '../../database/prisma/prisma.service.js'
 import { GoogleOAuthService } from '../oauth/google-oauth.service.js'
-import { CryptographyService } from '../../cryptography/cryptography.service.js'
 import { DesktopTicketService, LOGIN_TTL_SECONDS } from './desktop-ticket.service.js'
 import { SessionService } from './session.service.js'
 
@@ -41,7 +41,7 @@ export class AuthService {
 		private cache: CacheRepository,
 		private tickets: DesktopTicketService,
 		private sessions: SessionService,
-		private cryptoService: CryptographyService
+		private cryptoService: CryptographyService,
 	) {}
 
 	async startDesktopLogin(codeChallenge: string) {
@@ -56,7 +56,10 @@ export class AuthService {
 		)
 		return {
 			ticket,
-			authorizationUrl: this.googleOAuth.getAuthUrl(state, this.cryptoService.hashToken(codeVerifier)),
+			authorizationUrl: this.googleOAuth.getAuthUrl(
+				state,
+				this.cryptoService.hashToken(codeVerifier),
+			),
 			expiresIn: LOGIN_TTL_SECONDS,
 			interval: 2,
 		}
@@ -64,31 +67,46 @@ export class AuthService {
 
 	async completeGoogleLogin(state: string, code?: string, error?: string) {
 		const attempt = await this.cache.getDel(`auth:oauth:${this.cryptoService.hashToken(state)}`)
-		if (!attempt) throw new UnauthorizedException('Invalid or expired OAuth state')
+
+		if (!attempt)
+			throw new UnauthorizedException({
+				message: 'Invalid or expired OAuth state',
+			})
+
 		const { codeVerifier, ticket } = JSON.parse(attempt) as { codeVerifier: string; ticket: string }
+
 		if (error || !code) {
 			await this.tickets.complete(ticket)
+
 			return false
 		}
 
 		try {
 			const profile = await this.googleOAuth.authenticate({ code, codeVerifier })
+
 			const user = await this.prisma.$transaction(async (db) => {
 				// The provider subject is the identity; never silently link accounts by email.
 				const account = await db.account.findUnique({
 					where: { providerAccountId: profile.id },
 				})
 				if (account) {
-					if (account.provider !== 'GOOGLE')
-						throw new UnauthorizedException('Invalid account provider')
+					if (account.provider !== 'GOOGLE') {
+						throw new UnauthorizedException({
+							message: 'Invalid account provider',
+						})
+					}
+
 					return db.user.update({
 						where: { id: account.userId },
 						data: { name: profile.name, avatarUrl: profile.avatarUrl },
 						select: userSelect,
 					})
 				}
+
 				if (await db.user.findUnique({ where: { email: profile.email } })) {
-					throw new UnauthorizedException('This email is already associated with another identity')
+					throw new UnauthorizedException({
+						message: 'This email is already associated with another identity',
+					})
 				}
 				return db.user.create({
 					data: {
@@ -101,8 +119,11 @@ export class AuthService {
 				})
 			})
 			return await this.tickets.complete(ticket, user.id)
-		} catch {
+		} catch (err) {
+			console.error(err)
+
 			await this.tickets.complete(ticket)
+
 			return false
 		}
 	}
