@@ -1,13 +1,6 @@
+import { Body, Controller, Get, Header, HttpCode, Post, Query } from '@nestjs/common'
 import {
-	Body,
-	Controller,
-	Get,
-	Header,
-	HttpCode,
-	Post,
-	Query,
-} from '@nestjs/common'
-import {
+	ApiBearerAuth,
 	ApiExtraModels,
 	ApiOkResponse,
 	ApiOperation,
@@ -17,12 +10,27 @@ import {
 } from '@nestjs/swagger'
 import { ApiErrorResponseDto } from '../http/dtos/api-error-response.dto.js'
 import { ZodValidationPipe } from '../http/pipes/zod-validation.pipe.js'
+import { CurrentUser } from './decorators/current-user.decorator.js'
 import { Public } from './decorators/public.decorator.js'
-import { ExchangeCompleteResponseDto, ExchangeDesktopDto, ExchangePendingResponseDto, exchangeDesktopSchema } from './dtos/exchange-desktop.dto.js'
+import {
+	ExchangeCompleteResponseDto,
+	ExchangeDesktopDto,
+	ExchangePendingResponseDto,
+	exchangeDesktopSchema,
+} from './dtos/exchange-desktop.dto.js'
 import { GoogleCallbackQueryDto, googleCallbackQuerySchema } from './dtos/google-callback.dto.js'
-import { RefreshTokenDto, RefreshTokenResponseDto, refreshTokenSchema } from './dtos/refresh-token.dto.js'
-import { StartDesktopLoginDto, StartDesktopLoginResponseDto, startDesktopLoginSchema } from './dtos/start-desktop.dto.js'
-import { AuthService } from './services/auth.service.js'
+import { ProfileResponseDto } from './dtos/public-user.dto.js'
+import {
+	RefreshTokenDto,
+	RefreshTokenResponseDto,
+	refreshTokenSchema,
+} from './dtos/refresh-token.dto.js'
+import {
+	StartDesktopLoginDto,
+	StartDesktopLoginResponseDto,
+	startDesktopLoginSchema,
+} from './dtos/start-desktop.dto.js'
+import { AuthenticatedUser, AuthService } from './services/auth.service.js'
 
 @ApiTags('Authentication')
 @Controller('api/auth')
@@ -38,7 +46,9 @@ export class AuthController {
 	})
 	@ApiResponse({ status: 200, type: StartDesktopLoginResponseDto })
 	@ApiResponse({ status: 400, type: ApiErrorResponseDto })
-	startGoogleOAuth(@Body(new ZodValidationPipe(startDesktopLoginSchema)) body: StartDesktopLoginDto) {
+	startGoogleOAuth(
+		@Body(new ZodValidationPipe(startDesktopLoginSchema)) body: StartDesktopLoginDto,
+	) {
 		const { codeChallenge } = body
 
 		return this.authService.startDesktopLogin(codeChallenge)
@@ -57,7 +67,7 @@ export class AuthController {
 	@ApiResponse({ status: 400, description: 'Malformed callback' })
 	@ApiResponse({ status: 401, description: 'Invalid, expired or already consumed OAuth state' })
 	async authenticateWithGoogle(
-		@Query(new ZodValidationPipe(googleCallbackQuerySchema)) query: GoogleCallbackQueryDto
+		@Query(new ZodValidationPipe(googleCallbackQuerySchema)) query: GoogleCallbackQueryDto,
 	) {
 		const { state, code, error } = query
 
@@ -81,25 +91,25 @@ export class AuthController {
 	@ApiOperation({
 		summary: 'Poll every two seconds; consume the completed ticket once to obtain tokens',
 	})
-	@ApiExtraModels(
-		ExchangePendingResponseDto,
-		ExchangeCompleteResponseDto,
-		)
-		@ApiOkResponse({
+	@ApiExtraModels(ExchangePendingResponseDto, ExchangeCompleteResponseDto)
+	@ApiOkResponse({
 		schema: {
 			oneOf: [
-			{ $ref: getSchemaPath(ExchangePendingResponseDto.Output) },
-			{ $ref: getSchemaPath(ExchangeCompleteResponseDto.Output) },
+				{ $ref: getSchemaPath(ExchangePendingResponseDto.Output) },
+				{ $ref: getSchemaPath(ExchangeCompleteResponseDto.Output) },
 			],
 		},
-		})
+	})
 	@ApiResponse({ status: 200 })
 	@ApiResponse({ status: 400, description: 'Malformed ticket or verifier' })
 	@ApiResponse({
 		status: 401,
 		description: 'Invalid, expired, denied or already consumed ticket; incorrect verifier',
 	})
-	exchange(@Body(new ZodValidationPipe(exchangeDesktopSchema, 'Invalid desktop exchange')) body: ExchangeDesktopDto) {
+	exchange(
+		@Body(new ZodValidationPipe(exchangeDesktopSchema, 'Invalid desktop exchange'))
+		body: ExchangeDesktopDto,
+	) {
 		const { ticket, codeVerifier } = body
 
 		return this.authService.exchangeDesktopLogin(ticket, codeVerifier)
@@ -116,7 +126,10 @@ export class AuthController {
 		status: 401,
 		description: 'INVALID_REFRESH_TOKEN: unknown, expired or already rotated refresh token',
 	})
-	refresh(@Body(new ZodValidationPipe(refreshTokenSchema, 'Invalid refresh token format')) body: RefreshTokenDto) {
+	refresh(
+		@Body(new ZodValidationPipe(refreshTokenSchema, 'Invalid refresh token format'))
+		body: RefreshTokenDto,
+	) {
 		return this.authService.refresh(body.refreshToken)
 	}
 
@@ -133,7 +146,28 @@ export class AuthController {
 			'Session removed or refresh token already invalid; issued JWTs remain valid until expiration',
 	})
 	@ApiResponse({ status: 400, description: 'Malformed refresh token' })
-	logout(@Body(new ZodValidationPipe(refreshTokenSchema, 'Invalid refresh token format')) body: RefreshTokenDto) {
+	logout(
+		@Body(new ZodValidationPipe(refreshTokenSchema, 'Invalid refresh token format'))
+		body: RefreshTokenDto,
+	) {
 		return this.authService.logout(body.refreshToken)
+	}
+
+	@Get('profile')
+	@HttpCode(200)
+	@ApiBearerAuth()
+	@ApiOperation({
+		summary: 'Get authenticated user profile',
+	})
+	@ApiResponse({
+		status: 200,
+		type: ProfileResponseDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: 'INVALID_ACCESS_TOKEN, ACCESS_TOKEN_EXPIRED, or user no longer exists',
+	})
+	async getProfile(@CurrentUser() user: AuthenticatedUser) {
+		return { user: await this.authService.getProfile(user.userId) }
 	}
 }

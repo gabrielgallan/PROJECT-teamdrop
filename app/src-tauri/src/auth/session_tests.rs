@@ -168,7 +168,7 @@ async fn mock_api() -> MockApi {
                             (200, pair(&next, number))
                         }
                     }
-                    "/api/auth/me" => {
+                    "/api/auth/profile" => {
                         state.profiles.fetch_add(1, Ordering::SeqCst);
                         (200, json!({ "user": user() }))
                     }

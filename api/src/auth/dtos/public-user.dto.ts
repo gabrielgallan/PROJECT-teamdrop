@@ -12,12 +12,17 @@ export class PublicUserDto {
 	email!: string
 
 	@ApiProperty({
-        example: 'John Doe'
-    })
-    name!: string | null
+		example: 'John Doe',
+	})
+	name!: string | null
 
-    @ApiProperty({
-        example: 'https://app.com/avatar-1'
-    })
-    avatarUrl!: string | null
+	@ApiProperty({
+		example: 'https://app.com/avatar-1',
+	})
+	avatarUrl!: string | null
+}
+
+export class ProfileResponseDto {
+	@ApiProperty({ type: PublicUserDto })
+	user!: PublicUserDto
 }

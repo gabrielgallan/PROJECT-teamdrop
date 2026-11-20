@@ -128,7 +128,7 @@ impl AuthClient {
         }
         let response = self
             .http
-            .get(format!("{}/api/auth/me", self.base_url))
+            .get(format!("{}/api/auth/profile", self.base_url))
             .bearer_auth(access)
             .send()
             .await

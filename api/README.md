@@ -49,7 +49,7 @@ The ticket can only be exchanged once and requires the original desktop verifier
 
 | Endpoint | Authentication | Response |
 | --- | --- | --- |
-| `GET /api/auth/me` | `Authorization: Bearer <accessToken>` | `200 { user }` |
+| `GET /api/auth/profile` | `Authorization: Bearer <accessToken>` | `200 { user }` |
 | `POST /api/auth/refresh` | JSON `{ "refreshToken": "..." }` | `200` with a new token pair |
 | `POST /api/auth/logout` | JSON `{ "refreshToken": "..." }` | `204`, including when already invalid |
 
