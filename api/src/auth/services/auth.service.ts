@@ -3,7 +3,7 @@ import type { Request } from 'express'
 import { CacheRepository } from '../../cache/cache.interface.js'
 import { PrismaService } from '../../database/prisma/prisma.service.js'
 import { GoogleOAuthService } from '../oauth/google-oauth.service.js'
-import { CryptoService } from './crypto.service.js'
+import { CryptographyService } from '../../cryptography/cryptography.service.js'
 import { DesktopTicketService, LOGIN_TTL_SECONDS } from './desktop-ticket.service.js'
 import { SessionService } from './session.service.js'
 
@@ -41,7 +41,7 @@ export class AuthService {
 		private cache: CacheRepository,
 		private tickets: DesktopTicketService,
 		private sessions: SessionService,
-		private cryptoService: CryptoService
+		private cryptoService: CryptographyService
 	) {}
 
 	async startDesktopLogin(codeChallenge: string) {

@@ -4,6 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "nest build",
+		"test:teams": "pnpm build && node --test tests/teams.test.mjs",
 		"start": "nest start",
 		"start:dev": "nest start --watch",
 		"start:prod": "node dist/main",

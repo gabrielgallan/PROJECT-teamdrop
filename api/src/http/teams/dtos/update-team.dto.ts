@@ -2,7 +2,7 @@ import { createZodDto } from "nestjs-zod";
 import z from "zod";
 
 export const updateTeamBodySchema = z.object({
-    newName: z.string()
+    newName: z.string().trim().nonempty()
 })
 
 export const updateTeamParamSchema = z.object({

@@ -80,39 +80,73 @@ The auth suite uses Node's test runner and starts its own temporary PostgreSQL c
 
 HTTP tests exercise real Nest controllers, guards, JWTs and Prisma persistence, including concurrent refreshes. Google and the temporary ticket cache use test doubles; these tests do not verify live Google OAuth or a real Redis instance.
 
-### Authentication
+## Teams API
 
-- [ ] **RF001** — The system must support authentication through OAuth providers (Google and Microsoft).
-- [x] **RF002** — The system must automatically create a user account upon first login.
-- [x] **RF003** — The system must allow session renewal without requiring reauthentication.
+All routes require a Bearer access token. Team member listing and invitation management are restricted to the team owner.
+
+| Endpoint | Input | Response |
+| --- | --- | --- |
+| `GET /api/teams` | — | `200` with the user's teams and `role` |
+| `POST /api/teams` | `{ "name": "Product" }` | `201` with the created team |
+| `PATCH /api/teams/:slug` | `{ "newName": "Design" }` | `200` with the updated team, including its new `slug` |
+| `GET /api/teams/:slug/members` | — | `200` with public member profiles and `role` |
+| `POST /api/teams/:slug/invites` | Optional `{ "maxUses": 100, "expiresIn": 604800 }` | `201 { token, expiresAt, maxUses, uses }` |
+| `GET /api/teams/:slug/invites/active` | — | `200 { invite: { id, expiresAt, maxUses, uses } }`, or `{ "invite": null }` |
+| `DELETE /api/teams/:slug/invites/active` | — | `204`; repeated revocation also succeeds |
+| `POST /api/teams/invites/accept` | `{ "token": "..." }` | `200` with the joined team and `role` |
+
+Names are trimmed and cannot be blank. After renaming, clients must use the returned slug for subsequent requests. The default invitation lasts seven days and allows 100 new memberships. Existing members do not consume another use. Invalid, expired, revoked or exhausted invitations cannot create memberships (`410`); malformed tokens return `400` and unauthorized management returns `403`.
+
+Creating an invitation revokes the previous one in the same transaction. A team row lock serializes creation, revocation and acceptance. The active endpoint returns only metadata, and no invitation after expiration or exhaustion. Responses containing invitation tokens use `Cache-Control: no-store`.
+
+Invitation tokens are returned only when created; clients must copy or save the link at that point. Only the SHA-256 hash is stored, so the original token cannot be recovered. Generate a new invitation to obtain another link, invalidating the previous one. `CryptographyModule` provides token generation and hashing; auth uses Base64URL hashes and invitations use hexadecimal hashes.
+
+Run `pnpm test:teams` to verify real Nest HTTP routes, authentication, owner authorization, member roles, name validation, renaming and invitation lifecycle/concurrency against a temporary PostgreSQL database. It requires PostgreSQL binaries on `PATH` (or `PG_BIN`) and Postman CLI, and does not use the configured `DATABASE_URL`.
+
+## Functional requirements
+
+Checked requirements are integrated; mock interactions are not considered complete.
+
+### Authentication and profile
+
+- [x] **RF001** — The system must allow users to sign in with Google.
+- [x] **RF002** — The system must allow automatic account creation upon first login.
+- [x] **RF003** — The system must allow users to restore and renew their sessions.
 - [x] **RF004** — The system must allow users to log out.
+- [x] **RF023** — The system must allow users to view their profile.
 
 ### Teams
 
-- [ ] **RF005** — The system must allow users to create teams.
-- [ ] **RF006** — The system must allow users to join multiple teams.
-- [ ] **RF007** — The system must list all teams a user belongs to.
-- [ ] **RF008** — The system must allow team owners to update their team information.
-- [ ] **RF009** — The system must allow team owners to delete their teams.
+- [ ] **RF005** — The system must allow users to create a team.
+- [ ] **RF006** — The system must allow users to belong to multiple teams.
+- [ ] **RF007** — The system must allow users to list their teams.
+- [ ] **RF008** — The system must allow team owners to update their teams.
 
 ### Members
 
-- [ ] **RF010** — The system must allow users to view team members.
-- [ ] **RF011** — The system must allow team owners to remove members from their teams.
-- [ ] **RF012** — The system must allow members to voluntarily leave a team.
+- [ ] **RF010** — The system must allow team owners to list team members.
+- [ ] **RF011** — The system must allow team owners to remove members.
+- [ ] **RF012** — The system must allow members to leave a team.
+- [ ] **RF024** — The system must allow automatic revocation of team access when a membership ends.
 
 ### Invites
 
-- [ ] **RF013** — The system must allow team owners to generate invitations for their teams.
-- [ ] **RF014** — The system must allow team owners to configure invitation expiration dates and usage limits.
+- [ ] **RF013** — The system must allow team owners to create invitation links.
+- [ ] **RF014** — The system must allow invitations to expire.
 - [ ] **RF015** — The system must allow users to join teams through valid invitations.
-- [ ] **RF016** — The system must allow team owners to revoke invitations.
-- [ ] **RF017** — The system must allow team owners to view their team invitations.
+- [ ] **RF016** — The system must allow team owners to revoke or replace invitation links.
+- [ ] **RF017** — The system must allow team owners to view invitation status and copy newly generated invitation links.
 
 ### Files
 
-- [ ] **RF018** — The system must allow users to upload files to teams.
-- [ ] **RF019** — The system must allow users to quickly capture and share screenshots.
-- [ ] **RF020** — The system must list files shared within each team.
-- [ ] **RF021** — The system must provide a unified list of recent files from all teams a user belongs to.
-- [ ] **RF022** — The system must allow users to view file details
+- [ ] **RF018** — The system must allow members to share files with their teams.
+- [ ] **RF019** — The system must allow users to capture and share screenshots.
+- [ ] **RF020** — The system must allow members to access files shared with their teams.
+- [ ] **RF021** — The system must allow users to view recent files from all their teams.
+- [ ] **RF022** — The system must allow users to view file details, preview files, download them and copy their links.
+- [ ] **RF025** — The system must allow shared files to expire.
+
+### Desktop behavior
+
+- [ ] **RF026** — The system must allow users to access the app from the Windows tray.
+- [ ] **RF027** — The system must allow users to confirm or cancel destructive actions.

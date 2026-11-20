@@ -1,7 +1,6 @@
-import { randomBytes } from 'node:crypto'
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { CacheRepository } from '../../cache/cache.interface.js';
-import { CryptoService } from './crypto.service.js';
+import { CryptographyService } from '../../cryptography/cryptography.service.js';
 
 export const LOGIN_TTL_SECONDS = 300
 
@@ -9,10 +8,10 @@ type Ticket = { challenge: string; status: 'pending' | 'complete' | 'denied'; us
 
 @Injectable()
 export class DesktopTicketService {
-	constructor(private cache: CacheRepository, private cryptoService: CryptoService) {}
+	constructor(private cache: CacheRepository, private cryptoService: CryptographyService) {}
 
 	async create(challenge: string) {
-		const ticket = randomBytes(32).toString('base64url')
+		const ticket = this.cryptoService.generateToken()
 		await this.cache.set(
 			this.key(ticket),
 			JSON.stringify({ challenge, status: 'pending' }),
