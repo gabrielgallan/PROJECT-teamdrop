@@ -12,6 +12,21 @@ export interface Team {
 	members: number
 }
 
+export interface SettingsTeam {
+	id: string
+	name: string
+	role: 'owner' | 'member'
+}
+
+export interface TeamSettingsMember extends Member {
+	role: 'owner' | 'member'
+}
+
+export interface TeamSettings extends SettingsTeam {
+	members: TeamSettingsMember[]
+	inviteUrl: string | null
+}
+
 export interface SharedFile {
 	isNew?: boolean
 	id: string

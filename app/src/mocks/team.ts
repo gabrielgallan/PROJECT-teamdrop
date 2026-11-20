@@ -25,14 +25,14 @@ const members: Member[] = [
 		id: '2',
 		name: 'Leonardo',
 		initials: 'LE',
-		color: 'bg-emerald-400/15 text-emerald-200',
+		color: 'bg-indigo-400/15 text-indigo-200',
 		avatarUrl: 'https://avatars.githubusercontent.com/u/2254731?v=4',
 	},
 	{
 		id: '3',
 		name: 'Shadcn',
 		initials: 'JM',
-		color: 'bg-amber-400/15 text-amber-200',
+		color: 'bg-indigo-400/15 text-indigo-200',
 		avatarUrl: 'https://avatars.githubusercontent.com/u/124599?v=4',
 	},
 ]

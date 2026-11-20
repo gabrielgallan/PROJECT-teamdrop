@@ -5,7 +5,7 @@ import { currentUser, screenshotSample } from '../mocks/team'
 import { copyText, downloadFile, isDesktop, openFiles, quitApp } from '../services/desktop'
 import type { PendingFile, SharedFile } from '../types/team'
 
-export function useDrops() {
+export function useDrops(active = true) {
 	const {
 		team,
 		files,
@@ -29,7 +29,7 @@ export function useDrops() {
 	const dropzone = useDropzone({
 		noClick: true,
 		noKeyboard: true,
-		disabled: busy,
+		disabled: busy || !active,
 		onDrop: (accepted, rejected) => {
 			if (accepted.length) {
 				prepare(
@@ -119,6 +119,7 @@ export function useDrops() {
 		}
 	}, [sharing, capture, pending.length])
 	useEffect(() => {
+		if (!active) return
 		function handleShortcut(event: KeyboardEvent) {
 			if (event.key === 'Escape' && !sharing) {
 				setPreview(null)
@@ -139,7 +140,7 @@ export function useDrops() {
 		}
 		window.addEventListener('keydown', handleShortcut)
 		return () => window.removeEventListener('keydown', handleShortcut)
-	}, [selectFiles, captureScreen, quit, sharing, capture, preview, setPending])
+	}, [active, selectFiles, captureScreen, quit, sharing, capture, preview, setPending])
 
 	async function copyLink(file: SharedFile) {
 		if (file.expiresAt <= Date.now()) {

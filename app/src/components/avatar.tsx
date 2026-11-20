@@ -5,14 +5,18 @@ import type { Member } from '../types/team'
 interface AvatarProps extends ComponentProps<'img'> {
 	member: Member
 	className?: string
+	size?: 'default' | 'small'
+	hasBorder?: boolean
 }
 
 export function Avatar({
 	member,
-	className = 'size-8',
+	size = 'default',
+	className = size === 'small' ? 'size-4' : 'size-8',
 	src = member.avatarUrl,
 	alt = member.name,
 	onError,
+	hasBorder = false,
 	...props
 }: AvatarProps) {
 	const [failedSrc, setFailedSrc] = useState<string>()
@@ -20,7 +24,7 @@ export function Avatar({
 
 	return (
 		<span
-			className={`inline-grid aspect-square shrink-0 place-items-center overflow-hidden rounded-xl text-[10px] font-medium ${className}`}
+			className={`inline-grid aspect-square shrink-0 place-items-center overflow-hidden rounded-full ${hasBorder && 'border-2 border-transparent outline-2 outline-indigo-300'} font-medium ${size === 'small' ? 'text-[7px]' : 'text-[10px]'} ${className}`}
 		>
 			{hasImage ? (
 				<img

@@ -23,10 +23,12 @@ const fileIcons: Record<string, LucideIcon> = {
 	webp: Image,
 	svg: Image,
 	pdf: FileText,
-	txt: FileText,
-	md: FileText,
-	doc: FileText,
-	docx: FileText,
+	txt: File,
+	md: File,
+	doc: File,
+	docx: File,
+	rtf: File,
+	log: File,
 	json: FileJson,
 	js: FileCode,
 	ts: FileCode,
@@ -105,56 +107,73 @@ function SharedFileItem({
 	onCopy: (file: SharedFile) => void
 }) {
 	const expired = file.expiresAt <= now
-	const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
+
+	const extension = file.name.includes('.') ? (file.name.split('.').pop()?.toLowerCase() ?? '') : ''
+
 	const Icon = fileIcons[extension] ?? (file.kind === 'image' ? Image : File)
+
 	return (
-		<li className="group *:transition-colors *:duration-100 flex items-center gap-1 rounded-xl px-2 hover:bg-white/5">
+		<li className="group flex items-center gap-1 rounded-lg px-2 transition-colors hover:bg-white/5">
 			<button
 				type="button"
 				disabled={expired}
 				onClick={() => onPreview(file)}
-				className="flex min-w-0 flex-1 items-center gap-3 py-3 text-left"
+				className="flex min-w-0 flex-1 items-center gap-2.5 py-3 text-left focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-default"
 			>
-				<Avatar member={file.member} className="size-9" />
+				<span
+					className={`grid size-10 shrink-0 place-items-center rounded-lg bg-white/5 ${
+						expired ? 'text-white/30' : 'text-white/70'
+					}`}
+				>
+					<Icon size={18} aria-hidden="true" />
+				</span>
+
 				<span className="min-w-0 flex-1">
-					<span className="flex items-baseline gap-2">
+					<span className="flex min-w-0 items-center gap-1.5">
 						{file.isNew && !expired && (
-							<span
-								title="Novo arquivo"
-								className="size-1.5 shrink-0 self-center rounded-full bg-indigo-400"
-							>
+							<span title="Novo arquivo" className="size-1.5 shrink-0 rounded-full bg-indigo-400">
 								<span className="sr-only">Novo arquivo</span>
 							</span>
 						)}
-						<span className={`truncate text-[13px] ${expired ? 'text-white/40' : 'text-white/90'}`}>
+
+						<span
+							title={file.name}
+							className={`min-w-0 flex-1 truncate text-[13px] font-medium ${
+								expired ? 'text-white/40' : 'text-white/90'
+							}`}
+						>
+							{file.name}
+						</span>
+					</span>
+
+					<span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] text-white/50">
+						<Avatar member={file.member} size="small" className={`size-4 ${file.member.color}`} />
+
+						<span className="min-w-0 truncate" title={file.member.name}>
 							{file.member.name}
 						</span>
+
 						<time
-							className="shrink-0 text-[11px] text-white/45"
+							className="shrink-0 tabular-nums"
 							dateTime={new Date(file.createdAt).toISOString()}
 						>
 							{relativeTime(file.createdAt, now)}
 						</time>
 					</span>
-					<span className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-white/60">
-						<Icon size={12} className="shrink-0" aria-hidden="true" />
-						<span className="truncate" title={file.name}>
-							{file.name}
-						</span>
-					</span>
 				</span>
 			</button>
+
 			{expired ? (
-				<span className="text-[10px] text-white/45">Expirado</span>
+				<span className="shrink-0 text-[10px] text-white/40">Expirado</span>
 			) : (
 				<button
 					type="button"
 					onClick={() => onCopy(file)}
 					aria-label={`Copiar link de ${file.name}`}
 					title="Copiar link"
-					className="grid rounded-xl size-8 shrink-0 place-items-center text-white/55 hover:bg-white/10 hover:text-white"
+					className="grid size-8 shrink-0 place-items-center rounded-lg text-white/45 transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-300"
 				>
-					<Link size={14} />
+					<Link size={14} aria-hidden="true" />
 				</button>
 			)}
 		</li>

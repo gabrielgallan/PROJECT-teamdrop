@@ -1,24 +1,32 @@
 import { FileInput, Loader2, Power, Settings } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { FileDropzone } from '../components/file-dropzone'
 import { FilePreview } from '../components/file-preview'
 import { MenuItem } from '../components/menu-item'
 import { RecentFiles } from '../components/recent-files'
-import { Separator } from '../components/separator'
 import { useDrops } from '../hooks/use-drops'
+import { useTeamSettings } from '../hooks/use-team-settings'
+import type { SessionUser } from '../types/auth'
+import { SettingsScreen } from './settings-screen'
 
 export function DropsScreen({
+	user,
 	onLogout,
 	authBusy,
 	authError,
 	authNeedsLogin,
 	onAuthRetry,
 }: {
+	user: SessionUser
 	onLogout: () => void
 	authBusy: boolean
 	authError: string
 	authNeedsLogin: boolean
 	onAuthRetry: () => void
 }) {
+	const [settingsOpen, setSettingsOpen] = useState(false)
+	const settingsButton = useRef<HTMLButtonElement>(null)
+	const teamSettings = useTeamSettings(user)
 	const {
 		files,
 		pending,
@@ -41,10 +49,32 @@ export function DropsScreen({
 		openPreview,
 		clearSelection,
 		dismissError,
-	} = useDrops()
+	} = useDrops(!settingsOpen)
+
+	if (settingsOpen) {
+		return (
+			<SettingsScreen
+				teams={teamSettings.teams}
+				onCreateTeam={teamSettings.createTeam}
+				onLeaveTeam={teamSettings.leaveTeam}
+				onCreateInvite={teamSettings.createInvite}
+				onRevokeInvite={teamSettings.revokeInvite}
+				onRenameTeam={teamSettings.renameTeam}
+				onRemoveMember={teamSettings.removeMember}
+				user={user}
+				onBack={() => {
+					setSettingsOpen(false)
+					requestAnimationFrame(() => settingsButton.current?.focus())
+				}}
+				onLogout={onLogout}
+				authBusy={authBusy}
+				authError={authError}
+			/>
+		)
+	}
 
 	return (
-		<main className="relative flex h-full flex-col overflow-hidden bg-zinc-800/60 text-white/90">
+		<main className="relative flex h-full flex-col overflow-hidden bg-zinc-900/50 text-white/90">
 			{activePreview ? (
 				<FilePreview
 					file={activePreview}
@@ -80,26 +110,20 @@ export function DropsScreen({
 							</div>
 						)}
 
-						<Separator />
-
 						<div className="mx-2">
 							<MenuItem disabled={busy} onClick={selectFiles} aria-keyshortcuts="Control+O">
 								<FileInput aria-hidden="true" className="size-4" />
 								Selecionar arquivos
 								<span className="ml-auto text-xs text-white/55">Ctrl+O</span>
 							</MenuItem>
-							<MenuItem aria-keyshortcuts="Control+O">
+							<MenuItem ref={settingsButton} onClick={() => setSettingsOpen(true)}>
 								<Settings aria-hidden="true" className="size-4" />
 								Configurações
-								<span className="ml-auto text-xs text-white/55">Ctrl+C</span>
 							</MenuItem>
 							<MenuItem onClick={quit} aria-keyshortcuts="Control+Q">
 								<Power aria-hidden="true" className="size-4" />
 								Sair
 								<span className="ml-auto text-xs text-white/55">Ctrl+Q</span>
-							</MenuItem>
-							<MenuItem onClick={onLogout} disabled={authBusy}>
-								Encerrar sessão
 							</MenuItem>
 						</div>
 						<div className="mx-4 flex items-center justify-between border-t border-white/8 pb-1 pt-4">

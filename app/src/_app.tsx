@@ -8,6 +8,7 @@ export function App() {
 	if (session) {
 		return (
 			<DropsScreen
+				user={session.user}
 				onLogout={logout}
 				authBusy={busy !== null}
 				authError={error}

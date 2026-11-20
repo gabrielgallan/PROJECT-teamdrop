@@ -32,7 +32,7 @@ export function FileDropzone({
 		<section
 			{...getRootProps({
 				'aria-label': 'Seleção de arquivos',
-				className: `relative mx-4 flex h-32 flex-col rounded-md border-2 border-dashed ${border}`,
+				className: `relative mx-4 flex h-38 flex-col rounded-md border-2 border-dashed ${border}`,
 			})}
 		>
 			<input {...getInputProps()} />
