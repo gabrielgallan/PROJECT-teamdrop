@@ -1,13 +1,15 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
 import { AuthenticatedUser } from '../../auth/services/auth.service.js'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
 import { CreateTeamDto, createTeamSchema } from './dtos/create-team.dto.js'
+import { LeaveTeamDto, leaveTeamSchema } from './dtos/leave-team.dto.js'
 import {
 	ListTeamMembersParamsDto,
 	listTeamMembersParamsSchema,
 } from './dtos/list-teams-members.dto.js'
+import { RemoveMemberDto, removeMemberSchema } from './dtos/remove-member.dto.js'
 import {
 	UpdateTeamBodyDto,
 	UpdateTeamParamDto,
@@ -72,6 +74,35 @@ export class TeamsController {
 		return this.teamsService.listTeamMembers({
 			userId: user.userId,
 			teamSlug: slug,
+		})
+	}
+
+	@Delete(':slug/members/me')
+	@HttpCode(204)
+	async leaveFromTeam(
+		@CurrentUser() user: AuthenticatedUser,
+		@Param(new ZodValidationPipe(leaveTeamSchema)) param: LeaveTeamDto,
+	) {
+		const { slug } = param
+
+		return this.teamsService.leaveFromTeam({
+			userId: user.userId,
+			teamSlug: slug,
+		})
+	}
+
+	@Delete(':slug/members/:memberId')
+	@HttpCode(204)
+	async removeMemberFromTeam(
+		@CurrentUser() user: AuthenticatedUser,
+		@Param(new ZodValidationPipe(removeMemberSchema)) param: RemoveMemberDto,
+	) {
+		const { slug, memberId } = param
+
+		return this.teamsService.removeMemberFromTeam({
+			userId: user.userId,
+			teamSlug: slug,
+			memberId,
 		})
 	}
 }

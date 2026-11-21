@@ -7,8 +7,10 @@ import {
 import { slugify } from '../../common/utils/slugify.js'
 import { PrismaService } from '../../database/prisma/prisma.service.js'
 import { CreateTeamServiceInput } from './dtos/create-team.dto.js'
+import { LeaveTeamServiceInput } from './dtos/leave-team.dto.js'
 import { ListTeamMembersServiceInput } from './dtos/list-teams-members.dto.js'
 import { ListUserTeamsServiceInput } from './dtos/list-user-teams.dto.js'
+import { RemoveMemberServiceInput } from './dtos/remove-member.dto.js'
 import { UpdateTeamServiceInput } from './dtos/update-team.dto.js'
 
 @Injectable()
@@ -155,5 +157,107 @@ export class TeamsService {
 				}
 			}),
 		}
+	}
+
+	async leaveFromTeam({ userId, teamSlug }: LeaveTeamServiceInput) {
+		const membership = await this.prisma.member.findFirst({
+			where: {
+				team: {
+					slug: teamSlug,
+				},
+				userId,
+			},
+			include: {
+				team: {
+					select: {
+						ownerId: true,
+					},
+				},
+			},
+		})
+
+		if (!membership) {
+			throw new NotFoundException({
+				message: 'User team membership not found',
+			})
+		}
+
+		if (membership.team.ownerId === userId) {
+			throw new ForbiddenException({
+				message: 'Team owners cannot leave the team',
+			})
+		}
+
+		await this.prisma.member.delete({
+			where: {
+				teamId_userId: {
+					userId,
+					teamId: membership.teamId,
+				},
+			},
+		})
+
+		return
+	}
+
+	async removeMemberFromTeam({ userId, teamSlug, memberId }: RemoveMemberServiceInput) {
+		const membership = await this.prisma.member.findFirst({
+			where: {
+				userId,
+				team: {
+					slug: teamSlug,
+				},
+			},
+			select: {
+				teamId: true,
+				team: {
+					select: {
+						ownerId: true,
+					},
+				},
+			},
+		})
+
+		if (!membership) {
+			throw new NotFoundException({
+				message: 'User team membership not found',
+			})
+		}
+
+		if (membership.team.ownerId !== userId) {
+			throw new ForbiddenException({
+				message: 'User not allowed to manage this team',
+			})
+		}
+
+		if (memberId === userId) {
+			throw new ForbiddenException({
+				message: 'Team owners cannot remove themselves',
+			})
+		}
+
+		const userMembershipToRemove = await this.prisma.member.findUnique({
+			where: {
+				teamId_userId: {
+					teamId: membership.teamId,
+					userId: memberId,
+				},
+			},
+		})
+
+		if (!userMembershipToRemove) {
+			throw new NotFoundException({
+				message: 'Resource not found',
+			})
+		}
+
+		await this.prisma.member.delete({
+			where: {
+				teamId_userId: {
+					teamId: membership.teamId,
+					userId: memberId,
+				},
+			},
+		})
 	}
 }
