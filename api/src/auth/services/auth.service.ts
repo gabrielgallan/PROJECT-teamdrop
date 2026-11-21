@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import type { Request } from 'express'
 import { CacheRepository } from '../../cache/cache.interface.js'
 import { CryptographyService } from '../../cryptography/cryptography.service.js'
@@ -35,6 +35,8 @@ export interface TokenPair {
 
 @Injectable()
 export class AuthService {
+	private readonly logger = new Logger(AuthService.name)
+
 	constructor(
 		private googleOAuth: GoogleOAuthService,
 		private prisma: PrismaService,
@@ -81,9 +83,11 @@ export class AuthService {
 			return false
 		}
 
+		let stage = 'google-oauth'
 		try {
 			const profile = await this.googleOAuth.authenticate({ code, codeVerifier })
 
+			stage = 'database'
 			const user = await this.prisma.$transaction(async (db) => {
 				// The provider subject is the identity; never silently link accounts by email.
 				const account = await db.account.findUnique({
@@ -118,9 +122,16 @@ export class AuthService {
 					select: userSelect,
 				})
 			})
+			stage = 'complete-ticket'
 			return await this.tickets.complete(ticket, user.id)
 		} catch (err) {
-			console.error(err)
+			const code = err && typeof err === 'object' && 'code' in err ? err.code : undefined
+			this.logger.error({
+				message: 'Google login failed',
+				stage,
+				errorType: err instanceof Error ? err.name : 'UnknownError',
+				code: typeof code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(code) ? code : undefined,
+			})
 
 			await this.tickets.complete(ticket)
 

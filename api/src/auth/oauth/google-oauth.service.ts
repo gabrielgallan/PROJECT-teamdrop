@@ -1,5 +1,5 @@
 import { setTimeout as delay } from 'node:timers/promises'
-import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common'
+import { BadGatewayException, BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { z } from 'zod'
 import { EnvService } from '../../env/env.service.js'
 
@@ -19,6 +19,8 @@ interface GoogleOAuthCallbackData {
 
 @Injectable()
 export class GoogleOAuthService {
+	private readonly logger = new Logger(GoogleOAuthService.name)
+
 	constructor(private env: EnvService) {}
 
 	async authenticate({ code: OAuthCode, codeVerifier }: GoogleOAuthCallbackData) {
@@ -142,12 +144,16 @@ export class GoogleOAuthService {
 					error instanceof Error &&
 					error.name === 'TimeoutError'
 				) {
-					console.warn('Google profile request timed out; retrying in 1s with a 20s timeout')
+					this.logger.warn('Google profile request timed out; retrying in 1s with a 20s timeout')
 					await delay(1_000)
 					continue
 				}
-				console.error('Google API request failed:', { url, method })
-				console.dir(error, { depth: 5 })
+				this.logger.error({
+					message: 'Google API request failed',
+					endpoint: url === GOOGLE_TOKEN_URL ? 'token' : 'userinfo',
+					method,
+					errorType: error instanceof Error ? error.name : 'UnknownError',
+				})
 
 				throw new BadGatewayException(
 					{ message: 'Failed to connect with Google API' },
