@@ -8,6 +8,9 @@
 		"beforeBuildCommand": "pnpm build",
 		"frontendDist": "../dist"
 	},
+	"plugins": {
+		"deep-link": { "desktop": { "schemes": ["teamdrop"] } }
+	},
 	"app": {
 		"windows": [
 			{

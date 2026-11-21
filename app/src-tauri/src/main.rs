@@ -9,6 +9,7 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
+use tauri_plugin_deep_link::DeepLinkExt;
 
 const MAIN_WINDOW: &str = "main";
 const TRAY_ID: &str = "widget";
@@ -39,6 +40,13 @@ fn quit_app(app: AppHandle) {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(auth::SessionManager::default())
@@ -52,6 +60,25 @@ fn main() {
             auth::auth_logout
         ])
         .setup(|app| {
+            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+            if app.deep_link().register_all().is_err() {
+                eprintln!("Could not register invitation links; manual paste is still available.");
+            }
+
+            if app.deep_link().get_current()?.is_some() {
+                if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            }
+
+            let handle = app.handle().clone();
+            app.deep_link().on_open_url(move |_event| {
+                if let Some(window) = handle.get_webview_window(MAIN_WINDOW) {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            });
             #[cfg(windows)]
             if let Some(window) = app.get_webview_window(MAIN_WINDOW)
                 && let Err(error) = window_frame::hide_caption_buttons(&window)
