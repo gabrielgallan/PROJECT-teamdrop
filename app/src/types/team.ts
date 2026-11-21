@@ -15,6 +15,7 @@ export interface Team {
 export interface SettingsTeam {
 	id: string
 	name: string
+	slug: string
 	role: 'owner' | 'member'
 }
 
@@ -24,7 +25,6 @@ export interface TeamSettingsMember extends Member {
 
 export interface TeamSettings extends SettingsTeam {
 	members: TeamSettingsMember[]
-	inviteUrl: string | null
 }
 
 export interface SharedFile {

@@ -6,6 +6,7 @@ import { teams } from './team'
 export const settingsTeams: SettingsTeam[] = teams.map((team, index) => ({
 	id: team.id,
 	name: team.name,
+	slug: team.id,
 	role: index === 0 ? 'owner' : 'member',
 }))
 

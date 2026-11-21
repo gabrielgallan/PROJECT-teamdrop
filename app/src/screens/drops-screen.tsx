@@ -1,11 +1,11 @@
 import { FileInput, Loader2, Power, Settings } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { FileDropzone } from '../components/file-dropzone'
 import { FilePreview } from '../components/file-preview'
 import { MenuItem } from '../components/menu-item'
 import { RecentFiles } from '../components/recent-files'
 import { useDrops } from '../hooks/use-drops'
-import { useTeamSettings } from '../hooks/use-team-settings'
+import type { TeamActions } from '../hooks/use-team-settings'
 import type { SessionUser } from '../types/auth'
 import { SettingsScreen } from './settings-screen'
 
@@ -16,6 +16,9 @@ export function DropsScreen({
 	authError,
 	authNeedsLogin,
 	onAuthRetry,
+	teamSettings,
+	settingsOpen,
+	onSettingsChange: setSettingsOpen,
 }: {
 	user: SessionUser
 	onLogout: () => void
@@ -23,10 +26,11 @@ export function DropsScreen({
 	authError: string
 	authNeedsLogin: boolean
 	onAuthRetry: () => void
+	teamSettings: TeamActions
+	settingsOpen: boolean
+	onSettingsChange: (value: boolean) => void
 }) {
-	const [settingsOpen, setSettingsOpen] = useState(false)
 	const settingsButton = useRef<HTMLButtonElement>(null)
-	const teamSettings = useTeamSettings(user)
 	const {
 		files,
 		pending,
@@ -54,13 +58,7 @@ export function DropsScreen({
 	if (settingsOpen) {
 		return (
 			<SettingsScreen
-				teams={teamSettings.teams}
-				onCreateTeam={teamSettings.createTeam}
-				onLeaveTeam={teamSettings.leaveTeam}
-				onCreateInvite={teamSettings.createInvite}
-				onRevokeInvite={teamSettings.revokeInvite}
-				onRenameTeam={teamSettings.renameTeam}
-				onRemoveMember={teamSettings.removeMember}
+				actions={teamSettings}
 				user={user}
 				onBack={() => {
 					setSettingsOpen(false)

@@ -7,15 +7,13 @@ import { MenuItem } from '../components/menu-item'
 import { Separator } from '../components/separator'
 import { copyText } from '../services/desktop'
 import type { TeamSettings } from '../types/team'
+import type { TeamActions } from '../hooks/use-team-settings'
 
 interface TeamSettingsScreenProps {
 	team: TeamSettings
 	currentUserId: string
 	onBack: () => void
-	onCreateInvite: (teamId: string) => void
-	onRevokeInvite: (teamId: string) => void
-	onRenameTeam: (teamId: string, name: string) => void
-	onRemoveMember: (teamId: string, memberId: string) => void
+	actions: TeamActions
 }
 
 type Confirmation = { kind: 'replace' | 'revoke' } | { kind: 'remove'; memberId: string }
@@ -24,11 +22,20 @@ export function TeamSettingsScreen({
 	team,
 	currentUserId,
 	onBack,
-	onCreateInvite,
-	onRevokeInvite,
-	onRenameTeam,
-	onRemoveMember,
+	actions,
 }: TeamSettingsScreenProps) {
+	const {
+		busy,
+		error,
+		createInvite: onCreateInvite,
+		revokeInvite: onRevokeInvite,
+		renameTeam: onRenameTeam,
+		removeMember: onRemoveMember,
+	} = actions
+	const [inviteUrl, setInviteUrl] = useState<string | null>(null)
+	useEffect(() => {
+		void actions.loadMembers(team.id)
+	}, [team.id])
 	const backButton = useRef<HTMLButtonElement>(null)
 	const inviteButton = useRef<HTMLButtonElement>(null)
 	const revokeButton = useRef<HTMLButtonElement>(null)
@@ -53,6 +60,7 @@ export function TeamSettingsScreen({
 	}, [copied])
 
 	function cancelConfirmation() {
+		if (busy) return
 		const target =
 			confirmation?.kind === 'remove'
 				? removeButtons.current.get(confirmation.memberId)
@@ -64,7 +72,7 @@ export function TeamSettingsScreen({
 	}
 
 	useEffect(() => {
-		if (pendingMember) return
+		if (pendingMember || busy) return
 		function handleEscape(event: KeyboardEvent) {
 			if (event.key !== 'Escape') return
 			event.preventDefault()
@@ -75,20 +83,22 @@ export function TeamSettingsScreen({
 		return () => window.removeEventListener('keydown', handleEscape)
 	})
 
-	function createInvite() {
-		onCreateInvite(team.id)
+	async function createInvite() {
+		const url = await onCreateInvite(team.id)
+		if (!url) return
+		setInviteUrl(url)
 		setConfirmation(null)
 		setCopied(false)
 		setCopyError('')
-		setNotice(team.inviteUrl ? 'Novo link criado.' : 'Convite criado.')
+		setNotice(inviteUrl ? 'Novo link criado.' : 'Convite criado.')
 		requestAnimationFrame(() => inviteButton.current?.focus())
 	}
 
 	async function copyInvite() {
-		if (!team.inviteUrl) return
+		if (!inviteUrl) return
 		setCopyError('')
 		try {
-			await copyText(team.inviteUrl)
+			await copyText(inviteUrl)
 			setCopied(true)
 			setNotice('Link copiado.')
 		} catch {
@@ -97,13 +107,14 @@ export function TeamSettingsScreen({
 	}
 
 	return (
-		<main className="flex h-full flex-col overflow-hidden bg-zinc-800/60 text-white/90">
+		<main className="flex h-full flex-col overflow-y-auto bg-zinc-800/60 text-white/90">
 			<header className="shrink-0 px-4 pb-4 pt-3">
 				<div className="mb-5 flex min-w-0 items-center gap-2">
 					<button
 						ref={backButton}
 						type="button"
 						onClick={onBack}
+						disabled={busy}
 						aria-label="Voltar às configurações"
 						className="grid size-8 shrink-0 place-items-center text-white/70 hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-300"
 					>
@@ -115,11 +126,11 @@ export function TeamSettingsScreen({
 				</div>
 				<form
 					className="mb-5"
-					onSubmit={(event) => {
+					onSubmit={async (event) => {
 						event.preventDefault()
 						const name = draftName.trim()
-						if (!name || name === team.name) return
-						onRenameTeam(team.id, name)
+						if (!name || name === team.name || busy) return
+						if (!(await onRenameTeam(team.id, name))) return
 						setDraftName(name)
 						setNotice('Nome do time atualizado.')
 					}}
@@ -132,12 +143,13 @@ export function TeamSettingsScreen({
 							id="team-name"
 							required
 							value={draftName}
+							disabled={busy}
 							onChange={(event) => setDraftName(event.target.value)}
 							className="min-w-0 flex-1 bg-transparent px-2 py-2 text-xs text-white/85 focus-visible:ring-2 focus-visible:ring-indigo-300"
 						/>
 						<button
 							type="submit"
-							disabled={!draftName.trim() || draftName.trim() === team.name}
+							disabled={busy || !draftName.trim() || draftName.trim() === team.name}
 							aria-label="Salvar nome do time"
 							title="Salvar nome do time"
 							className="grid size-8 shrink-0 place-items-center text-white/75 enabled:hover:bg-indigo-400 enabled:hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-300"
@@ -147,13 +159,13 @@ export function TeamSettingsScreen({
 					</div>
 				</form>
 				<h2 className="mb-3 text-xs font-medium text-white/75">Convite do time</h2>
-				{team.inviteUrl ? (
+				{inviteUrl && (
 					<>
 						<div className="flex min-w-0 items-center gap-1 rounded-md bg-white/5 p-1">
 							<input
 								readOnly
 								aria-label="Link de convite"
-								value={team.inviteUrl}
+								value={inviteUrl}
 								onFocus={(event) => event.currentTarget.select()}
 								className="min-w-0 flex-1 bg-transparent px-2 py-2 text-xs text-white/85 focus-visible:ring-2 focus-visible:ring-indigo-300"
 							/>
@@ -161,77 +173,85 @@ export function TeamSettingsScreen({
 								type="button"
 								onClick={() => void copyInvite()}
 								aria-label={copied ? 'Link copiado' : 'Copiar convite'}
-								title={copied ? 'Link copiado' : 'Copiar convite'}
 								className="grid size-8 shrink-0 place-items-center text-white/75 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-indigo-300"
 							>
-								{copied ? (
-									<Check size={15} aria-hidden="true" />
-								) : (
-									<Copy size={15} aria-hidden="true" />
-								)}
+								{copied ? <Check size={15} /> : <Copy size={15} />}
 							</button>
 						</div>
+						<p className="mt-2 text-xs leading-relaxed text-white/75">
+							Copie este link agora. Ao sair desta tela, será necessário gerar outro para obter um
+							link novamente.
+						</p>
 						{copyError && (
-							<p role="alert" className="mt-2 text-xs leading-relaxed text-red-300">
+							<p role="alert" className="mt-2 text-xs text-red-300">
 								{copyError}
 							</p>
 						)}
-						<div>
-							<MenuItem
-								ref={inviteButton}
-								onClick={() => setConfirmation({ kind: 'replace' })}
-								className="mt-2 text-xs focus-visible:ring-2 focus-visible:ring-indigo-300"
-							>
-								<RefreshCw size={16} aria-hidden="true" />
-								Gerar novo link
-							</MenuItem>
-							<MenuItem
-								ref={revokeButton}
-								variant="danger"
-								onClick={() => setConfirmation({ kind: 'revoke' })}
-								className="text-xs enabled:hover:bg-rose-400 focus-visible:ring-2 focus-visible:ring-red-300"
-							>
-								<Unlink size={16} aria-hidden="true" />
-								Revogar link atual
-							</MenuItem>
-						</div>
 					</>
-				) : (
-					<MenuItem
-						ref={inviteButton}
-						onClick={createInvite}
-						className="text-xs focus-visible:ring-2 focus-visible:ring-indigo-300"
-					>
-						<Link size={16} aria-hidden="true" />
-						Criar convite
-					</MenuItem>
 				)}
+				<MenuItem
+					ref={inviteButton}
+					disabled={busy}
+					onClick={() => setConfirmation({ kind: 'replace' })}
+					className="mt-2 text-xs focus-visible:ring-2 focus-visible:ring-indigo-300"
+				>
+					{inviteUrl ? <RefreshCw size={16} /> : <Link size={16} />}
+					{inviteUrl ? 'Gerar novo link' : 'Gerar convite'}
+				</MenuItem>
+				<MenuItem
+					ref={revokeButton}
+					disabled={busy}
+					variant="danger"
+					onClick={() => setConfirmation({ kind: 'revoke' })}
+					className="text-xs enabled:hover:bg-rose-400 focus-visible:ring-2 focus-visible:ring-red-300"
+				>
+					<Unlink size={16} />
+					Revogar convites
+				</MenuItem>
 				{confirmation?.kind === 'replace' && (
 					<div className="mt-2">
 						<InlineConfirmation
-							message="O link atual deixará de funcionar. Gerar outro?"
-							confirmLabel="Gerar novo link"
-							onConfirm={createInvite}
+							message="Gerar um convite invalida todos os links anteriores deste time. Continuar?"
+							confirmLabel="Gerar link"
+							onConfirm={() => void createInvite()}
 							onCancel={cancelConfirmation}
+							busy={busy}
+							error={error}
 						/>
 					</div>
 				)}
 				{confirmation?.kind === 'revoke' && (
 					<div className="mt-2">
 						<InlineConfirmation
-							message="O link atual deixará de funcionar. Revogar convite?"
-							confirmLabel="Revogar link"
+							message="Os links anteriores deixarão de funcionar. Revogar convites?"
+							confirmLabel="Revogar"
 							onCancel={cancelConfirmation}
-							onConfirm={() => {
-								onRevokeInvite(team.id)
+							busy={busy}
+							error={error}
+							onConfirm={async () => {
+								if (!(await onRevokeInvite(team.id))) return
+								setInviteUrl(null)
 								setConfirmation(null)
 								setCopied(false)
 								setCopyError('')
-								setNotice('Link de convite revogado.')
+								setNotice('Convites revogados.')
 								requestAnimationFrame(() => inviteButton.current?.focus())
 							}}
 						/>
 					</div>
+				)}
+				{error && !confirmation && (
+					<p role="alert" className="mt-2 text-xs text-red-300">
+						{error}{' '}
+						<button
+							type="button"
+							disabled={busy}
+							onClick={() => void actions.loadMembers(team.id)}
+							className="underline"
+						>
+							Atualizar membros
+						</button>
+					</p>
 				)}
 			</header>
 			<Separator />
@@ -243,8 +263,13 @@ export function TeamSettingsScreen({
 			</h2>
 			<section
 				aria-labelledby="team-members-title"
-				className="min-h-0 flex-1 overflow-y-auto px-2 pb-3"
+				className="shrink-0 px-2 pb-3"
 			>
+				{busy && (
+					<p role="status" className="px-2 text-xs text-white/70">
+						Aguarde…
+					</p>
+				)}
 				<ul>
 					{team.members.map((member) => (
 						<li key={member.id}>
@@ -268,6 +293,7 @@ export function TeamSettingsScreen({
 											else removeButtons.current.delete(member.id)
 										}}
 										type="button"
+										disabled={busy}
 										onClick={() => setConfirmation({ kind: 'remove', memberId: member.id })}
 										aria-label={`Remover ${member.name}`}
 										title={`Remover ${member.name}`}
@@ -287,8 +313,10 @@ export function TeamSettingsScreen({
 					message={`Remover ${pendingMember.name} do time ${team.name}?`}
 					confirmLabel="Remover membro"
 					onCancel={cancelConfirmation}
-					onConfirm={() => {
-						onRemoveMember(team.id, pendingMember.id)
+					busy={busy}
+					error={error}
+					onConfirm={async () => {
+						if (!(await onRemoveMember(team.id, pendingMember.id))) return
 						setConfirmation(null)
 						setNotice(`${pendingMember.name} não faz mais parte do time.`)
 						requestAnimationFrame(() => backButton.current?.focus())

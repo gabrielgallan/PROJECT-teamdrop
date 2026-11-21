@@ -87,3 +87,24 @@ Manual acceptance with the configured API:
 4. Use an expired access token and verify one refresh restores access.
 5. Disconnect the API and attempt logout; an error should preserve the local session.
 6. Reconnect, log out and restart; the login screen should appear.
+
+
+## Teams and invitation links
+
+Settings now uses the API for listing, creating, renaming and leaving teams, member management, invitation creation and revocation. The existing file/drop flows remain prototypes and are outside this integration. Team mutations wait for server confirmation. Renaming keeps the server's updated slug for subsequent requests. State is scoped to the signed-in account and discarded on logout.
+
+A newly generated invitation URL is available only while its management screen is open. Copy it before leaving; it is not persisted or recoverable. Creating a new invitation invalidates previous links. Revoking invitations does not require the previous URL.
+
+The public link opens a minimal page served by the API. Its button launches `teamdrop://invite?token=...`. The widget shows the team and current account, then submits an authenticated POST only after explicit confirmation. A pending invitation survives the existing login flow in memory, but not process exit. Settings → **Entrar com convite** also accepts the public link by manual paste. Public links are parsed locally; only the configured API receives authentication headers.
+
+Deep linking uses Tauri's deep-link and single-instance plugins. During Windows debug startup, the app attempts to register the scheme for development. Installed builds register it through the installer. Restart `pnpm tauri dev` after installing dependencies or changing Rust/configuration. Run the app and development terminal/IDE without administrator privileges: Windows can block forwarding a browser link to an elevated instance. Registration failure leaves manual paste available. No second widget should be opened for an incoming link.
+
+### Manual acceptance check
+
+1. Configure `VITE_API_URL` for the running API; set the API's `PUBLIC_BASE_URL` to a reachable origin (or leave it unset for a local URL using `PORT`). Both instances/devices must use the same backend.
+2. As an owner, create a team, open management, generate and copy an invitation. Leave and reopen management: the previous URL must not be restored, while revocation remains available.
+3. With another account, open the link and choose **Abrir no Teamdrop**. Check both running and closed app cases. If not signed in, complete Google login; the invitation must reappear for confirmation.
+4. Confirm and check that the team appears under settings. Repeat the link: membership must not be duplicated or consume another use.
+5. Test manual paste, cancellation, revocation, expired/exhausted links, renaming followed by another action, removing a member, and leaving as a member. An owner cannot leave or remove themselves.
+
+`pnpm test:auth` runs the frontend suite, including team state, invitation parsing/startup delivery and confirmation UI tests. `pnpm build` checks TypeScript and builds the frontend. In `src-tauri`, run `cargo check` and `cargo test` for native verification. Real Windows browser-to-widget activation and live Google sign-in still require manual testing.
