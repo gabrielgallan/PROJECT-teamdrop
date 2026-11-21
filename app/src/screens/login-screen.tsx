@@ -1,11 +1,10 @@
-import { Package } from 'lucide-react'
+import { Loader2, Package } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
 
 export function LoginScreen({
 	onContinue,
 	busy,
 	error,
-	onCancel,
 	restoring = false,
 	recoverable = false,
 	unsupported = false,
@@ -44,12 +43,13 @@ export function LoginScreen({
 							disabled={busy}
 							className="w-full flex gap-2 items-center justify-center bg-white/5 py-3 hover:bg-white/10"
 						>
-							<FaGoogle />{' '}
-							{busy
-								? 'Aguardando login…'
-								: needsLogin
-									? 'Entrar novamente com Google'
-									: 'Entrar com Google'}
+							{busy ? (
+								<Loader2 className="size-4 animate-spin" />
+							) : (
+								<>
+									<FaGoogle /> Entrar com Google
+								</>
+							)}
 						</button>
 					)}
 					{recoverable && !needsLogin && (
@@ -60,16 +60,6 @@ export function LoginScreen({
 						>
 							Tentar novamente
 						</button>
-					)}
-					{busy && (
-						<>
-							<p role="status" className="text-sm text-white/70">
-								Conclua o login no navegador e volte ao Teamdrop.
-							</p>
-							<button type="button" onClick={onCancel} className="w-full py-2">
-								Cancelar
-							</button>
-						</>
 					)}
 					{error && (
 						<p role="alert" className="text-sm text-red-300">
