@@ -80,28 +80,33 @@ The auth suite uses Node's test runner and starts its own temporary PostgreSQL c
 
 HTTP tests exercise real Nest controllers, guards, JWTs and Prisma persistence, including concurrent refreshes. Google and the temporary ticket cache use test doubles; these tests do not verify live Google OAuth or a real Redis instance.
 
-## Teams API
+## Teams and invitations API
 
-All routes require a Bearer access token. Team member listing and invitation management are restricted to the team owner.
+All `/api/teams` and `/api/invites` routes require a Bearer access token. Listing members and managing invitations are restricted to the owner. The public invitation page is read-only and requires no authentication.
 
 | Endpoint | Input | Response |
 | --- | --- | --- |
-| `GET /api/teams` | — | `200` with the user's teams and `role` |
-| `POST /api/teams` | `{ "name": "Product" }` | `201` with the created team |
-| `PATCH /api/teams/:slug` | `{ "newName": "Design" }` | `200` with the updated team, including its new `slug` |
-| `GET /api/teams/:slug/members` | — | `200` with public member profiles and `role` |
-| `POST /api/teams/:slug/invites` | Optional `{ "maxUses": 100, "expiresIn": 604800 }` | `201 { token, expiresAt, maxUses, uses }` |
-| `GET /api/teams/:slug/invites/active` | — | `200 { invite: { id, expiresAt, maxUses, uses } }`, or `{ "invite": null }` |
-| `DELETE /api/teams/:slug/invites/active` | — | `204`; repeated revocation also succeeds |
-| `POST /api/teams/invites/accept` | `{ "token": "..." }` | `200` with the joined team and `role` |
+| `GET /api/teams` | — | `200 { teams: [...] }`, including each team's `role` and `slug` |
+| `POST /api/teams` | `{ "name": "Product" }` | `201 { team }` |
+| `PATCH /api/teams/:slug` | `{ "newName": "Design" }` | `200 { team }`, with the updated slug |
+| `GET /api/teams/:slug/members` | — | `200 { users: [...] }`, including public profile fields and role |
+| `DELETE /api/teams/:slug/members/me` | — | `204`; an owner cannot leave |
+| `DELETE /api/teams/:slug/members/:memberId` | — | `204`; owner only, cannot remove themselves |
+| `POST /api/invites` | `{ "teamSlug": "product", "maxUses": 100, "expiresIn": 604800 }` | `201 { url }`; limits optional |
+| `DELETE /api/invites` | `{ "teamSlug": "product" }` | `204`; revokes all previous invitations, repeated calls succeed |
+| `GET /invites/:token` | Public browser navigation | HTML with a button to open `teamdrop://invite?token=...`; no membership change |
+| `GET /api/invites/:token/preview` | — | `200 { team: { id, name, slug }, alreadyMember }`; no usage increment |
+| `POST /api/invites/accept` | `{ "token": "..." }` | `200 { team }`, including role; confirms membership |
 
-Names are trimmed and cannot be blank. After renaming, clients must use the returned slug for subsequent requests. The default invitation lasts seven days and allows 100 new memberships. Existing members do not consume another use. Invalid, expired, revoked or exhausted invitations cannot create memberships (`410`); malformed tokens return `400` and unauthorized management returns `403`.
+The previous `GET /api/invites/:token` acceptance route is removed. Invitation links lead to the public page; the authenticated widget previews and explicitly confirms them. Set `PUBLIC_BASE_URL` to the externally reachable origin of this API in production (HTTPS). If omitted locally, it defaults to `http://localhost:<PORT>`. `localhost` links only work on the same computer. The public page uses no third-party resources and sends `Cache-Control: no-store` and `Referrer-Policy: no-referrer`. Invitation tokens are masked in application HTTP paths and must also be redacted in any proxy/access logs.
 
-Creating an invitation revokes the previous one in the same transaction. A team row lock serializes creation, revocation and acceptance. The active endpoint returns only metadata, and no invitation after expiration or exhaustion. Responses containing invitation tokens use `Cache-Control: no-store`.
+Names are trimmed and cannot be blank. After renaming, clients must use the returned slug. An invitation defaults to seven days and 100 new memberships. Existing members do not consume another use. Invalid, expired, revoked or exhausted invitations return `410`; missing token input returns `400`. Current MVP string validation remains unchanged. Non-owner creation returns `403`; revocation outside an owned team returns `404`.
 
-Invitation tokens are returned only when created; clients must copy or save the link at that point. Only the SHA-256 hash is stored, so the original token cannot be recovered. Generate a new invitation to obtain another link, invalidating the previous one. `CryptographyModule` provides token generation and hashing; auth uses Base64URL hashes and invitations use hexadecimal hashes.
+Creating an invitation revokes previous ones in the same transaction. A team row lock serializes creation, revocation and acceptance. Preview does not reserve a use: acceptance checks validity and available uses again inside the transaction.
 
-Run `pnpm test:teams` to verify real Nest HTTP routes, authentication, owner authorization, member roles, name validation, renaming and invitation lifecycle/concurrency against a temporary PostgreSQL database. It requires PostgreSQL binaries on `PATH` (or `PG_BIN`) and Postman CLI, and does not use the configured `DATABASE_URL`.
+Only the SHA-256 hash is stored. The URL is returned on creation only; there is no recovery or active-invitation lookup endpoint. In the widget, copy it while the management screen is open. Leaving that screen discards the local URL; generating another invalidates the previous link. Revocation remains available without recovering a link. Responses containing links or preview/acceptance data use `Cache-Control: no-store`.
+
+Run `pnpm test:teams` to verify real Nest HTTP routes, JWT authorization, PostgreSQL persistence, role restrictions, leaving/removal, public landing, preview, token redaction, invitation lifecycle and concurrency. It creates a temporary PostgreSQL cluster and checks migration drift; it does not use the configured `DATABASE_URL`. Requires PostgreSQL binaries on `PATH` (or `PG_BIN`) and Postman CLI. The suite also runs a local Postman assertion against the teams response envelope. It does not exercise installed Windows protocol registration or live Google OAuth.
 
 ## Functional requirements
 

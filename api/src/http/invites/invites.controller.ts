@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpCode, Param, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, HttpCode, Param, Post } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
 import { AuthenticatedUser } from '../../auth/services/auth.service.js'
@@ -22,6 +22,7 @@ export class InvitesController {
 
 	@Post()
 	@HttpCode(201)
+	@Header('Cache-Control', 'no-store')
 	async createTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
 		@Body(new ZodValidationPipe(createTeamInviteBodySchema)) body: CreateTeamInviteBodyDto,
@@ -52,19 +53,27 @@ export class InvitesController {
 		return
 	}
 
-	@Post(':token')
-	@HttpCode(204)
-	async acceptTeamInvite(
+	@Get(':token/preview')
+	@Header('Cache-Control', 'no-store')
+	async previewTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
 		@Param(new ZodValidationPipe(acceptTeamInviteSchema)) param: AcceptTeamInviteDto,
 	) {
-		const { token } = param
+		return this.invitesService.previewInvite({ userId: user.userId, token: param.token })
+	}
 
-		await this.invitesService.acceptInvite({
+	@Post('accept')
+	@HttpCode(200)
+	@Header('Cache-Control', 'no-store')
+	async acceptTeamInvite(
+		@CurrentUser() user: AuthenticatedUser,
+		@Body(new ZodValidationPipe(acceptTeamInviteSchema)) body: AcceptTeamInviteDto,
+	) {
+		const { token } = body
+
+		return this.invitesService.acceptInvite({
 			userId: user.userId,
 			token,
 		})
-
-		return
 	}
 }

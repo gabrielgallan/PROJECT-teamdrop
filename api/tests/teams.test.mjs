@@ -22,7 +22,10 @@ import { SessionService } from '../dist/src/auth/services/session.service.js'
 import { DesktopTicketService } from '../dist/src/auth/services/desktop-ticket.service.js'
 import { TeamsController } from '../dist/src/http/teams/teams.controller.js'
 import { TeamsService } from '../dist/src/http/teams/teams.service.js'
-import { UsersService } from '../dist/src/http/users/users.service.js'
+import { InvitesController } from '../dist/src/http/invites/invites.controller.js'
+import { InvitesService } from '../dist/src/http/invites/invites.service.js'
+import { InvitePageController } from '../dist/src/http/invites/invite-page.controller.js'
+import { LoggingMiddleware } from '../dist/src/http/middlewares/logging/logging.middleware.js'
 
 const execFile = promisify(execFileCallback)
 const secret = 'teams-integration-test-only-secret-'.repeat(2)
@@ -43,6 +46,7 @@ const controlPostgres = (args) =>
 let directory, database, databaseUrl, app, prisma, baseUrl, owner, member, outsider
 let started = false
 const bearer = new Map()
+const httpLogs = []
 
 async function freePort() {
 	const server = net.createServer()
@@ -64,13 +68,21 @@ async function request(method, route, actor, body) {
 		...(body === undefined ? {} : { body: JSON.stringify(body) }),
 	})
 	const text = await response.text()
-	return { status: response.status, body: text ? JSON.parse(text) : null }
+	return {
+		status: response.status,
+		headers: response.headers,
+		body: text
+			? response.headers.get('content-type')?.includes('application/json')
+				? JSON.parse(text)
+				: text
+			: null,
+	}
 }
 
 async function createTeam() {
 	const response = await request('POST', '/api/teams', owner, { name: `Team ${randomUUID()}` })
 	assert.equal(response.status, 201)
-	return response.body
+	return response.body.team
 }
 
 before(
@@ -114,7 +126,6 @@ before(
 			await sql.end()
 		}
 		prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) })
-		const users = new UsersService(prisma)
 		const tokens = new AccessTokenService(new JwtService({ secret }))
 		const actors = await Promise.all(
 			['owner', 'member', 'outsider'].map((name) =>
@@ -131,17 +142,28 @@ before(
 		class TestModule {}
 		Module({
 			imports: [CryptographyModule],
-			controllers: [TeamsController],
+			controllers: [TeamsController, InvitesController, InvitePageController],
 			providers: [
 				{
 					provide: TeamsService,
-					useFactory: (crypto) => new TeamsService(prisma, users, crypto),
+					useFactory: () => new TeamsService(prisma),
+				},
+				{
+					provide: InvitesService,
+					useFactory: (crypto) =>
+						new InvitesService({ get: () => 'https://teamdrop.example' }, prisma, crypto),
 					inject: [CryptographyService],
 				},
 				{ provide: APP_GUARD, useValue: new AccessTokenGuard(new Reflector(), tokens) },
 			],
 		})(TestModule)
 		app = await NestFactory.create(TestModule, { logger: false })
+		const logging = new LoggingMiddleware()
+		logging.logger = {
+			log: (value) => httpLogs.push(value),
+			error: (value) => httpLogs.push(value),
+		}
+		app.use((req, res, next) => logging.use(req, res, next))
 		await app.listen(0, '127.0.0.1')
 		baseUrl = await app.getUrl()
 	},
@@ -179,9 +201,9 @@ test('only the owner can list members, with the correct roles and public fields'
 	}
 	const response = await request('GET', `/api/teams/${team.slug}/members`, owner)
 	assert.equal(response.status, 200)
-	assert.equal(response.body.find((item) => item.id === owner.id).role, 'owner')
-	assert.equal(response.body.find((item) => item.id === member.id).role, 'member')
-	assert.deepEqual(Object.keys(response.body[0]).sort(), [
+	assert.equal(response.body.users.find((item) => item.id === owner.id).role, 'owner')
+	assert.equal(response.body.users.find((item) => item.id === member.id).role, 'member')
+	assert.deepEqual(Object.keys(response.body.users[0]).sort(), [
 		'avatarUrl',
 		'email',
 		'id',
@@ -201,124 +223,169 @@ test('rename returns the updated slug and trims the name', async () => {
 		newName: `  ${newName}  `,
 	})
 	assert.equal(response.status, 200)
-	assert.equal(response.body.id, team.id)
-	assert.equal(response.body.name, newName)
-	assert.notEqual(response.body.slug, team.slug)
+	assert.equal(response.body.team.id, team.id)
+	assert.equal(response.body.team.name, newName)
+	assert.notEqual(response.body.team.slug, team.slug)
 	assert.equal(
-		(await request('GET', `/api/teams/${response.body.slug}/members`, owner)).status,
+		(await request('GET', `/api/teams/${response.body.team.slug}/members`, owner)).status,
 		200,
 	)
 })
 
-test('invites expose the token only on creation and return only active metadata', async () => {
+async function invitation(team, options = {}) {
+	const response = await request('POST', '/api/invites', owner, { teamSlug: team.slug, ...options })
+	assert.equal(response.status, 201)
+	assert.equal(response.headers.get('cache-control'), 'no-store')
+	assert.deepEqual(Object.keys(response.body), ['url'])
+	return { url: response.body.url, token: new URL(response.body.url).pathname.split('/').pop() }
+}
+
+test('invitations are returned once, hashed at rest, replaced and revoked', async () => {
 	const team = await createTeam()
-	const route = `/api/teams/${team.slug}/invites`
 	for (const actor of [member, outsider]) {
-		assert.equal((await request('POST', route, actor, {})).status, 403)
-		assert.equal((await request('GET', `${route}/active`, actor)).status, 403)
-		assert.equal((await request('DELETE', `${route}/active`, actor)).status, 403)
+		assert.equal(
+			(await request('POST', '/api/invites', actor, { teamSlug: team.slug })).status,
+			403,
+		)
+		assert.equal(
+			(await request('DELETE', '/api/invites', actor, { teamSlug: team.slug })).status,
+			404,
+		)
 	}
-	assert.deepEqual((await request('GET', `${route}/active`, owner)).body, { invite: null })
-	const first = await request('POST', route, owner, {})
-	assert.equal(first.status, 201)
-	assert.equal(first.body.maxUses, 100)
-	assert.ok(Math.abs(Date.parse(first.body.expiresAt) - Date.now() - 7 * 86400000) < 5000)
+	assert.equal(
+		(await request('POST', '/api/invites', undefined, { teamSlug: team.slug })).status,
+		401,
+	)
+	const first = await invitation(team)
 	const stored = await prisma.invite.findFirstOrThrow({
 		where: { teamId: team.id, revokedAt: null },
 	})
-	assert.equal(stored.tokenHash, createHash('sha256').update(first.body.token).digest('hex'))
-	assert.equal(Object.values(stored).includes(first.body.token), false)
-	const restarted = new TeamsService(prisma, new UsersService(prisma), new CryptographyService())
-	const metadata = (await restarted.getActiveInvite({ userId: owner.id, teamSlug: team.slug }))
-		.invite
-	assert.deepEqual(Object.keys(metadata).sort(), ['expiresAt', 'id', 'maxUses', 'uses'])
-	const activeResponse = await request('GET', `${route}/active`, owner)
-	assert.equal(activeResponse.body.invite.id, stored.id)
-	assert.equal('token' in activeResponse.body.invite, false)
-	assert.equal('tokenHash' in activeResponse.body.invite, false)
-	const next = await request('POST', route, owner)
-	assert.equal(next.status, 201)
-	assert.notEqual(next.body.token, first.body.token)
+	assert.equal(stored.tokenHash, createHash('sha256').update(first.token).digest('hex'))
+	assert.equal(Object.values(stored).includes(first.token), false)
+	assert.equal(stored.maxUses, 100)
+	assert.ok(Math.abs(stored.expiresAt.getTime() - Date.now() - 7 * 86400000) < 5000)
+	assert.equal((await request('GET', '/api/invites', owner)).status, 404)
+	const next = await invitation(team)
+	assert.notEqual(first.token, next.token)
 	assert.equal(
-		(await request('POST', '/api/teams/invites/accept', outsider, { token: first.body.token }))
-			.status,
+		(await request('POST', '/api/invites/accept', outsider, { token: first.token })).status,
 		410,
 	)
-	assert.equal((await request('DELETE', `${route}/active`, owner)).status, 204)
-	assert.equal((await request('DELETE', `${route}/active`, owner)).status, 204)
-	assert.deepEqual((await request('GET', `${route}/active`, owner)).body, { invite: null })
+	for (let repeat = 0; repeat < 2; repeat++)
+		assert.equal(
+			(await request('DELETE', '/api/invites', owner, { teamSlug: team.slug })).status,
+			204,
+		)
 	assert.equal(
-		(await request('POST', '/api/teams/invites/accept', outsider, { token: next.body.token }))
-			.status,
+		(await request('POST', '/api/invites/accept', outsider, { token: next.token })).status,
 		410,
+	)
+})
+
+test('public landing and authenticated preview never consume invitations', async () => {
+	const team = await createTeam()
+	const invite = await invitation(team)
+	const page = await request('GET', `/invites/${invite.token}`)
+	assert.equal(page.status, 200)
+	assert.equal(page.headers.get('cache-control'), 'no-store')
+	assert.equal(page.headers.get('referrer-policy'), 'no-referrer')
+	assert.match(page.body, /Abrir no Teamdrop/)
+	assert.ok(page.body.includes(`teamdrop://invite?token=${invite.token}`))
+	assert.equal((await request('GET', `/api/invites/${invite.token}/preview`)).status, 401)
+	const preview = await request('GET', `/api/invites/${invite.token}/preview`, outsider)
+	assert.equal(preview.status, 200)
+	assert.deepEqual(preview.body, {
+		team: { id: team.id, name: team.name, slug: team.slug },
+		alreadyMember: false,
+	})
+	assert.equal(preview.headers.get('cache-control'), 'no-store')
+	assert.equal((await request('GET', `/api/invites/${invite.token}`, outsider)).status, 404)
+	assert.equal(await prisma.member.count({ where: { teamId: team.id } }), 1)
+	assert.equal(
+		(
+			await prisma.invite.findUniqueOrThrow({
+				where: { tokenHash: createHash('sha256').update(invite.token).digest('hex') },
+			})
+		).uses,
+		0,
+	)
+	assert.ok(!httpLogs.some((line) => line.includes(invite.token)))
+	assert.ok(httpLogs.some((line) => line.includes('/invites/[redacted]/preview')))
+	const accepted = await request('POST', '/api/invites/accept', outsider, { token: invite.token })
+	assert.equal(accepted.status, 200)
+	assert.equal(accepted.body.team.id, team.id)
+	assert.equal(accepted.body.team.role, 'member')
+	assert.equal(
+		(await request('GET', `/api/invites/${invite.token}/preview`, outsider)).body.alreadyMember,
+		true,
 	)
 })
 
 test('concurrent replacement leaves a single usable invitation', async () => {
 	const team = await createTeam()
-	const route = `/api/teams/${team.slug}/invites`
-	const results = await Promise.all(
-		Array.from({ length: 4 }, () => request('POST', route, owner, {})),
-	)
-	assert.ok(results.every((item) => item.status === 201))
+	const results = await Promise.all(Array.from({ length: 4 }, () => invitation(team)))
 	assert.equal(await prisma.invite.count({ where: { teamId: team.id, revokedAt: null } }), 1)
-	const activeHash = (
-		await prisma.invite.findFirstOrThrow({ where: { teamId: team.id, revokedAt: null } })
-	).tokenHash
-	const active = results.find(
-		(item) => createHash('sha256').update(item.body.token).digest('hex') === activeHash,
-	).body.token
-	for (const item of results.filter((item) => item.body.token !== active)) {
+	const active = await prisma.invite.findFirstOrThrow({
+		where: { teamId: team.id, revokedAt: null },
+	})
+	for (const item of results) {
+		const valid = createHash('sha256').update(item.token).digest('hex') === active.tokenHash
 		assert.equal(
-			(await request('POST', '/api/teams/invites/accept', outsider, { token: item.body.token }))
-				.status,
-			410,
+			(await request('POST', '/api/invites/accept', outsider, { token: item.token })).status,
+			valid ? 200 : 410,
 		)
 	}
-	assert.equal(
-		(await request('POST', '/api/teams/invites/accept', outsider, { token: active })).status,
-		200,
-	)
 })
 
 test('acceptance is idempotent and serializes the last available use', async () => {
 	const team = await createTeam()
-	const invitation = await request('POST', `/api/teams/${team.slug}/invites`, owner, { maxUses: 1 })
+	const invite = await invitation(team, { maxUses: 1 })
 	const attempts = await Promise.all(
 		[member, outsider].map((actor) =>
-			request('POST', '/api/teams/invites/accept', actor, { token: invitation.body.token }),
+			request('POST', '/api/invites/accept', actor, { token: invite.token }),
 		),
 	)
 	assert.deepEqual(attempts.map((item) => item.status).sort(), [200, 410])
 	const winner = attempts[0].status === 200 ? member : outsider
 	assert.equal(
-		(await request('POST', '/api/teams/invites/accept', winner, { token: invitation.body.token }))
-			.status,
+		(await request('POST', '/api/invites/accept', winner, { token: invite.token })).status,
 		200,
 	)
 	assert.equal(await prisma.member.count({ where: { teamId: team.id } }), 2)
 	assert.equal((await prisma.invite.findFirstOrThrow({ where: { teamId: team.id } })).uses, 1)
 	const teams = await request('GET', '/api/teams', winner)
-	assert.equal(teams.body.find((item) => item.id === team.id).role, 'member')
+	assert.equal(teams.body.teams.find((item) => item.id === team.id).role, 'member')
+	const loser = winner === member ? outsider : member
+	assert.equal((await request('GET', `/api/invites/${invite.token}/preview`, loser)).status, 410)
 })
 
-test('expired and malformed invitations cannot create memberships', async () => {
+test('expired, revoked and malformed invitations cannot create memberships', async () => {
 	const team = await createTeam()
-	const invitation = await request('POST', `/api/teams/${team.slug}/invites`, owner, {})
+	const invite = await invitation(team)
 	await prisma.invite.updateMany({ where: { teamId: team.id }, data: { expiresAt: new Date(0) } })
-	assert.equal(
-		(await request('POST', '/api/teams/invites/accept', outsider, { token: invitation.body.token }))
-			.status,
-		410,
-	)
-	assert.equal(
-		(await request('POST', '/api/teams/invites/accept', outsider, { token: 'bad' })).status,
-		400,
-	)
-	assert.deepEqual((await request('GET', `/api/teams/${team.slug}/invites/active`, owner)).body, {
-		invite: null,
-	})
+	for (const token of [invite.token, 'bad']) {
+		assert.equal((await request('POST', '/api/invites/accept', outsider, { token })).status, 410)
+		assert.equal((await request('GET', `/api/invites/${token}/preview`, outsider)).status, 410)
+	}
+	assert.equal((await request('POST', '/api/invites/accept', outsider, {})).status, 400)
 	assert.equal(await prisma.member.count({ where: { teamId: team.id } }), 1)
+})
+
+test('owners cannot leave or remove themselves; members can leave and owners remove members', async () => {
+	const team = await createTeam()
+	await prisma.member.create({ data: { teamId: team.id, userId: member.id } })
+	await prisma.member.create({ data: { teamId: team.id, userId: outsider.id } })
+	const route = `/api/teams/${team.slug}/members`
+	assert.equal((await request('DELETE', `${route}/me`, owner)).status, 403)
+	assert.equal((await request('DELETE', `${route}/${owner.id}`, owner)).status, 403)
+	assert.equal((await request('DELETE', `${route}/${outsider.id}`, member)).status, 403)
+	assert.equal((await request('DELETE', `${route}/${outsider.id}`, owner)).status, 204)
+	assert.equal((await request('DELETE', `${route}/me`, member)).status, 204)
+	assert.equal(await prisma.member.count({ where: { teamId: team.id } }), 1)
+	for (const actor of [member, outsider])
+		assert.ok(
+			!(await request('GET', '/api/teams', actor)).body.teams.some((item) => item.id === team.id),
+		)
 })
 
 test('shared cryptography preserves existing refresh hashes and session rotation', async () => {
@@ -392,7 +459,7 @@ test('Postman verifies the live teams response contract locally', async () => {
 		'--auth-bearer-token',
 		bearer.get(owner.id),
 		'--script-post-request',
-		"pm.test('teams response', () => { pm.response.to.have.status(200); pm.expect(pm.response.json()).to.be.an('array'); pm.response.json().forEach(team => { pm.expect(team.role).to.eql('owner'); pm.expect(team.slug).to.be.a('string'); }); });",
+		"pm.test('teams response', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().teams).to.be.an('array'); pm.response.json().teams.forEach(team => { pm.expect(team.role).to.eql('owner'); pm.expect(team.slug).to.be.a('string'); }); });",
 	])
 	assert.ok(stdout.includes('teams response'))
 })
