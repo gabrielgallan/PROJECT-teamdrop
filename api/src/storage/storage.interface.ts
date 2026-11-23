@@ -1,10 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export abstract class StorageService {
 	abstract upload(key: string, data: Buffer, mimeType: string): Promise<void>
 
 	abstract download(key: string): Promise<NodeJS.ReadableStream>
+
+	abstract getDownloadUrl(key: string): Promise<string>
 
 	abstract delete(key: string): Promise<void>
 }

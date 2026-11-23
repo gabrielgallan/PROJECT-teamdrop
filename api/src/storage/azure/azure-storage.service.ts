@@ -1,5 +1,5 @@
 import type { Readable } from 'node:stream'
-import { BlobServiceClient, type ContainerClient } from '@azure/storage-blob'
+import { BlobSASPermissions, BlobServiceClient, type ContainerClient } from '@azure/storage-blob'
 import { Injectable, Logger } from '@nestjs/common'
 import { EnvService } from '../../env/env.service.js'
 import { StorageService } from '../storage.interface.js'
@@ -60,6 +60,26 @@ export class AzureStorageService implements StorageService {
 			return response.readableStreamBody as Readable
 		} catch (error) {
 			this.logger.error(`Failed to download blob: ${key}`, error)
+
+			throw error
+		}
+	}
+
+	async getDownloadUrl(key: string): Promise<string> {
+		try {
+			const blob = this.container.getBlockBlobClient(key)
+
+			const url = await blob.generateSasUrl({
+				permissions: BlobSASPermissions.parse('r'),
+				expiresOn: new Date(Date.now() + 5 * 60 * 1000),
+			})
+
+			this.logger.log(`Blob download URL generated: ${key}`)
+
+			return url
+		} catch (error) {
+			this.logger.error(`Failed to generate blob download URL: ${key}`, error)
+
 			throw error
 		}
 	}
