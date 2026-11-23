@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module.js'
 import { envSchema } from './env/env.js'
 import { EnvModule } from './env/env.module.js'
 import { HttpMoodule } from './http/http.module.js'
+import { WebSocketModule } from './websocket/websocket.module.js'
 
 @Module({
 	imports: [
@@ -13,7 +14,8 @@ import { HttpMoodule } from './http/http.module.js'
 			validate: (env) => envSchema.parse(env),
 		}),
 		HttpMoodule,
-		AuthModule
+		AuthModule,
+		WebSocketModule
 	],
 })
 export class AppModule {}

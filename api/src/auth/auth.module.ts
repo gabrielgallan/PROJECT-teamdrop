@@ -26,7 +26,7 @@ import { SessionService } from './services/session.service.js'
 			useFactory: (env: EnvService) => ({ secret: env.get('JWT_SECRET') }),
 		}),
 	],
-	exports: [AuthService, GoogleOAuthService],
+	exports: [AuthService, GoogleOAuthService, AccessTokenService],
 	providers: [
 		GoogleOAuthService,
 		DesktopTicketService,
