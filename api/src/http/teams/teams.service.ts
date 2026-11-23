@@ -12,6 +12,7 @@ import { ListTeamMembersServiceDto } from './dtos/list-teams-members.dto.js'
 import { ListUserTeamsServiceDto } from './dtos/list-user-teams.dto.js'
 import { RemoveMemberServiceDto } from './dtos/remove-member.dto.js'
 import { UpdateTeamServiceDto } from './dtos/update-team.dto.js'
+import { TeamsPresenter } from './presenters/teams.presenter.js'
 
 @Injectable()
 export class TeamsService {
@@ -153,7 +154,7 @@ export class TeamsService {
 			users: members.map((member) => {
 				return {
 					...member,
-					role: member.id === team.ownerId ? 'owner' : 'member',
+					memberRole: member.id === team.ownerId ? 'owner' : 'member',
 				}
 			}),
 		}
@@ -259,5 +260,7 @@ export class TeamsService {
 				},
 			},
 		})
+
+		return
 	}
 }

@@ -9,6 +9,7 @@ import { CreateTeamDto, createTeamSchema } from './dtos/create-team.dto.js'
 import { RemoveMemberDto, removeMemberSchema } from './dtos/remove-member.dto.js'
 import { UpdateTeamDto, updateTeamSchema } from './dtos/update-team.dto.js'
 import { TeamsService } from './teams.service.js'
+import { TeamsPresenter } from './presenters/teams.presenter.js'
 
 export const teamIdSchema = z.object({
 	teamId: z.string(),
@@ -25,9 +26,13 @@ export class TeamsController {
 	@Get()
 	@HttpCode(200)
 	async getTeams(@CurrentUser() user: AuthenticatedUser) {
-		return this.teamsService.listUserTeams({
+		const { teams } = await this.teamsService.listUserTeams({
 			userId: user.userId,
 		})
+
+		return {
+			teams: teams.map(TeamsPresenter.teamWithRoleToHTTP)
+		}
 	}
 
 	@Post()
@@ -38,10 +43,14 @@ export class TeamsController {
 	) {
 		const { name } = body
 
-		return this.teamsService.createTeam({
+		const { team } = await this.teamsService.createTeam({
 			name,
 			userId: user.userId,
 		})
+
+		return {
+			team: TeamsPresenter.toHTTP(team)
+		}
 	}
 
 	@Patch(':teamId')
@@ -54,11 +63,15 @@ export class TeamsController {
 		const { newName } = body
 		const { teamId } = param
 
-		return this.teamsService.updateTeam({
+		const { team } = await this.teamsService.updateTeam({
 			userId: user.userId,
 			teamId,
 			newName,
 		})
+
+		return {
+			team: TeamsPresenter.toHTTP(team)
+		}
 	}
 
 	@Get(':teamId/members')
@@ -69,10 +82,14 @@ export class TeamsController {
 	) {
 		const { teamId } = param
 
-		return this.teamsService.listTeamMembers({
+		const { users } = await this.teamsService.listTeamMembers({
 			userId: user.userId,
 			teamId,
 		})
+
+		return {
+			users
+		}
 	}
 
 	@Delete(':teamId/members/me')
@@ -83,10 +100,12 @@ export class TeamsController {
 	) {
 		const { teamId } = param
 
-		return this.teamsService.leaveFromTeam({
+		await this.teamsService.leaveFromTeam({
 			userId: user.userId,
 			teamId,
 		})
+
+		return 
 	}
 
 	@Delete(':teamId/members/:memberId')
@@ -97,10 +116,12 @@ export class TeamsController {
 	) {
 		const { teamId, memberId } = param
 
-		return this.teamsService.removeMemberFromTeam({
+		await this.teamsService.removeMemberFromTeam({
 			userId: user.userId,
 			teamId,
 			memberId,
 		})
+
+		return
 	}
 }
