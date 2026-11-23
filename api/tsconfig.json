@@ -9,7 +9,7 @@
 		"moduleResolution": "NodeNext",
 
 		"target": "es2024",
-		"types": ["node"],
+		"types": ["node", "multer"],
 
 		"rootDir": "./",
 		"outDir": "./dist",
@@ -19,7 +19,7 @@
 		"skipLibCheck": true,
 
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
+		"emitDecoratorMetadata": true
 	},
 
 	"exclude": ["node_modules", "src/test", "dist", "**/*spec.ts"]
