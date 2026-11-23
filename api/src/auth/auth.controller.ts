@@ -31,6 +31,7 @@ import {
 	startDesktopLoginSchema,
 } from './dtos/start-desktop.dto.js'
 import { AuthenticatedUser, AuthService } from './services/auth.service.js'
+import { UserPresenter } from './presenters/user.presenter.js'
 
 @ApiTags('Authentication')
 @Controller('api/auth')
@@ -168,6 +169,10 @@ export class AuthController {
 		description: 'INVALID_ACCESS_TOKEN, ACCESS_TOKEN_EXPIRED, or user no longer exists',
 	})
 	async getProfile(@CurrentUser() user: AuthenticatedUser) {
-		return { user: await this.authService.getProfile(user.userId) }
+		const result = await this.authService.getProfile(user.userId)
+
+		return { 
+			user: UserPresenter.toHTTP(result.user)
+		}
 	}
 }

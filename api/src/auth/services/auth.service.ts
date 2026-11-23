@@ -155,8 +155,16 @@ export class AuthService {
 	}
 
 	async getProfile(userId: string) {
-		const user = await this.prisma.user.findUnique({ where: { id: userId }, select: userSelect })
-		if (!user) throw new UnauthorizedException('User no longer exists')
-		return user
+		const user = await this.prisma.user.findUnique({ where: { id: userId } })
+		
+		if (!user) {
+			throw new UnauthorizedException({
+				message: 'User no longer exists'
+			})
+		}
+
+		return {
+			user,
+		}
 	}
 }
