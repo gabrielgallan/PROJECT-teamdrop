@@ -1,6 +1,6 @@
 import { File } from '../../../database/prisma/client/client.js'
 
-export class FilesMapper {
+export class FilesPresenter {
 	static toHTTP(file: File) {
 		return {
 			...file,

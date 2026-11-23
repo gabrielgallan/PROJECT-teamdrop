@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common'
+import { Controller, Delete, Get, HttpCode, Param, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
@@ -6,7 +6,18 @@ import { AuthenticatedUser } from '../../auth/services/auth.service.js'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
 import { TeamIdDto, teamIdSchema } from '../teams/teams.controller.js'
 import { FilesService } from './files.service.js'
-import { FilesMapper } from './mappers/files.mapper.js'
+import { FilesPresenter } from './presenters/files.presenter.js'
+import { Public } from '../../auth/decorators/public.decorator.js'
+import { Response } from 'express';
+import z from 'zod'
+import { createZodDto } from 'nestjs-zod'
+import { DeleteFileDto, deleteFileSchema } from './dtos/delete-file.dto.js'
+
+const fileIdSchema = z.object({
+	fileId: z.uuid()
+})
+
+class FileIdDto extends createZodDto(fileIdSchema) {}
 
 @ApiTags('Files')
 @Controller('api')
@@ -34,34 +45,80 @@ export class FilesController {
 			fileSize: file.size,
 		})
 
-		return FilesMapper.toHTTP(result.file)
+		return {
+			file: FilesPresenter.toHTTP(result.file)
+		}
 	}
 
-	// @Get('download/*path')
-	// async download(@Param('path') path: string[], @Res() response: Response) {
-	// 	const key = path.join('/')
-	// 	const stream = await this.storage.download(key)
+	@Get('teams/:teamId/files')
+	@HttpCode(200)
+	async listFiles(
+		@CurrentUser() user: AuthenticatedUser,
+		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto
+	) {
+		const { teamId } = param
 
-	// 	response.setHeader('Content-Type', 'application/octet-stream')
-	// 	response.setHeader('Content-Disposition', 'attachment')
+		const { files } = await this.filesService.listFiles({
+			userId: user.userId,
+			teamId,
+			cursor: '',
+			limit: 10
+		})
 
-	// 	stream.pipe(response)
-	// }
+		return {
+			files: files.map(FilesPresenter.toHTTP)
+		}
+	}
 
-	// @Get('url/*path')
-	// async getDownloadUrl(@Param('path') path: string[]) {
-	// 	const key = path.join('/')
-	// 	const url = await this.storage.getDownloadUrl(key)
+	@Public()
+	@Get('files/:fileId/preview')
+	@HttpCode(302)
+	async previewFile(
+		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
+		@Res() response: Response
+	) {
+		const { url } = await this.filesService.getFilePreviewUrl(param.fileId)
 
-	// 	return { url }
-	// }
+		return response.redirect(url)
+	}
 
-	// @Delete('*path')
-	// async delete(@Param('path') path: string[]) {
-	// 	const key = path.join('/')
+	@Public()
+	@Get('files/:fileId/download')
+	@HttpCode(302)
+	async downloadFile(
+		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
+		@Res() response: Response
+	) {
+		const { url } = await this.filesService.getFileDownloadUrl(param.fileId)
 
-	// 	await this.storage.delete(key)
+		return response.redirect(url)
+	}
 
-	// 	return { message: 'File deleted successfully' }
-	// }
+	@Public()
+	@Get('files/:fileId/url')
+	@HttpCode(200)
+	async generateUrl(
+		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
+	) {
+		const { url } = await this.filesService.getFilePreviewUrl(param.fileId)
+
+		return {
+			url,
+		}
+	}
+
+	@Delete('teams/:teamId/files/:fileId')
+	@HttpCode(204)
+	async deleteFile(
+		@CurrentUser() user: AuthenticatedUser,
+		@Param(new ZodValidationPipe(deleteFileSchema)) param: DeleteFileDto,
+	) {
+		await this.filesService.deleteFile({
+			userId: user.userId,
+			teamId: param.teamId,
+			fileId: param.fileId,
+		})
+
+		return
+	}
 }

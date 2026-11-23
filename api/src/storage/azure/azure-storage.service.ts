@@ -2,7 +2,7 @@ import type { Readable } from 'node:stream'
 import { BlobSASPermissions, BlobServiceClient, type ContainerClient } from '@azure/storage-blob'
 import { Injectable, Logger } from '@nestjs/common'
 import { EnvService } from '../../env/env.service.js'
-import { StorageService } from '../storage.interface.js'
+import { StorageService, StorageUrlType } from '../storage.interface.js'
 
 @Injectable()
 export class AzureStorageService implements StorageService {
@@ -25,7 +25,7 @@ export class AzureStorageService implements StorageService {
 		this.logger.log(`Azure Blob Storage initialized: ${containerName}`)
 	}
 
-	async upload(key: string, data: Buffer, mimeType: string): Promise<void> {
+	async upload(key: string, data: Buffer, mimeType: string) {
 		const startedAt = performance.now()
 
 		try {
@@ -46,48 +46,36 @@ export class AzureStorageService implements StorageService {
 		}
 	}
 
-	async download(key: string): Promise<NodeJS.ReadableStream> {
-		try {
-			const blob = this.container.getBlockBlobClient(key)
-			const response = await blob.download()
-
-			if (!response.readableStreamBody) {
-				throw new Error(`Unable to download blob: ${key}`)
-			}
-
-			this.logger.log(`Blob download started: ${key}`)
-
-			return response.readableStreamBody as Readable
-		} catch (error) {
-			this.logger.error(`Failed to download blob: ${key}`, error)
-
-			throw error
-		}
-	}
-
-	async getDownloadUrl(key: string): Promise<string> {
+	async generateUrl(key: string, type: StorageUrlType = 'preview', fileName?: string) {
 		try {
 			const blob = this.container.getBlockBlobClient(key)
 
 			const url = await blob.generateSasUrl({
 				permissions: BlobSASPermissions.parse('r'),
 				expiresOn: new Date(Date.now() + 5 * 60 * 1000),
+				contentDisposition: type === 'download' ? `attachment; filename*=UTF-8''${encodeURIComponent(String(fileName))}` : undefined,
+				contentType: type === 'download' ? 'application/octet-stream' : undefined,
 			})
 
-			this.logger.log(`Blob download URL generated: ${key}`)
+			this.logger.log(`Blob ${type} URL generated: ${key}`)
 
-			return url
+			return {
+				url,
+			}
 		} catch (error) {
-			this.logger.error(`Failed to generate blob download URL: ${key}`, error)
+			this.logger.error(`Failed to generate blob ${type} URL: ${key}`, error)
 
 			throw error
 		}
 	}
 
-	async delete(key: string): Promise<void> {
+	async delete(key: string) {
 		try {
 			const blob = this.container.getBlockBlobClient(key)
-			const response = await blob.deleteIfExists()
+			
+			const response = await blob.deleteIfExists({
+				deleteSnapshots: 'include',
+			})
 
 			if (response.succeeded) {
 				this.logger.log(`Blob deleted: ${key}`)
@@ -96,6 +84,7 @@ export class AzureStorageService implements StorageService {
 			}
 		} catch (error) {
 			this.logger.error(`Failed to delete blob: ${key}`, error)
+
 			throw error
 		}
 	}

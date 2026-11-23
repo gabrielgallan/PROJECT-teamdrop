@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common'
+import { BadGatewayException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common'
 import { v7 as uuidv7 } from 'uuid'
 import { PrismaService } from '../../database/prisma/prisma.service.js'
 import { StorageService } from '../../storage/storage.interface.js'
 import { UploadFileServiceDto } from './dtos/upload-file.dto.js'
+import { ListFilesServiceDto } from './dtos/list-files.dto.js'
+import { DeleteFileServiceDto } from './dtos/delete-file.dto.js'
+
+interface FileIdServiceDto {
+	fileId: string
+}
 
 @Injectable()
 export class FilesService {
@@ -64,5 +70,112 @@ export class FilesService {
 		return {
 			file,
 		}
+	}
+
+	async listFiles({
+		userId,
+		teamId,
+	}: ListFilesServiceDto) {
+		const membership = await this.prisma.member.findUnique({
+			where: {
+				teamId_userId: {
+					teamId,
+					userId,
+				},
+			},
+			select: {
+				teamId: true,
+				userId: true,
+			},
+		})
+
+		if (!membership) {
+			throw new NotFoundException({
+				message: 'Resource not found',
+			})
+		}
+
+		const files = await this.prisma.file.findMany({
+			where: {
+				teamId
+			}
+		})
+
+		return {
+			files,
+		}
+	}
+
+	async getFileDownloadUrl(fileId: string) {
+		const file = await this.prisma.file.findUnique({
+			where: {
+				id: fileId
+			}
+		})
+
+		if (!file) {
+			throw new NotFoundException({
+				message: 'File not found'
+			})
+		}
+
+		const { url } = await this.storageService.generateUrl(file.storageKey, 'download', file.name)
+
+		return {
+			url,
+		}
+	}
+
+	async getFilePreviewUrl(fileId: string) {
+		const file = await this.prisma.file.findUnique({
+			where: {
+				id: fileId
+			}
+		})
+
+		if (!file) {
+			throw new NotFoundException({
+				message: 'File not found'
+			})
+		}
+
+		const { url } = await this.storageService.generateUrl(file.storageKey, 'preview')
+
+		return {
+			url,
+		}
+	}
+
+	async deleteFile({ userId, teamId, fileId }: DeleteFileServiceDto) {
+		const file = await this.prisma.file.findUnique({
+			where: {
+				id: fileId,
+				authorId: userId,
+				teamId
+			}
+		})
+
+		if (!file) {
+			throw new NotFoundException({
+				message: 'File not found'
+			})
+		}
+
+		try {
+			await this.storageService.delete(file.storageKey)
+
+		} catch {
+			throw new BadGatewayException({
+				message: 'File storage service is unavailable',
+			})
+		}
+
+		await this.prisma.file.delete({
+			where: {
+				id: fileId
+			}
+		})
+
+		return
 	}
 }
