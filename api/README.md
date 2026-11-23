@@ -88,12 +88,12 @@ All `/api/teams` and `/api/invites` routes require a Bearer access token. Listin
 | --- | --- | --- |
 | `GET /api/teams` | — | `200 { teams: [...] }`, including each team's `role` and `slug` |
 | `POST /api/teams` | `{ "name": "Product" }` | `201 { team }` |
-| `PATCH /api/teams/:slug` | `{ "newName": "Design" }` | `200 { team }`, with the updated slug |
-| `GET /api/teams/:slug/members` | — | `200 { users: [...] }`, including public profile fields and role |
-| `DELETE /api/teams/:slug/members/me` | — | `204`; an owner cannot leave |
-| `DELETE /api/teams/:slug/members/:memberId` | — | `204`; owner only, cannot remove themselves |
-| `POST /api/invites` | `{ "teamSlug": "product", "maxUses": 100, "expiresIn": 604800 }` | `201 { url }`; limits optional |
-| `DELETE /api/invites` | `{ "teamSlug": "product" }` | `204`; revokes all previous invitations, repeated calls succeed |
+| `PATCH /api/teams/:teamId` | `{ "newName": "Design" }` | `200 { team }`, with the updated slug |
+| `GET /api/teams/:teamId/members` | — | `200 { users: [...] }`, including public profile fields and role |
+| `DELETE /api/teams/:teamId/members/me` | — | `204`; an owner cannot leave |
+| `DELETE /api/teams/:teamId/members/:memberId` | — | `204`; owner only, cannot remove themselves |
+| `POST /api/teams/:teamId/invites` | `{ "maxUses": 100, "expiresIn": 604800 }` | `201 { url }`; limits optional |
+| `DELETE /api/teams/:teamId/invites` | — | `204`; revokes all previous invitations, repeated calls succeed |
 | `GET /invites/:token` | Public browser navigation | HTML with a button to open `teamdrop://invite?token=...`; no membership change |
 | `GET /api/invites/:token/preview` | — | `200 { team: { id, name, slug }, alreadyMember }`; no usage increment |
 | `POST /api/invites/accept` | `{ "token": "..." }` | `200 { team }`, including role; confirms membership |

@@ -187,7 +187,7 @@ test('requires authentication and rejects blank names through HTTP', async () =>
 	const team = await createTeam()
 	for (const newName of ['', '   ']) {
 		assert.equal(
-			(await request('PATCH', `/api/teams/${team.slug}`, owner, { newName })).status,
+			(await request('PATCH', `/api/teams/${team.id}`, owner, { newName })).status,
 			400,
 		)
 	}
@@ -197,9 +197,9 @@ test('only the owner can list members, with the correct roles and public fields'
 	const team = await createTeam()
 	await prisma.member.create({ data: { teamId: team.id, userId: member.id } })
 	for (const actor of [member, outsider]) {
-		assert.equal((await request('GET', `/api/teams/${team.slug}/members`, actor)).status, 403)
+		assert.equal((await request('GET', `/api/teams/${team.id}/members`, actor)).status, 403)
 	}
-	const response = await request('GET', `/api/teams/${team.slug}/members`, owner)
+	const response = await request('GET', `/api/teams/${team.id}/members`, owner)
 	assert.equal(response.status, 200)
 	assert.equal(response.body.users.find((item) => item.id === owner.id).role, 'owner')
 	assert.equal(response.body.users.find((item) => item.id === member.id).role, 'member')
@@ -212,14 +212,14 @@ test('only the owner can list members, with the correct roles and public fields'
 	])
 })
 
-test('rename returns the updated slug and trims the name', async () => {
+test('rename preserves ID-based access, returns the updated slug and trims the name', async () => {
 	const team = await createTeam()
 	const newName = `Renamed ${randomUUID()}`
 	assert.equal(
-		(await request('PATCH', `/api/teams/${team.slug}`, outsider, { newName })).status,
+		(await request('PATCH', `/api/teams/${team.id}`, outsider, { newName })).status,
 		403,
 	)
-	const response = await request('PATCH', `/api/teams/${team.slug}`, owner, {
+	const response = await request('PATCH', `/api/teams/${team.id}`, owner, {
 		newName: `  ${newName}  `,
 	})
 	assert.equal(response.status, 200)
@@ -227,13 +227,13 @@ test('rename returns the updated slug and trims the name', async () => {
 	assert.equal(response.body.team.name, newName)
 	assert.notEqual(response.body.team.slug, team.slug)
 	assert.equal(
-		(await request('GET', `/api/teams/${response.body.team.slug}/members`, owner)).status,
+		(await request('GET', `/api/teams/${team.id}/members`, owner)).status,
 		200,
 	)
 })
 
 async function invitation(team, options = {}) {
-	const response = await request('POST', '/api/invites', owner, { teamSlug: team.slug, ...options })
+	const response = await request('POST', `/api/teams/${team.id}/invites`, owner, options)
 	assert.equal(response.status, 201)
 	assert.equal(response.headers.get('cache-control'), 'no-store')
 	assert.deepEqual(Object.keys(response.body), ['url'])
@@ -244,16 +244,16 @@ test('invitations are returned once, hashed at rest, replaced and revoked', asyn
 	const team = await createTeam()
 	for (const actor of [member, outsider]) {
 		assert.equal(
-			(await request('POST', '/api/invites', actor, { teamSlug: team.slug })).status,
+			(await request('POST', `/api/teams/${team.id}/invites`, actor, {})).status,
 			403,
 		)
 		assert.equal(
-			(await request('DELETE', '/api/invites', actor, { teamSlug: team.slug })).status,
+			(await request('DELETE', `/api/teams/${team.id}/invites`, actor)).status,
 			404,
 		)
 	}
 	assert.equal(
-		(await request('POST', '/api/invites', undefined, { teamSlug: team.slug })).status,
+		(await request('POST', `/api/teams/${team.id}/invites`, undefined, {})).status,
 		401,
 	)
 	const first = await invitation(team)
@@ -273,7 +273,7 @@ test('invitations are returned once, hashed at rest, replaced and revoked', asyn
 	)
 	for (let repeat = 0; repeat < 2; repeat++)
 		assert.equal(
-			(await request('DELETE', '/api/invites', owner, { teamSlug: team.slug })).status,
+			(await request('DELETE', `/api/teams/${team.id}/invites`, owner)).status,
 			204,
 		)
 	assert.equal(
@@ -375,7 +375,7 @@ test('owners cannot leave or remove themselves; members can leave and owners rem
 	const team = await createTeam()
 	await prisma.member.create({ data: { teamId: team.id, userId: member.id } })
 	await prisma.member.create({ data: { teamId: team.id, userId: outsider.id } })
-	const route = `/api/teams/${team.slug}/members`
+	const route = `/api/teams/${team.id}/members`
 	assert.equal((await request('DELETE', `${route}/me`, owner)).status, 403)
 	assert.equal((await request('DELETE', `${route}/${owner.id}`, owner)).status, 403)
 	assert.equal((await request('DELETE', `${route}/${outsider.id}`, member)).status, 403)

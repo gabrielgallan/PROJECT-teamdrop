@@ -7,7 +7,7 @@ export const acceptTeamInviteSchema = z.object({
 
 export class AcceptTeamInviteDto extends createZodDto(acceptTeamInviteSchema) {}
 
-export interface AcceptTeamInviteServiceInput {
+export interface AcceptTeamInviteServiceDto {
 	userId: string
 	token: string
 }

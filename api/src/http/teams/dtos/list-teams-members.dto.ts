@@ -1,13 +1,4 @@
-import { createZodDto } from 'nestjs-zod'
-import z from 'zod'
-
-export const listTeamMembersParamsSchema = z.object({
-	slug: z.string(),
-})
-
-export class ListTeamMembersParamsDto extends createZodDto(listTeamMembersParamsSchema) {}
-
-export interface ListTeamMembersServiceInput {
+export interface ListTeamMembersServiceDto {
 	userId: string
-	teamSlug: string
+	teamId: string
 }

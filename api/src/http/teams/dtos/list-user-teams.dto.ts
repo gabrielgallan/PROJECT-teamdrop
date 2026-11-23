@@ -1,10 +1,10 @@
-import { createZodDto } from "nestjs-zod";
-import z from "zod";
+import { createZodDto } from 'nestjs-zod'
+import z from 'zod'
 
 export const listUserTeamsSchema = z.object({
-    userId: z.string().nonempty()
+	userId: z.string().nonempty(),
 })
 
 export class ListUserTeamsDto extends createZodDto(listUserTeamsSchema) {}
 
-export type ListUserTeamsServiceInput = z.infer<typeof listUserTeamsSchema>
+export type ListUserTeamsServiceDto = z.infer<typeof listUserTeamsSchema>

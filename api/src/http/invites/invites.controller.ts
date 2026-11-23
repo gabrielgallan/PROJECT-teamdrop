@@ -3,57 +3,55 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
 import { AuthenticatedUser } from '../../auth/services/auth.service.js'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
+import { TeamIdDto, teamIdSchema } from '../teams/teams.controller.js'
 import { AcceptTeamInviteDto, acceptTeamInviteSchema } from './dtos/accept-team-invite.dto.js'
-import {
-	CreateTeamInviteBodyDto,
-	createTeamInviteBodySchema,
-} from './dtos/create-team-invite.dto.js'
-import {
-	RevokeTeamInvitesBodyDto,
-	revokeTeamInvitesBodySchema,
-} from './dtos/revoke-team-invites.dto.js'
+import { CreateTeamInviteDto, createTeamInviteSchema } from './dtos/create-team-invite.dto.js'
 import { InvitesService } from './invites.service.js'
 
 @ApiTags('Invites')
 @ApiBearerAuth()
-@Controller('api/invites')
+@Controller('api')
 export class InvitesController {
 	constructor(private invitesService: InvitesService) {}
 
-	@Post()
+	@Post('teams/:teamId/invites')
 	@HttpCode(201)
 	@Header('Cache-Control', 'no-store')
 	async createTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
-		@Body(new ZodValidationPipe(createTeamInviteBodySchema)) body: CreateTeamInviteBodyDto,
+		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
+		@Body(new ZodValidationPipe(createTeamInviteSchema)) body: CreateTeamInviteDto,
 	) {
-		const { teamSlug, maxUses, expiresIn } = body
+		const { maxUses, expiresIn } = body
+		const { teamId } = param
 
-		return this.invitesService.createTeamInvite({
+		await this.invitesService.createTeamInvite({
 			userId: user.userId,
-			teamSlug,
+			teamId,
 			maxUses,
 			expiresIn,
-		})
-	}
-
-	@Delete()
-	@HttpCode(204)
-	async revokeTeamInvite(
-		@CurrentUser() user: AuthenticatedUser,
-		@Body(new ZodValidationPipe(revokeTeamInvitesBodySchema)) body: RevokeTeamInvitesBodyDto,
-	) {
-		const { teamSlug } = body
-
-		await this.invitesService.revokeTeamInvites({
-			userId: user.userId,
-			teamSlug,
 		})
 
 		return
 	}
 
-	@Get(':token/preview')
+	@Delete('teams/:teamId/invites')
+	@HttpCode(204)
+	async revokeTeamInvite(
+		@CurrentUser() user: AuthenticatedUser,
+		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
+	) {
+		const { teamId } = param
+
+		await this.invitesService.revokeTeamInvites({
+			userId: user.userId,
+			teamId,
+		})
+
+		return
+	}
+
+	@Get('invites/:token/preview')
 	@Header('Cache-Control', 'no-store')
 	async previewTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
@@ -62,7 +60,7 @@ export class InvitesController {
 		return this.invitesService.previewInvite({ userId: user.userId, token: param.token })
 	}
 
-	@Post('accept')
+	@Post('invites/accept')
 	@HttpCode(200)
 	@Header('Cache-Control', 'no-store')
 	async acceptTeamInvite(

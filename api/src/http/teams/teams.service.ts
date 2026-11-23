@@ -6,18 +6,18 @@ import {
 } from '@nestjs/common'
 import { slugify } from '../../common/utils/slugify.js'
 import { PrismaService } from '../../database/prisma/prisma.service.js'
-import { CreateTeamServiceInput } from './dtos/create-team.dto.js'
-import { LeaveTeamServiceInput } from './dtos/leave-team.dto.js'
-import { ListTeamMembersServiceInput } from './dtos/list-teams-members.dto.js'
-import { ListUserTeamsServiceInput } from './dtos/list-user-teams.dto.js'
-import { RemoveMemberServiceInput } from './dtos/remove-member.dto.js'
-import { UpdateTeamServiceInput } from './dtos/update-team.dto.js'
+import { CreateTeamServiceDto } from './dtos/create-team.dto.js'
+import { LeaveTeamServiceDto } from './dtos/leave-team.dto.js'
+import { ListTeamMembersServiceDto } from './dtos/list-teams-members.dto.js'
+import { ListUserTeamsServiceDto } from './dtos/list-user-teams.dto.js'
+import { RemoveMemberServiceDto } from './dtos/remove-member.dto.js'
+import { UpdateTeamServiceDto } from './dtos/update-team.dto.js'
 
 @Injectable()
 export class TeamsService {
 	constructor(private prisma: PrismaService) {}
 
-	async createTeam({ name, userId }: CreateTeamServiceInput) {
+	async createTeam({ name, userId }: CreateTeamServiceDto) {
 		const slug = slugify(name)
 
 		const teamAlreadyExists = await this.prisma.team.findUnique({
@@ -50,7 +50,7 @@ export class TeamsService {
 		}
 	}
 
-	async listUserTeams({ userId }: ListUserTeamsServiceInput) {
+	async listUserTeams({ userId }: ListUserTeamsServiceDto) {
 		const teams = await this.prisma.team.findMany({
 			where: {
 				members: {
@@ -71,10 +71,10 @@ export class TeamsService {
 		}
 	}
 
-	async updateTeam({ userId, teamSlug, newName }: UpdateTeamServiceInput) {
+	async updateTeam({ userId, teamId, newName }: UpdateTeamServiceDto) {
 		const team = await this.prisma.team.findUnique({
 			where: {
-				slug: teamSlug,
+				id: teamId,
 			},
 		})
 
@@ -119,10 +119,10 @@ export class TeamsService {
 		}
 	}
 
-	async listTeamMembers({ userId, teamSlug }: ListTeamMembersServiceInput) {
+	async listTeamMembers({ userId, teamId }: ListTeamMembersServiceDto) {
 		const team = await this.prisma.team.findUnique({
 			where: {
-				slug: teamSlug,
+				id: teamId,
 			},
 		})
 
@@ -159,11 +159,11 @@ export class TeamsService {
 		}
 	}
 
-	async leaveFromTeam({ userId, teamSlug }: LeaveTeamServiceInput) {
+	async leaveFromTeam({ userId, teamId }: LeaveTeamServiceDto) {
 		const membership = await this.prisma.member.findFirst({
 			where: {
 				team: {
-					slug: teamSlug,
+					id: teamId,
 				},
 				userId,
 			},
@@ -200,12 +200,12 @@ export class TeamsService {
 		return
 	}
 
-	async removeMemberFromTeam({ userId, teamSlug, memberId }: RemoveMemberServiceInput) {
-		const membership = await this.prisma.member.findFirst({
+	async removeMemberFromTeam({ userId, teamId, memberId }: RemoveMemberServiceDto) {
+		const membership = await this.prisma.member.findUnique({
 			where: {
-				userId,
-				team: {
-					slug: teamSlug,
+				teamId_userId: {
+					userId,
+					teamId,
 				},
 			},
 			select: {

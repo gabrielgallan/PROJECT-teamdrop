@@ -1,20 +1,14 @@
-import { createZodDto } from "nestjs-zod";
-import z from "zod";
+import { createZodDto } from 'nestjs-zod'
+import z from 'zod'
 
-export const updateTeamBodySchema = z.object({
-    newName: z.string().trim().nonempty()
+export const updateTeamSchema = z.object({
+	newName: z.string().trim().nonempty(),
 })
 
-export const updateTeamParamSchema = z.object({
-    slug: z.string()
-})
+export class UpdateTeamDto extends createZodDto(updateTeamSchema) {}
 
-export class UpdateTeamBodyDto extends createZodDto(updateTeamBodySchema) {}
-
-export class UpdateTeamParamDto extends createZodDto(updateTeamParamSchema) {}
-
-export type UpdateTeamServiceInput = {
-    userId: string
-    teamSlug: string
-    newName: string
+export type UpdateTeamServiceDto = {
+	userId: string
+	teamId: string
+	newName: string
 }
