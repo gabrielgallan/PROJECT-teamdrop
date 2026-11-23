@@ -75,6 +75,8 @@ export class FilesService {
 	async listFiles({
 		userId,
 		teamId,
+		cursor,
+		limit = 10
 	}: ListFilesServiceDto) {
 		const membership = await this.prisma.member.findUnique({
 			where: {
@@ -97,12 +99,37 @@ export class FilesService {
 
 		const files = await this.prisma.file.findMany({
 			where: {
-				teamId
+				teamId,
+				...(cursor && {
+					id: {
+						lt: cursor
+					}
+				})
+			},
+			orderBy: {
+				id: 'desc',
+			},
+			take: (limit + 1),
+			include: {
+				author: {
+					select: {
+						name: true,
+						email: true,
+						avatarUrl: true
+					}
+				}
 			}
 		})
 
+		const hasNextPage = files.length > limit
+
+		if (hasNextPage) {
+			files.pop()
+		}
+
 		return {
 			files,
+			nextCursor: hasNextPage ? files.at(-1)?.id : null
 		}
 	}
 

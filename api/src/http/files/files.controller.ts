@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, Param, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common'
+import { Controller, Delete, Get, HttpCode, Param, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
@@ -12,6 +12,7 @@ import { Response } from 'express';
 import z from 'zod'
 import { createZodDto } from 'nestjs-zod'
 import { DeleteFileDto, deleteFileSchema } from './dtos/delete-file.dto.js'
+import { ListFilesDto, listFilesSchema } from './dtos/list-files.dto.js'
 
 const fileIdSchema = z.object({
 	fileId: z.uuid()
@@ -54,19 +55,22 @@ export class FilesController {
 	@HttpCode(200)
 	async listFiles(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto
+		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
+		@Query(new ZodValidationPipe(listFilesSchema)) query: ListFilesDto
 	) {
 		const { teamId } = param
+		const { limit, cursor } = query
 
-		const { files } = await this.filesService.listFiles({
+		const { files, nextCursor } = await this.filesService.listFiles({
 			userId: user.userId,
 			teamId,
-			cursor: '',
-			limit: 10
+			limit,
+			cursor
 		})
 
 		return {
-			files: files.map(FilesPresenter.toHTTP)
+			files: files.map(FilesPresenter.fileWithAuthorToHTTP),
+			nextCursor
 		}
 	}
 
