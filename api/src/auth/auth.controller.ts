@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Header, HttpCode, Post, Query } from '@nestjs/common'
 import {
 	ApiBearerAuth,
+	ApiExcludeEndpoint,
 	ApiExtraModels,
 	ApiOkResponse,
 	ApiOperation,
@@ -32,6 +33,8 @@ import {
 } from './dtos/start-desktop.dto.js'
 import { AuthenticatedUser, AuthService } from './services/auth.service.js'
 import { UserPresenter } from './presenters/user.presenter.js'
+import { HtmlPage } from '../http/html/page.decorator.js'
+import { htmlPageTemplate } from '../http/html/page.template.js'
 
 @ApiTags('Authentication')
 @Controller('api/auth')
@@ -55,18 +58,11 @@ export class AuthController {
 		return this.authService.startDesktopLogin(codeChallenge)
 	}
 
+	@ApiExcludeEndpoint()
 	@Public()
 	@Get('google/callback')
 	@HttpCode(200)
-	@Header('Content-Type', 'text/html; charset=utf-8')
-	@Header('Cache-Control', 'no-store')
-	@Header('Referrer-Policy', 'no-referrer')
-	@ApiOperation({
-		summary: 'Google redirect URI; completes the ticket without exposing tokens in the browser',
-	})
-	@ApiResponse({ status: 200, description: 'HTML instructing the user to return to Teamdrop' })
-	@ApiResponse({ status: 400, description: 'Malformed callback' })
-	@ApiResponse({ status: 401, description: 'Invalid, expired or already consumed OAuth state' })
+	@HtmlPage()
 	async authenticateWithGoogle(
 		@Query(new ZodValidationPipe(googleCallbackQuerySchema)) query: GoogleCallbackQueryDto,
 	) {
@@ -74,15 +70,46 @@ export class AuthController {
 
 		const success = await this.authService.completeGoogleLogin(state, code, error)
 
-		const message = success
-			? 'Login concluído. Você pode fechar esta aba e voltar ao Teamdrop.'
-			: 'Não foi possível concluir o login. Volte ao Teamdrop e tente novamente.'
+		const title = success ? 'Login concluído' : 'Falha na autenticação'
 
-		return (
-			'<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Teamdrop</title><p>' +
-			message +
-			'</p></html>'
-		)
+		const description = success
+			? 'Sua autenticação foi realizada com sucesso. Você já pode fechar esta aba e voltar ao Teamdrop.'
+			: 'Não foi possível concluir seu login. Volte ao Teamdrop e tente novamente.'
+
+		const icon = success
+			? '<path d="m5 12 4 4L19 6"/>'
+			: '<path d="M18 6 6 18M6 6l12 12"/>'
+
+		return htmlPageTemplate({
+			title: `${title} - Teamdrop`,
+			content: `
+				<div class="icon ${success ? 'icon-success' : 'icon-error'}">
+					<svg
+						width="22"
+						height="22"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						${icon}
+					</svg>
+				</div>
+
+				<h1>${title}</h1>
+
+				<p class="description">${description}</p>
+
+				<div class="divider"></div>
+
+				<p class="help-text">
+					${success ? 'Continue no aplicativo.' : 'Tente novamente pelo aplicativo.'}
+				</p>
+			`,
+		})
 	}
 
 	@Public()

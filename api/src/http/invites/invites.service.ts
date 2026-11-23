@@ -101,23 +101,51 @@ export class InvitesService {
 				},
 			})
 		})
+
+		return
 	}
 
 	async previewInvite({ userId, token }: AcceptTeamInviteServiceDto) {
 		const invite = await this.prisma.invite.findUnique({
-			where: { tokenHash: this.cryptoService.hashToken(token, 'hex') },
-			include: { team: { select: { id: true, name: true, slug: true } } },
+			where: { 
+				tokenHash: this.cryptoService.hashToken(token, 'hex')
+			},
+			include: { 
+				team: { 
+					select: { 
+						id: true, 
+						name: true, 
+						slug: true 
+					} 
+				} 
+			},
 		})
+
 		if (!invite || invite.revokedAt || invite.expiresAt.getTime() <= Date.now()) {
-			throw new GoneException({ message: 'Invalid or expired invitation' })
+			throw new GoneException({ 
+				message: 'Invalid or expired invitation' 
+			})
 		}
+
 		const membership = await this.prisma.member.findUnique({
-			where: { teamId_userId: { teamId: invite.teamId, userId } },
+			where: { 
+				teamId_userId: { 
+					teamId: invite.teamId, 
+					userId 
+				} 
+			},
 		})
+
 		if (!membership && invite.uses >= invite.maxUses) {
-			throw new GoneException({ message: 'Invitation usage limit reached' })
+			throw new GoneException({ 
+				message: 'Invitation usage limit reached' 
+			})
 		}
-		return { team: invite.team, alreadyMember: Boolean(membership) }
+
+		return {
+			team: invite.team, 
+			alreadyMember: Boolean(membership)
+		}
 	}
 
 	async acceptInvite({ userId, token }: AcceptTeamInviteServiceDto) {
@@ -168,7 +196,9 @@ export class InvitesService {
 			})
 
 			const team = await db.team.findUniqueOrThrow({ where: { id: invite.teamId } })
+			
 			const result = { team: { ...team, role: team.ownerId === userId ? 'owner' : 'member' } }
+			
 			if (membership) return result
 
 			if (invite.uses >= invite.maxUses) {
@@ -194,6 +224,7 @@ export class InvitesService {
 					},
 				},
 			})
+
 			return result
 		})
 	}

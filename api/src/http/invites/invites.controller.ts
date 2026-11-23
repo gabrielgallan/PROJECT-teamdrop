@@ -7,6 +7,7 @@ import { TeamIdDto, teamIdSchema } from '../teams/teams.controller.js'
 import { AcceptTeamInviteDto, acceptTeamInviteSchema } from './dtos/accept-team-invite.dto.js'
 import { CreateTeamInviteDto, createTeamInviteSchema } from './dtos/create-team-invite.dto.js'
 import { InvitesService } from './invites.service.js'
+import { TeamsPresenter } from '../teams/presenters/teams.presenter.js'
 
 @ApiTags('Invites')
 @ApiBearerAuth()
@@ -25,14 +26,16 @@ export class InvitesController {
 		const { maxUses, expiresIn } = body
 		const { teamId } = param
 
-		await this.invitesService.createTeamInvite({
+		const { url } = await this.invitesService.createTeamInvite({
 			userId: user.userId,
 			teamId,
 			maxUses,
 			expiresIn,
 		})
 
-		return
+		return {
+			url,
+		}
 	}
 
 	@Delete('teams/:teamId/invites')
@@ -57,7 +60,15 @@ export class InvitesController {
 		@CurrentUser() user: AuthenticatedUser,
 		@Param(new ZodValidationPipe(acceptTeamInviteSchema)) param: AcceptTeamInviteDto,
 	) {
-		return this.invitesService.previewInvite({ userId: user.userId, token: param.token })
+		const { team, alreadyMember } = await this.invitesService.previewInvite({ 
+			userId: user.userId, 
+			token: param.token 
+		})
+		
+		return {
+			team,
+			alreadyMember
+		}
 	}
 
 	@Post('invites/accept')
@@ -69,9 +80,13 @@ export class InvitesController {
 	) {
 		const { token } = body
 
-		return this.invitesService.acceptInvite({
+		const { team } = await this.invitesService.acceptInvite({
 			userId: user.userId,
 			token,
 		})
+
+		return {
+			team: TeamsPresenter.teamWithRoleToHTTP(team)
+		}
 	}
 }
