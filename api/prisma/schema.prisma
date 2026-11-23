@@ -118,7 +118,6 @@ model File {
   mimeType   String   @map("mime_type")
   size       BigInt
   createdAt  DateTime @default(now()) @map("created_at")
-  expiresAt  DateTime @map("expires_at")
 
   team   Team   @relation(fields: [teamId], references: [id])
   teamId String @map("team_id") @db.Uuid
@@ -127,6 +126,5 @@ model File {
   authorId String @map("author_id") @db.Uuid
 
   @@index([teamId, createdAt])
-  @@index([expiresAt])
   @@map("files")
 }
