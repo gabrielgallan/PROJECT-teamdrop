@@ -1,13 +1,13 @@
 import { Body, Controller, Delete, Get, Header, HttpCode, Param, Post } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
-import { AuthenticatedUser } from '../../auth/services/auth.service.js'
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js'
+import { AuthenticatedUser } from '../auth/services/auth.service.js'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
+import { TeamsPresenter } from '../teams/presenters/teams.presenter.js'
 import { TeamIdDto, teamIdSchema } from '../teams/teams.controller.js'
 import { AcceptTeamInviteDto, acceptTeamInviteSchema } from './dtos/accept-team-invite.dto.js'
 import { CreateTeamInviteDto, createTeamInviteSchema } from './dtos/create-team-invite.dto.js'
 import { InvitesService } from './invites.service.js'
-import { TeamsPresenter } from '../teams/presenters/teams.presenter.js'
 
 @ApiTags('Invites')
 @ApiBearerAuth()
@@ -60,14 +60,14 @@ export class InvitesController {
 		@CurrentUser() user: AuthenticatedUser,
 		@Param(new ZodValidationPipe(acceptTeamInviteSchema)) param: AcceptTeamInviteDto,
 	) {
-		const { team, alreadyMember } = await this.invitesService.previewInvite({ 
-			userId: user.userId, 
-			token: param.token 
+		const { team, alreadyMember } = await this.invitesService.previewInvite({
+			userId: user.userId,
+			token: param.token,
 		})
-		
+
 		return {
 			team,
-			alreadyMember
+			alreadyMember,
 		}
 	}
 
@@ -86,7 +86,7 @@ export class InvitesController {
 		})
 
 		return {
-			team: TeamsPresenter.teamWithRoleToHTTP(team)
+			team: TeamsPresenter.teamWithRoleToHTTP(team),
 		}
 	}
 }

@@ -2,14 +2,14 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@ne
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
-import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
-import { AuthenticatedUser } from '../../auth/services/auth.service.js'
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js'
+import { AuthenticatedUser } from '../auth/services/auth.service.js'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
 import { CreateTeamDto, createTeamSchema } from './dtos/create-team.dto.js'
 import { RemoveMemberDto, removeMemberSchema } from './dtos/remove-member.dto.js'
 import { UpdateTeamDto, updateTeamSchema } from './dtos/update-team.dto.js'
-import { TeamsService } from './teams.service.js'
 import { TeamsPresenter } from './presenters/teams.presenter.js'
+import { TeamsService } from './teams.service.js'
 
 export const teamIdSchema = z.object({
 	teamId: z.string(),
@@ -31,7 +31,7 @@ export class TeamsController {
 		})
 
 		return {
-			teams: teams.map(TeamsPresenter.teamWithRoleToHTTP)
+			teams: teams.map(TeamsPresenter.teamWithRoleToHTTP),
 		}
 	}
 
@@ -49,7 +49,7 @@ export class TeamsController {
 		})
 
 		return {
-			team: TeamsPresenter.toHTTP(team)
+			team: TeamsPresenter.toHTTP(team),
 		}
 	}
 
@@ -70,7 +70,7 @@ export class TeamsController {
 		})
 
 		return {
-			team: TeamsPresenter.toHTTP(team)
+			team: TeamsPresenter.toHTTP(team),
 		}
 	}
 
@@ -88,7 +88,7 @@ export class TeamsController {
 		})
 
 		return {
-			users
+			users,
 		}
 	}
 
@@ -105,7 +105,7 @@ export class TeamsController {
 			teamId,
 		})
 
-		return 
+		return
 	}
 
 	@Delete(':teamId/members/:memberId')

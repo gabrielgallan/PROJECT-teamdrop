@@ -1,15 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { PrismaService } from '../../database/prisma/prisma.service.js'
+import { CryptographyService } from '../../../cryptography/cryptography.service.js'
+import { PrismaService } from '../../../database/prisma/prisma.service.js'
 import { AccessTokenService } from './access-token.service.js'
 import { TokenPair } from './auth.service.js'
-import { CryptographyService } from '../../cryptography/cryptography.service.js'
 
 @Injectable()
 export class SessionService {
 	constructor(
 		private prisma: PrismaService,
 		private accessTokens: AccessTokenService,
-		private cryptoService: CryptographyService
+		private cryptoService: CryptographyService,
 	) {}
 
 	async create(userId: string): Promise<TokenPair> {

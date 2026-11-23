@@ -1,20 +1,23 @@
-import { BadGatewayException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common'
+import {
+	BadGatewayException,
+	Injectable,
+	NotFoundException,
+	ServiceUnavailableException,
+} from '@nestjs/common'
 import { v7 as uuidv7 } from 'uuid'
 import { PrismaService } from '../../database/prisma/prisma.service.js'
 import { StorageService } from '../../storage/storage.interface.js'
-import { UploadFileServiceDto } from './dtos/upload-file.dto.js'
-import { ListFilesServiceDto } from './dtos/list-files.dto.js'
+import { FilesEmitterService } from '../../websocket/events/files/files-emitter.service.js'
 import { DeleteFileServiceDto } from './dtos/delete-file.dto.js'
-
-interface FileIdServiceDto {
-	fileId: string
-}
+import { ListFilesServiceDto } from './dtos/list-files.dto.js'
+import { UploadFileServiceDto } from './dtos/upload-file.dto.js'
 
 @Injectable()
 export class FilesService {
 	constructor(
 		private prisma: PrismaService,
 		private storageService: StorageService,
+		private filesEmitterService: FilesEmitterService,
 	) {}
 
 	async uploadFile({
@@ -67,17 +70,14 @@ export class FilesService {
 			},
 		})
 
+		this.filesEmitterService.fileUploaded(file.teamId, file.id)
+
 		return {
 			file,
 		}
 	}
 
-	async listFiles({
-		userId,
-		teamId,
-		cursor,
-		limit = 10
-	}: ListFilesServiceDto) {
+	async listFiles({ userId, teamId, cursor, limit = 10 }: ListFilesServiceDto) {
 		const membership = await this.prisma.member.findUnique({
 			where: {
 				teamId_userId: {
@@ -102,23 +102,23 @@ export class FilesService {
 				teamId,
 				...(cursor && {
 					id: {
-						lt: cursor
-					}
-				})
+						lt: cursor,
+					},
+				}),
 			},
 			orderBy: {
 				id: 'desc',
 			},
-			take: (limit + 1),
+			take: limit + 1,
 			include: {
 				author: {
 					select: {
 						name: true,
 						email: true,
-						avatarUrl: true
-					}
-				}
-			}
+						avatarUrl: true,
+					},
+				},
+			},
 		})
 
 		const hasNextPage = files.length > limit
@@ -129,20 +129,20 @@ export class FilesService {
 
 		return {
 			files,
-			nextCursor: hasNextPage ? files.at(-1)?.id : null
+			nextCursor: hasNextPage ? files.at(-1)?.id : null,
 		}
 	}
 
 	async getFileDownloadUrl(fileId: string) {
 		const file = await this.prisma.file.findUnique({
 			where: {
-				id: fileId
-			}
+				id: fileId,
+			},
 		})
 
 		if (!file) {
 			throw new NotFoundException({
-				message: 'File not found'
+				message: 'File not found',
 			})
 		}
 
@@ -156,13 +156,13 @@ export class FilesService {
 	async getFilePreviewUrl(fileId: string) {
 		const file = await this.prisma.file.findUnique({
 			where: {
-				id: fileId
-			}
+				id: fileId,
+			},
 		})
 
 		if (!file) {
 			throw new NotFoundException({
-				message: 'File not found'
+				message: 'File not found',
 			})
 		}
 
@@ -178,19 +178,18 @@ export class FilesService {
 			where: {
 				id: fileId,
 				authorId: userId,
-				teamId
-			}
+				teamId,
+			},
 		})
 
 		if (!file) {
 			throw new NotFoundException({
-				message: 'File not found'
+				message: 'File not found',
 			})
 		}
 
 		try {
 			await this.storageService.delete(file.storageKey)
-
 		} catch {
 			throw new BadGatewayException({
 				message: 'File storage service is unavailable',
@@ -199,9 +198,11 @@ export class FilesService {
 
 		await this.prisma.file.delete({
 			where: {
-				id: fileId
-			}
+				id: fileId,
+			},
 		})
+
+		this.filesEmitterService.fileDeleted(file.teamId, file.id)
 
 		return
 	}

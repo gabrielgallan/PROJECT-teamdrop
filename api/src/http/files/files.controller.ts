@@ -1,21 +1,32 @@
-import { Controller, Delete, Get, HttpCode, Param, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common'
+import {
+	Controller,
+	Delete,
+	Get,
+	HttpCode,
+	Param,
+	Post,
+	Query,
+	Res,
+	UploadedFile,
+	UseInterceptors,
+} from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiTags } from '@nestjs/swagger'
-import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
-import { AuthenticatedUser } from '../../auth/services/auth.service.js'
+import { Response } from 'express'
+import { createZodDto } from 'nestjs-zod'
+import z from 'zod'
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js'
+import { Public } from '../auth/decorators/public.decorator.js'
+import { AuthenticatedUser } from '..//auth/services/auth.service.js'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
 import { TeamIdDto, teamIdSchema } from '../teams/teams.controller.js'
-import { FilesService } from './files.service.js'
-import { FilesPresenter } from './presenters/files.presenter.js'
-import { Public } from '../../auth/decorators/public.decorator.js'
-import { Response } from 'express';
-import z from 'zod'
-import { createZodDto } from 'nestjs-zod'
 import { DeleteFileDto, deleteFileSchema } from './dtos/delete-file.dto.js'
 import { ListFilesDto, listFilesSchema } from './dtos/list-files.dto.js'
+import { FilesService } from './files.service.js'
+import { FilesPresenter } from './presenters/files.presenter.js'
 
 const fileIdSchema = z.object({
-	fileId: z.uuid()
+	fileId: z.uuid(),
 })
 
 class FileIdDto extends createZodDto(fileIdSchema) {}
@@ -47,7 +58,7 @@ export class FilesController {
 		})
 
 		return {
-			file: FilesPresenter.toHTTP(result.file)
+			file: FilesPresenter.toHTTP(result.file),
 		}
 	}
 
@@ -56,7 +67,7 @@ export class FilesController {
 	async listFiles(
 		@CurrentUser() user: AuthenticatedUser,
 		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
-		@Query(new ZodValidationPipe(listFilesSchema)) query: ListFilesDto
+		@Query(new ZodValidationPipe(listFilesSchema)) query: ListFilesDto,
 	) {
 		const { teamId } = param
 		const { limit, cursor } = query
@@ -65,12 +76,12 @@ export class FilesController {
 			userId: user.userId,
 			teamId,
 			limit,
-			cursor
+			cursor,
 		})
 
 		return {
 			files: files.map(FilesPresenter.fileWithAuthorToHTTP),
-			nextCursor
+			nextCursor,
 		}
 	}
 
@@ -79,7 +90,7 @@ export class FilesController {
 	@HttpCode(302)
 	async previewFile(
 		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
-		@Res() response: Response
+		@Res() response: Response,
 	) {
 		const { url } = await this.filesService.getFilePreviewUrl(param.fileId)
 
@@ -91,7 +102,7 @@ export class FilesController {
 	@HttpCode(302)
 	async downloadFile(
 		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
-		@Res() response: Response
+		@Res() response: Response,
 	) {
 		const { url } = await this.filesService.getFileDownloadUrl(param.fileId)
 
@@ -101,9 +112,7 @@ export class FilesController {
 	@Public()
 	@Get('files/:fileId/url')
 	@HttpCode(200)
-	async generateUrl(
-		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
-	) {
+	async generateUrl(@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto) {
 		const { url } = await this.filesService.getFilePreviewUrl(param.fileId)
 
 		return {

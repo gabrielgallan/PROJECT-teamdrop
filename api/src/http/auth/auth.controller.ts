@@ -9,8 +9,10 @@ import {
 	ApiTags,
 	getSchemaPath,
 } from '@nestjs/swagger'
-import { ApiErrorResponseDto } from '../http/dtos/api-error-response.dto.js'
-import { ZodValidationPipe } from '../http/pipes/zod-validation.pipe.js'
+import { ApiErrorResponseDto } from '../dtos/api-error-response.dto.js'
+import { HtmlPage } from '../html/page.decorator.js'
+import { htmlPageTemplate } from '../html/page.template.js'
+import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
 import { CurrentUser } from './decorators/current-user.decorator.js'
 import { Public } from './decorators/public.decorator.js'
 import {
@@ -31,10 +33,8 @@ import {
 	StartDesktopLoginResponseDto,
 	startDesktopLoginSchema,
 } from './dtos/start-desktop.dto.js'
-import { AuthenticatedUser, AuthService } from './services/auth.service.js'
 import { UserPresenter } from './presenters/user.presenter.js'
-import { HtmlPage } from '../http/html/page.decorator.js'
-import { htmlPageTemplate } from '../http/html/page.template.js'
+import { AuthenticatedUser, AuthService } from './services/auth.service.js'
 
 @ApiTags('Authentication')
 @Controller('api/auth')
@@ -76,9 +76,7 @@ export class AuthController {
 			? 'Sua autenticação foi realizada com sucesso. Você já pode fechar esta aba e voltar ao Teamdrop.'
 			: 'Não foi possível concluir seu login. Volte ao Teamdrop e tente novamente.'
 
-		const icon = success
-			? '<path d="m5 12 4 4L19 6"/>'
-			: '<path d="M18 6 6 18M6 6l12 12"/>'
+		const icon = success ? '<path d="m5 12 4 4L19 6"/>' : '<path d="M18 6 6 18M6 6l12 12"/>'
 
 		return htmlPageTemplate({
 			title: `${title} - Teamdrop`,
@@ -198,8 +196,8 @@ export class AuthController {
 	async getProfile(@CurrentUser() user: AuthenticatedUser) {
 		const result = await this.authService.getProfile(user.userId)
 
-		return { 
-			user: UserPresenter.toHTTP(result.user)
+		return {
+			user: UserPresenter.toHTTP(result.user),
 		}
 	}
 }

@@ -1,13 +1,12 @@
-import { Controller, Get, Header, Param } from '@nestjs/common'
-import { ApiExcludeController, ApiExcludeEndpoint } from '@nestjs/swagger'
-import { Public } from '../../auth/decorators/public.decorator.js'
-import { htmlPageTemplate } from '../html/page.template.js'
+import { Controller, Get, Param } from '@nestjs/common'
+import { ApiExcludeController } from '@nestjs/swagger'
+import { Public } from '../auth/decorators/public.decorator.js'
 import { HtmlPage } from '../html/page.decorator.js'
+import { htmlPageTemplate } from '../html/page.template.js'
 
 @ApiExcludeController()
 @Controller('invites')
 export class InvitePageController {
-	
 	@Public()
 	@Get(':token')
 	@HtmlPage()

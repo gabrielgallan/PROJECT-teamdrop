@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { CacheRepository } from '../../cache/cache.interface.js';
-import { CryptographyService } from '../../cryptography/cryptography.service.js';
+import { CacheRepository } from '../../../cache/cache.interface.js'
+import { CryptographyService } from '../../../cryptography/cryptography.service.js'
 
 export const LOGIN_TTL_SECONDS = 300
 
@@ -8,7 +8,10 @@ type Ticket = { challenge: string; status: 'pending' | 'complete' | 'denied'; us
 
 @Injectable()
 export class DesktopTicketService {
-	constructor(private cache: CacheRepository, private cryptoService: CryptographyService) {}
+	constructor(
+		private cache: CacheRepository,
+		private cryptoService: CryptographyService,
+	) {}
 
 	async create(challenge: string) {
 		const ticket = this.cryptoService.generateToken()

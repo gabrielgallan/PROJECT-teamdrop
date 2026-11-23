@@ -1,8 +1,8 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import type { Request } from 'express'
-import { CacheRepository } from '../../cache/cache.interface.js'
-import { CryptographyService } from '../../cryptography/cryptography.service.js'
-import { PrismaService } from '../../database/prisma/prisma.service.js'
+import { CacheRepository } from '../../../cache/cache.interface.js'
+import { CryptographyService } from '../../../cryptography/cryptography.service.js'
+import { PrismaService } from '../../../database/prisma/prisma.service.js'
 import { GoogleOAuthService } from '../oauth/google-oauth.service.js'
 import { DesktopTicketService, LOGIN_TTL_SECONDS } from './desktop-ticket.service.js'
 import { SessionService } from './session.service.js'
@@ -156,10 +156,10 @@ export class AuthService {
 
 	async getProfile(userId: string) {
 		const user = await this.prisma.user.findUnique({ where: { id: userId } })
-		
+
 		if (!user) {
 			throw new UnauthorizedException({
-				message: 'User no longer exists'
+				message: 'User no longer exists',
 			})
 		}
 
