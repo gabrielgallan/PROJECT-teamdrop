@@ -98,31 +98,31 @@ export function useTeamSettings(user: SessionUser) {
 			}),
 		loadMembers: (id: string) =>
 			run(async () => {
-				patch(id, { members: await api.listMembers(find(id).slug) })
+				patch(id, { members: await api.listMembers(find(id).id) })
 				return true
 			}),
 		leaveTeam: (id: string) =>
 			run(async () => {
-				await api.leaveTeam(find(id).slug)
+				await api.leaveTeam(find(id).id)
 				if (active.current) setTeams((items) => items.filter((team) => team.id !== id))
 				return true
 			}),
 		renameTeam: (id: string, name: string) =>
 			run(async () => {
-				const team = await api.renameTeam(find(id).slug, name.trim())
+				const team = await api.renameTeam(find(id).id, name.trim())
 				patch(id, { name: team.name, slug: team.slug })
 				return true
 			}),
 		removeMember: (id: string, memberId: string) =>
 			run(async () => {
-				await api.removeMember(find(id).slug, memberId)
+				await api.removeMember(find(id).id, memberId)
 				patch(id, { members: find(id).members.filter((member) => member.id !== memberId) })
 				return true
 			}),
-		createInvite: (id: string) => run(() => api.createInvite(find(id).slug)),
+		createInvite: (id: string) => run(() => api.createInvite(find(id).id)),
 		revokeInvite: (id: string) =>
 			run(async () => {
-				await api.revokeInvite(find(id).slug)
+				await api.revokeInvite(find(id).id)
 				return true
 			}),
 	}

@@ -33,24 +33,24 @@ export async function createTeam(name: string) {
 		})
 	).team
 }
-export async function renameTeam(slug: string, newName: string) {
+export async function renameTeam(teamId: string, newName: string) {
 	return (
-		await apiRequest<{ team: ApiTeam }>(`/api/teams/${encodeURIComponent(slug)}`, {
+		await apiRequest<{ team: ApiTeam }>(`/api/teams/${encodeURIComponent(teamId)}`, {
 			method: 'PATCH',
 			body: JSON.stringify({ newName }),
 		})
 	).team
 }
-export function leaveTeam(slug: string) {
-	return apiRequest<void>(`/api/teams/${encodeURIComponent(slug)}/members/me`, { method: 'DELETE' })
+export function leaveTeam(teamId: string) {
+	return apiRequest<void>(`/api/teams/${encodeURIComponent(teamId)}/members/me`, { method: 'DELETE' })
 }
-export function removeMember(slug: string, memberId: string) {
+export function removeMember(teamId: string, memberId: string) {
 	return apiRequest<void>(
-		`/api/teams/${encodeURIComponent(slug)}/members/${encodeURIComponent(memberId)}`,
+		`/api/teams/${encodeURIComponent(teamId)}/members/${encodeURIComponent(memberId)}`,
 		{ method: 'DELETE' },
 	)
 }
-export async function listMembers(slug: string): Promise<TeamSettingsMember[]> {
+export async function listMembers(teamId: string): Promise<TeamSettingsMember[]> {
 	const { users } = await apiRequest<{
 		users: {
 			id: string
@@ -59,7 +59,7 @@ export async function listMembers(slug: string): Promise<TeamSettingsMember[]> {
 			avatarUrl: string | null
 			role: 'owner' | 'member'
 		}[]
-	}>(`/api/teams/${encodeURIComponent(slug)}/members`)
+	}>(`/api/teams/${encodeURIComponent(teamId)}/members`)
 	return users.map((user) => {
 		const name = user.name?.trim() || user.email
 		return {
@@ -77,16 +77,16 @@ export async function listMembers(slug: string): Promise<TeamSettingsMember[]> {
 		}
 	})
 }
-export async function createInvite(teamSlug: string) {
+export async function createInvite(teamId: string) {
 	return (
-		await apiRequest<{ url: string }>('/api/invites', {
+		await apiRequest<{ url: string }>(`/api/teams/${encodeURIComponent(teamId)}/invites`, {
 			method: 'POST',
-			body: JSON.stringify({ teamSlug }),
+			body: JSON.stringify({}),
 		})
 	).url
 }
-export function revokeInvite(teamSlug: string) {
-	return apiRequest<void>('/api/invites', { method: 'DELETE', body: JSON.stringify({ teamSlug }) })
+export function revokeInvite(teamId: string) {
+	return apiRequest<void>(`/api/teams/${encodeURIComponent(teamId)}/invites`, { method: 'DELETE' })
 }
 export function previewInvite(token: string, signal?: AbortSignal) {
 	return apiRequest<InvitePreview>(`/api/invites/${encodeURIComponent(token)}/preview`, { signal })

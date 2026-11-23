@@ -56,7 +56,7 @@ beforeEach(() => {
 afterEach(cleanup)
 
 describe('teams integration state', () => {
-	it('uses the new slug for subsequent actions after renaming', async () => {
+	it('keeps using the team ID for subsequent actions after renaming', async () => {
 		vi.mocked(api.renameTeam).mockResolvedValue({ ...team, slug: 'renamed', name: 'Renamed' })
 		vi.mocked(api.createInvite).mockResolvedValue(link)
 		const { result } = renderHook(() => useTeamSettings(user))
@@ -67,8 +67,25 @@ describe('teams integration state', () => {
 		await act(async () => {
 			await result.current.createInvite(team.id)
 		})
-		expect(api.createInvite).toHaveBeenCalledWith('renamed')
+		expect(api.renameTeam).toHaveBeenCalledWith(team.id, 'Renamed')
+		expect(api.createInvite).toHaveBeenCalledWith(team.id)
 	})
+	it.each(['loadMembers', 'leaveTeam', 'removeMember', 'revokeInvite'] as const)(
+		'uses the team ID for %s',
+		async (action) => {
+			const { result } = renderHook(() => useTeamSettings(user))
+			await waitFor(() => expect(result.current.loading).toBe(false))
+			await act(async () => {
+				if (action === 'removeMember') await result.current.removeMember(team.id, 'member')
+				else await result.current[action](team.id)
+			})
+			const service = action === 'loadMembers' ? api.listMembers : api[action]
+			expect(service).toHaveBeenCalledWith(
+				team.id,
+				...(action === 'removeMember' ? ['member'] : []),
+			)
+		},
+	)
 	it('blocks duplicate submissions while a mutation is pending', async () => {
 		const pending = deferred<typeof team>()
 		vi.mocked(api.createTeam).mockReturnValue(pending.promise)
