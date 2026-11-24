@@ -8,39 +8,32 @@ import { TeamSwitcher } from '../components/team-switcher'
 import { useDrops } from '../hooks/use-drops'
 import { useSelectedTeam } from '../hooks/use-selected-team'
 import type { TeamActions } from '../hooks/use-team-settings'
-import type { SessionUser } from '../types/auth'
 import type { TeamFile } from '../types/file'
 import { FileQrScreen } from './file-qr-screen'
 import { SettingsScreen } from './settings-screen'
+import { useAuth } from '../auth/use-auth'
 
-export function DropsScreen({
-	user,
-	onLogout,
-	authBusy,
-	authError,
-	authNeedsLogin,
-	onAuthRetry,
-	teamSettings,
-	settingsOpen,
-	onSettingsChange: setSettingsOpen,
-}: {
-	user: SessionUser
-	onLogout: () => void
-	authBusy: boolean
-	authError: string
-	authNeedsLogin: boolean
-	onAuthRetry: () => void
+interface DropsScreenProps {
 	teamSettings: TeamActions
 	settingsOpen: boolean
 	onSettingsChange: (value: boolean) => void
-}) {
+}
+
+export function DropsScreen({
+	teamSettings,
+	settingsOpen,
+	onSettingsChange: setSettingsOpen,
+}: DropsScreenProps) {
+	const { session, busy: authBusy, error: authError } =
+		useAuth()
+
 	const settingsButton = useRef<HTMLButtonElement>(null)
 	const [qrFile, setQrFile] = useState<TeamFile | null>(null)
 	const qrTrigger = useRef<HTMLButtonElement | null>(null)
 	const filesList = useRef<HTMLElement>(null)
 	const savedScroll = useRef(0)
 	const { team, selectTeam } = useSelectedTeam(
-		user.id,
+		session.user.id,
 		teamSettings.teams,
 		!teamSettings.loading && !teamSettings.error,
 	)
@@ -74,7 +67,7 @@ export function DropsScreen({
 		return (
 			<SettingsScreen
 				actions={teamSettings}
-				user={user}
+				user={session.user}
 				onBack={() => {
 					setSettingsOpen(false)
 					requestAnimationFrame(() => settingsButton.current?.focus())
