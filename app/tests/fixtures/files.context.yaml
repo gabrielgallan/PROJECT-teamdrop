@@ -23,6 +23,13 @@ assumptions:
     verification: The hook test keeps unconfirmed files in the queue, removes confirmed successes and reloads the first page. No automatic retry is attempted for a lost response. A real lost-response scenario with Azure was not exercised.
     source: api/src/http/files/files.service.ts; app/src/hooks/use-team-files.ts; app/tests/files-state.test.tsx
     updated_at: '2026-11-23'
+  - id: qr-uses-public-url
+    status: supported
+    claim: The QR screen reuses the public URL request and preserves the listing when returning.
+    reason: The QR action needs no new endpoint or backend behavior.
+    verification: The browser flow ran against this HTTP simulation at 340x520, displayed the real QR SVG and returned to scrollTop 556 with focus restored. Five component tests cover expiry, latency, retry and cancellation. Real Azure links and mobile-camera scanning were not exercised.
+    source: app/src/screens/file-qr-screen.tsx; app/src/screens/drops-screen.tsx; app/tests/file-qr.test.tsx
+    updated_at: '2026-11-23'
 fingerprints:
   - id: files-integration
     date: '2026-11-23'

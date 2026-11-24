@@ -131,3 +131,7 @@ pnpm test:auth
 ```
 
 Without that variable, the three HTTP simulation tests are skipped; the unit/component tests still run. The mock is derived from the local API source and is never used by production code. Native download and session tests run with `cargo test` from `app/src-tauri/`; the real-vault test remains opt-in.
+
+### File QR codes
+
+Each file has a QR action beside its copy-link button. It calls the same public URL endpoint, renders the installed `@lglab/react-qr-code` SVG locally and keeps the signed URL only in screen memory. The five-minute countdown starts before the request; expired codes are removed and regenerated only on demand. Back/Escape restores the list, its scroll position and the triggering button focus without another listing request. Tests cover rendering, latency, expiry, retry, cancellation and returning to the list. Mobile-camera scanning with real Azure links remains a manual validation step.

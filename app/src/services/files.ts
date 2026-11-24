@@ -17,9 +17,11 @@ export async function uploadFile(teamId: string, file: File, signal?: AbortSigna
 	})).file
 }
 
-export async function generateFileUrl(fileId: string) {
+export async function generateFileUrl(fileId: string, signal?: AbortSignal) {
 	const response = await fetch(`${apiUrl}/api/files/${encodeURIComponent(fileId)}/url`, {
-		cache: 'no-store', signal: AbortSignal.timeout(15_000),
+		cache: 'no-store', signal: signal
+			? AbortSignal.any([signal, AbortSignal.timeout(15_000)])
+			: AbortSignal.timeout(15_000),
 	})
 	return (await responseData<{ url: string }>(response)).url
 }
