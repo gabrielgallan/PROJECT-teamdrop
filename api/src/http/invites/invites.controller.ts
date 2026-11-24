@@ -1,30 +1,59 @@
 import { Body, Controller, Delete, Get, Header, HttpCode, Param, Post } from '@nestjs/common'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js'
 import { AuthenticatedUser } from '../auth/services/auth.service.js'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
 import { TeamsPresenter } from '../teams/presenters/teams.presenter.js'
 import { TeamIdDto, teamIdSchema } from '../teams/teams.controller.js'
-import { AcceptTeamInviteDto, acceptTeamInviteSchema } from './dtos/accept-team-invite.dto.js'
-import { CreateTeamInviteDto, createTeamInviteSchema } from './dtos/create-team-invite.dto.js'
+import { AcceptTeamInviteDto, AcceptTeamInviteResponseDto, acceptTeamInviteSchema } from './dtos/accept-team-invite.dto.js'
+import { CreateInviteResponseDto, CreateTeamInviteDto, createTeamInviteSchema } from './dtos/create-team-invite.dto.js'
 import { InvitesService } from './invites.service.js'
+import { ApiErrorResponseDto } from '../dtos/api-error-response.dto.js'
+import { GetInviteDetailsDto, GetInviteDetailsResponseDto, getInviteDetailsSchema } from './dtos/get-invite-details.dto.js'
 
 @ApiTags('Invites')
 @ApiBearerAuth()
-@Controller('api')
+@Controller('api/invites')
 export class InvitesController {
 	constructor(private invitesService: InvitesService) {}
 
-	@Post('teams/:teamId/invites')
+	// Create invite
+	@ApiOperation({
+		summary: 'Create team invite',
+	})
+	@ApiResponse({
+		status: 201,
+		description: 'Team invite successfully created.',
+		type: CreateInviteResponseDto,
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: 'Authentication required or invalid access token.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 403,
+		description: 'User not allowed to manage this resource',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'Resource not found or inaccessible to the authenticated user.',
+		type: ApiErrorResponseDto,
+	})
+	@Post()
 	@HttpCode(201)
 	@Header('Cache-Control', 'no-store')
 	async createTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
 		@Body(new ZodValidationPipe(createTeamInviteSchema)) body: CreateTeamInviteDto,
 	) {
-		const { maxUses, expiresIn } = body
-		const { teamId } = param
+		const { teamId, maxUses, expiresIn } = body
 
 		const { url } = await this.invitesService.createTeamInvite({
 			userId: user.userId,
@@ -38,13 +67,41 @@ export class InvitesController {
 		}
 	}
 
-	@Delete('teams/:teamId/invites')
+	// Revoke invites
+	@ApiOperation({
+		summary: 'Revoke team invites',
+	})
+	@ApiResponse({
+		status: 204,
+		description: 'Team invites successfully revoked.',
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: 'Authentication required or invalid access token.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 403,
+		description: 'User not allowed to manage this resource',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'Resource not found or inaccessible to the authenticated user.',
+		type: ApiErrorResponseDto,
+	})
+	@Delete()
 	@HttpCode(204)
 	async revokeTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
+		@Body(new ZodValidationPipe(teamIdSchema)) body: TeamIdDto,
 	) {
-		const { teamId } = param
+		const { teamId } = body
 
 		await this.invitesService.revokeTeamInvites({
 			userId: user.userId,
@@ -54,13 +111,38 @@ export class InvitesController {
 		return
 	}
 
-	@Get('invites/:token/preview')
+	// Get user invite status
+	@ApiOperation({
+		summary: 'Get invite details',
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'Invite details and user membership status retrieved successfully.',
+		type: GetInviteDetailsResponseDto
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: 'Authentication required or invalid access token.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 410,
+		description: 'Invalid or expired invitation.',
+		type: ApiErrorResponseDto,
+	})
+	@Get(':token')
+	@HttpCode(200)
 	@Header('Cache-Control', 'no-store')
-	async previewTeamInvite(
+	async getInviteDetails(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(acceptTeamInviteSchema)) param: AcceptTeamInviteDto,
+		@Param(new ZodValidationPipe(getInviteDetailsSchema)) param: GetInviteDetailsDto,
 	) {
-		const { team, alreadyMember } = await this.invitesService.previewInvite({
+		const { team, alreadyMember } = await this.invitesService.getInviteDetails({
 			userId: user.userId,
 			token: param.token,
 		})
@@ -71,18 +153,40 @@ export class InvitesController {
 		}
 	}
 
-	@Post('invites/accept')
-	@HttpCode(200)
+	// Accept invite
+	@ApiOperation({
+		summary: 'Accept invite',
+	})
+	@ApiResponse({
+		status: 201,
+		description: 'Team invite successfully accepted.',
+		type: AcceptTeamInviteResponseDto
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: 'Authentication required or invalid access token.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 410,
+		description: 'Invalid or expired invitation.',
+		type: ApiErrorResponseDto,
+	})
+	@Post(':token/accept')
+	@HttpCode(201)
 	@Header('Cache-Control', 'no-store')
 	async acceptTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
-		@Body(new ZodValidationPipe(acceptTeamInviteSchema)) body: AcceptTeamInviteDto,
+		@Param(new ZodValidationPipe(acceptTeamInviteSchema)) param: AcceptTeamInviteDto,
 	) {
-		const { token } = body
-
 		const { team } = await this.invitesService.acceptInvite({
 			userId: user.userId,
-			token,
+			token: param.token,
 		})
 
 		return {

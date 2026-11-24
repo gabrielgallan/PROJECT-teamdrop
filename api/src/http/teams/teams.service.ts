@@ -75,18 +75,13 @@ export class TeamsService {
 		const team = await this.prisma.team.findUnique({
 			where: {
 				id: teamId,
+				ownerId: userId
 			},
 		})
 
 		if (!team) {
 			throw new NotFoundException({
-				message: 'Team not found',
-			})
-		}
-
-		if (team.ownerId !== userId) {
-			throw new ForbiddenException({
-				message: 'User not allowed to modify team',
+				message: 'Resource not found',
 			})
 		}
 
@@ -120,21 +115,25 @@ export class TeamsService {
 	}
 
 	async listTeamMembers({ userId, teamId }: ListTeamMembersServiceDto) {
-		const team = await this.prisma.team.findUnique({
+		const membership = await this.prisma.member.findUnique({
 			where: {
-				id: teamId,
+				teamId_userId: {
+					userId,
+					teamId
+				}
 			},
+			include: {
+				team: {
+					select: {
+						ownerId: true
+					}
+				}
+			}
 		})
 
-		if (!team) {
+		if (!membership) {
 			throw new NotFoundException({
-				message: 'Team not found',
-			})
-		}
-
-		if (team.ownerId !== userId) {
-			throw new ForbiddenException({
-				message: 'User not allowed to list team members',
+				message: 'User team membership not found',
 			})
 		}
 
@@ -142,7 +141,7 @@ export class TeamsService {
 			where: {
 				members_on: {
 					some: {
-						teamId: team.id,
+						teamId: membership.teamId,
 					},
 				},
 			},
@@ -153,19 +152,19 @@ export class TeamsService {
 			users: members.map((member) => {
 				return {
 					...member,
-					role: member.id === team.ownerId ? 'owner' : 'member',
+					role: member.id === membership.team.ownerId ? 'owner' : 'member',
 				}
 			}),
 		}
 	}
 
 	async leaveFromTeam({ userId, teamId }: LeaveTeamServiceDto) {
-		const membership = await this.prisma.member.findFirst({
+		const membership = await this.prisma.member.findUnique({
 			where: {
-				team: {
-					id: teamId,
-				},
-				userId,
+				teamId_userId: {
+					teamId,
+					userId
+				}
 			},
 			include: {
 				team: {
@@ -183,7 +182,7 @@ export class TeamsService {
 		}
 
 		if (membership.team.ownerId === userId) {
-			throw new ForbiddenException({
+			throw new ConflictException({
 				message: 'Team owners cannot leave the team',
 			})
 		}
@@ -201,37 +200,24 @@ export class TeamsService {
 	}
 
 	async removeMemberFromTeam({ userId, teamId, memberId }: RemoveMemberServiceDto) {
-		const membership = await this.prisma.member.findUnique({
+		const team = await this.prisma.team.findUnique({
 			where: {
-				teamId_userId: {
-					userId,
-					teamId,
-				},
+				id: teamId,
+				ownerId: userId,
 			},
 			select: {
-				teamId: true,
-				team: {
-					select: {
-						ownerId: true,
-					},
-				},
+				id: true,
 			},
 		})
 
-		if (!membership) {
+		if (!team) {
 			throw new NotFoundException({
-				message: 'User team membership not found',
-			})
-		}
-
-		if (membership.team.ownerId !== userId) {
-			throw new ForbiddenException({
-				message: 'User not allowed to manage this team',
+				message: 'Resource not found',
 			})
 		}
 
 		if (memberId === userId) {
-			throw new ForbiddenException({
+			throw new ConflictException({
 				message: 'Team owners cannot remove themselves',
 			})
 		}
@@ -239,7 +225,7 @@ export class TeamsService {
 		const userMembershipToRemove = await this.prisma.member.findUnique({
 			where: {
 				teamId_userId: {
-					teamId: membership.teamId,
+					teamId: team.id,
 					userId: memberId,
 				},
 			},
@@ -254,12 +240,10 @@ export class TeamsService {
 		await this.prisma.member.delete({
 			where: {
 				teamId_userId: {
-					teamId: membership.teamId,
+					teamId: team.id,
 					userId: memberId,
 				},
 			},
 		})
-
-		return
 	}
 }

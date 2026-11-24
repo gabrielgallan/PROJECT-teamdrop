@@ -5,6 +5,7 @@ import { EnvService } from '../../env/env.service.js'
 import { AcceptTeamInviteServiceDto } from './dtos/accept-team-invite.dto.js'
 import { CreateTeamInviteServiceDto } from './dtos/create-team-invite.dto.js'
 import { RevokeTeamInvitesServiceDto } from './dtos/revoke-team-invites.dto.js'
+import { GetInviteDetailsServiceDto } from './dtos/get-invite-details.dto.js'
 
 @Injectable()
 export class InvitesService {
@@ -15,19 +16,29 @@ export class InvitesService {
 	) {}
 
 	async createTeamInvite({ userId, teamId, maxUses, expiresIn }: CreateTeamInviteServiceDto) {
-		const team = await this.prisma.team.findUnique({
+		const membership = await this.prisma.member.findUnique({
 			where: {
-				id: teamId,
+				teamId_userId: {
+					teamId,
+					userId
+				}
 			},
+			include: {
+				team: {
+					select: {
+						ownerId: true
+					}
+				}
+			}
 		})
 
-		if (!team) {
+		if (!membership) {
 			throw new NotFoundException({
-				message: 'Team not found',
+				message: 'User membership not found',
 			})
 		}
 
-		if (team.ownerId !== userId) {
+		if (membership.team.ownerId !== userId) {
 			throw new ForbiddenException({
 				message: 'User not allowed to manage team',
 			})
@@ -40,13 +51,13 @@ export class InvitesService {
 		await this.prisma.$transaction(async (db) => {
 			await db.$queryRaw`
 				SELECT id FROM teams
-				WHERE id = ${team.id}::uuid
+				WHERE id = ${membership.teamId}::uuid
 				FOR UPDATE
 			`
 
 			await db.invite.updateMany({
 				where: {
-					teamId: team.id,
+					teamId: membership.teamId,
 					revokedAt: null,
 				},
 				data: {
@@ -60,7 +71,7 @@ export class InvitesService {
 					maxUses,
 					expiresAt,
 					authorId: userId,
-					teamId: team.id,
+					teamId: membership.teamId,
 				},
 			})
 		})
@@ -71,29 +82,44 @@ export class InvitesService {
 	}
 
 	async revokeTeamInvites({ userId, teamId }: RevokeTeamInvitesServiceDto) {
-		const team = await this.prisma.team.findUnique({
+		const membership = await this.prisma.member.findUnique({
 			where: {
-				id: teamId,
-				ownerId: userId,
+				teamId_userId: {
+					teamId,
+					userId
+				}
 			},
+			include: {
+				team: {
+					select: {
+						ownerId: true
+					}
+				}
+			}
 		})
 
-		if (!team) {
+		if (!membership) {
 			throw new NotFoundException({
-				message: 'Team not found',
+				message: 'User membership not found',
+			})
+		}
+
+		if (membership.team.ownerId !== userId) {
+			throw new ForbiddenException({
+				message: 'User not allowed to manage team',
 			})
 		}
 
 		await this.prisma.$transaction(async (db) => {
 			await db.$queryRaw`
 				SELECT id FROM teams
-				WHERE id = ${team.id}::uuid
+				WHERE id = ${membership.teamId}::uuid
 				FOR UPDATE
 			`
 
 			await db.invite.updateMany({
 				where: {
-					teamId: team.id,
+					teamId: membership.teamId,
 					revokedAt: null,
 				},
 				data: {
@@ -105,7 +131,7 @@ export class InvitesService {
 		return
 	}
 
-	async previewInvite({ userId, token }: AcceptTeamInviteServiceDto) {
+	async getInviteDetails({ userId, token }: GetInviteDetailsServiceDto) {
 		const invite = await this.prisma.invite.findUnique({
 			where: { 
 				tokenHash: this.cryptoService.hashToken(token, 'hex')

@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
 
+// Requests
 export const createTeamSchema = z.object({
 	name: z.string().trim().nonempty(),
 })

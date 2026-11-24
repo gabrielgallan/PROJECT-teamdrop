@@ -14,17 +14,17 @@ export class InvitePageController {
 		const url = `teamdrop://invite?token=${encodeURIComponent(token)}`
 
 		return htmlPageTemplate({
-			title: 'Convite para o Teamdrop',
+			title: 'Convite para o TeamDrop',
 			content: `
 				<h1>Você recebeu um convite</h1>
 
 				<p>
-					Abra o Teamdrop para aceitar o convite
+					Abra o TeamDrop para aceitar o convite
 					e começar a colaborar com sua equipe.
 				</p>
 
 				<a class="button" href="${url}" rel="noreferrer">
-					Abrir no Teamdrop
+					Abrir no TeamDrop
 				</a>
 
 				<p class="muted">
