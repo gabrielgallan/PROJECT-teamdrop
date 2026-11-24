@@ -4,6 +4,7 @@ import { CacheRepository } from '../../../cache/cache.interface.js'
 import { CryptographyService } from '../../../cryptography/cryptography.service.js'
 import { PrismaService } from '../../../database/prisma/prisma.service.js'
 import { GoogleOAuthService } from '../oauth/google-oauth.service.js'
+import { UserPresenter } from '../presenters/user.presenter.js'
 import { DesktopTicketService, LOGIN_TTL_SECONDS } from './desktop-ticket.service.js'
 import { SessionService } from './session.service.js'
 
@@ -142,8 +143,12 @@ export class AuthService {
 	async exchangeDesktopLogin(ticket: string, codeVerifier: string) {
 		const userId = await this.tickets.exchange(ticket, codeVerifier)
 		if (!userId) return { status: 'pending' as const }
-		const user = await this.getProfile(userId)
-		return { status: 'complete' as const, ...(await this.sessions.create(userId)), user }
+		const { user } = await this.getProfile(userId)
+		return {
+			status: 'complete' as const,
+			...(await this.sessions.create(userId)),
+			user: UserPresenter.toHTTP(user),
+		}
 	}
 
 	refresh(refreshToken: string) {
@@ -155,7 +160,10 @@ export class AuthService {
 	}
 
 	async getProfile(userId: string) {
-		const user = await this.prisma.user.findUnique({ where: { id: userId } })
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId },
+			select: userSelect,
+		})
 
 		if (!user) {
 			throw new UnauthorizedException({

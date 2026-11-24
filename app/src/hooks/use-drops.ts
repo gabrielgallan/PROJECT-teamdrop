@@ -1,202 +1,94 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useTeamFiles } from './use-team-files'
-import { currentUser, screenshotSample } from '../mocks/team'
+import { fileError, generateFileUrl } from '../services/files'
 import { copyText, downloadFile, isDesktop, openFiles, quitApp } from '../services/desktop'
-import type { PendingFile, SharedFile } from '../types/team'
+import type { TeamFile } from '../types/file'
+import type { PendingFile, SettingsTeam } from '../types/team'
 
-export function useDrops(active = true) {
-	const {
-		team,
-		files,
-		pending,
-		setPending,
-		sharing,
-		preparing,
-		prepare,
-		progress,
-		markAsSeen,
-		share,
-	} = useTeamFiles()
-	const busy = preparing || sharing
+export function useDrops(team: Pick<SettingsTeam, 'id' | 'name'> | null, active = true) {
+	const listing = useTeamFiles(team?.id ?? null)
+	const { pending, setPending, sharing, prepare } = listing
+	const [choosing, setChoosing] = useState(false)
 	const [error, setError] = useState('')
 	const [notice, setNotice] = useState('')
-	const [preview, setPreview] = useState<SharedFile | null>(null)
-	const [capture, setCapture] = useState<SharedFile | null>(null)
+	const [copyingId, setCopyingId] = useState<string | null>(null)
+	const [downloadingId, setDownloadingId] = useState<string | null>(null)
 	const [now, setNow] = useState(Date.now)
 	const dialogOpen = useRef(false)
-	const activePreview = capture ?? preview
+	const copyLock = useRef(false)
+	const downloadLock = useRef(false)
+	const busy = sharing || choosing
 	const dropzone = useDropzone({
-		noClick: true,
-		noKeyboard: true,
-		disabled: busy || !active,
+		noClick: true, noKeyboard: true, disabled: busy || !active || !team,
 		onDrop: (accepted, rejected) => {
-			if (accepted.length) {
-				prepare(
-					accepted.map(
-						(file): PendingFile => ({
-							id: crypto.randomUUID(),
-							name: file.name,
-							file,
-							kind: file.type.startsWith('image/') ? 'image' : 'document',
-						}),
-					),
-				)
-			}
+			if (accepted.length) prepare(accepted.map((file): PendingFile => ({
+				id: crypto.randomUUID(), name: file.name, file,
+				kind: file.type.startsWith('image/') ? 'image' : 'document',
+			})))
 			setError(rejected.length ? 'Alguns arquivos não puderam ser selecionados.' : '')
 		},
 	})
 	const { open: openBrowserPicker } = dropzone
 	const selectFiles = useCallback(async () => {
-		if (dialogOpen.current || busy) return
-		if (!isDesktop()) {
-			openBrowserPicker()
-			return
-		}
+		if (dialogOpen.current || busy || !team || !active) return
+		if (!isDesktop()) { openBrowserPicker(); return }
 		dialogOpen.current = true
+		setChoosing(true)
 		try {
 			const paths = await openFiles()
-			if (paths?.length) {
-				setPending(
-					paths.map((path) => ({
-						id: crypto.randomUUID(),
-						name: path.split(/[\\/]/).pop() || path,
-						path,
-						kind: 'document',
-					})),
-				)
-				setError('')
-			}
-		} catch {
-			setError('Não foi possível abrir o seletor de arquivos.')
-		} finally {
-			dialogOpen.current = false
-		}
-	}, [openBrowserPicker, setPending, busy])
-
-	const captureScreen = useCallback(() => {
-		if (busy) return
-		const id = crypto.randomUUID()
-		const name = 'captura-de-tela.png'
-		const url = screenshotSample()
-		setPending([{ id, name, kind: 'image', url }])
-		setCapture({
-			id,
-			name,
-			url,
-			kind: 'image',
-			teamId: team.id,
-			member: currentUser,
-			size: 'Demo',
-			createdAt: Date.now(),
-			expiresAt: Date.now() + 3 * 86400000,
-			link: `https://teamdrop.example/f/${id}`,
-		})
-		setError('')
-	}, [busy, setPending, team.id])
-
+			if (paths?.length) setPending(paths.map((path) => ({
+				id: crypto.randomUUID(), name: path.split(/[\\/]/).pop() || path, path, kind: 'document',
+			})))
+		} catch { setError('Não foi possível abrir o seletor de arquivos.') }
+		finally { dialogOpen.current = false; setChoosing(false) }
+	}, [openBrowserPicker, setPending, busy, team?.id, active])
 	const quit = useCallback(async () => {
-		try {
-			await quitApp()
-		} catch {
-			setError('Não foi possível sair do aplicativo.')
-		}
+		try { await quitApp() } catch { setError('Não foi possível sair do aplicativo.') }
 	}, [])
-
-	useEffect(() => {
-		const timer = setInterval(() => setNow(Date.now()), 30000)
-		return () => clearInterval(timer)
-	}, [])
+	useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 30_000); return () => clearInterval(timer) }, [])
 	useEffect(() => {
 		if (!notice) return
-		const timer = setTimeout(() => setNotice(''), 2500)
+		const timer = setTimeout(() => setNotice(''), 3500)
 		return () => clearTimeout(timer)
 	}, [notice])
-	useEffect(() => {
-		if (!sharing && capture && pending.length === 0) {
-			setCapture(null)
-			setNotice('Captura compartilhada com a equipe')
-		}
-	}, [sharing, capture, pending.length])
+	useEffect(() => { setError(''); setNotice('') }, [team?.id])
 	useEffect(() => {
 		if (!active) return
-		function handleShortcut(event: KeyboardEvent) {
-			if (event.key === 'Escape' && !sharing) {
-				setPreview(null)
-				if (capture) {
-					setCapture(null)
-					setPending([])
-				}
-				return
-			}
-			if (!event.ctrlKey || event.altKey || event.metaKey) return
-			const key = event.key.toLowerCase()
-			if (!['o', 'q'].includes(key) && !(event.shiftKey && key === 's')) return
+		function shortcut(event: KeyboardEvent) {
+			if (!event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || !['o', 'q'].includes(event.key.toLowerCase())) return
 			event.preventDefault()
 			if (event.repeat) return
-			if (key === 'q') void quit()
-			else if (!preview && !capture && key === 'o') void selectFiles()
-			else if (!preview && !capture && key === 's') captureScreen()
+			if (event.key.toLowerCase() === 'q') void quit()
+			else void selectFiles()
 		}
-		window.addEventListener('keydown', handleShortcut)
-		return () => window.removeEventListener('keydown', handleShortcut)
-	}, [active, selectFiles, captureScreen, quit, sharing, capture, preview, setPending])
+		window.addEventListener('keydown', shortcut)
+		return () => window.removeEventListener('keydown', shortcut)
+	}, [active, quit, selectFiles])
 
-	async function copyLink(file: SharedFile) {
-		if (file.expiresAt <= Date.now()) {
-			setError('Este arquivo expirou.')
-			return
-		}
+	async function copyLink(file: TeamFile) {
+		if (copyLock.current) return
+		copyLock.current = true
+		setCopyingId(file.id)
 		try {
-			await copyText(file.link)
-			setNotice('Link de demonstração copiado')
-		} catch {
-			setError('Não foi possível copiar o link.')
-		}
+			await copyText(await generateFileUrl(file.id))
+			setNotice('Link copiado · válido por 5 minutos')
+		} catch (error) { setError(fileError(error)) }
+		finally { copyLock.current = false; setCopyingId(null) }
 	}
-	function download(file: SharedFile) {
-		if (file.expiresAt <= Date.now()) {
-			setError('Este arquivo expirou.')
-			return
-		}
-		downloadFile(file)
-		setNotice('Download solicitado')
+	async function download(file: TeamFile) {
+		if (downloadLock.current) return
+		downloadLock.current = true
+		setDownloadingId(file.id)
+		try {
+			if (await downloadFile(file)) setNotice(isDesktop() ? 'Arquivo salvo' : 'Download solicitado')
+		} catch (error) { setError(typeof error === 'string' ? error : fileError(error)) }
+		finally { downloadLock.current = false; setDownloadingId(null) }
 	}
-
-	function closePreview() {
-		setPreview(null)
-		if (capture) {
-			setCapture(null)
-			setPending([])
-		}
-	}
-
-	function openPreview(file: SharedFile) {
-		markAsSeen(file.id)
-		setPreview(file)
-	}
-
 	return {
-		files,
-		pending,
-		sharing,
-		preparing,
-		progress,
-		busy,
-		dropzone,
-		activePreview,
-		capture,
-		error,
-		notice,
-		now,
-		selectFiles,
-		quit,
-		share,
-		copyLink,
-		download,
-		closePreview,
-		openPreview,
+		...listing, pending, sharing, busy, dropzone, notice, now, selectFiles, quit, copyLink, download,
+		copyingId, downloadingId, listingError: listing.error, error: error || listing.uploadError,
 		clearSelection: () => setPending([]),
-		dismissError: () => setError(''),
+		dismissError: () => { setError(''); listing.dismissUploadError() },
 	}
 }

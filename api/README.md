@@ -108,6 +108,12 @@ Only the SHA-256 hash is stored. The URL is returned on creation only; there is 
 
 Run `pnpm test:teams` to verify real Nest HTTP routes, JWT authorization, PostgreSQL persistence, role restrictions, leaving/removal, public landing, preview, token redaction, invitation lifecycle and concurrency. It creates a temporary PostgreSQL cluster and checks migration drift; it does not use the configured `DATABASE_URL`. Requires PostgreSQL binaries on `PATH` (or `PG_BIN`) and Postman CLI. The suite also runs a local Postman assertion against the teams response envelope. It does not exercise installed Windows protocol registration or live Google OAuth.
 
+### Desktop response fields
+
+Profile and completed desktop exchange responses both expose `user: { id, email, name, avatarUrl }`. The exchange keeps token fields at the top level; user data is not nested inside another `user` object.
+
+Team creation, listing, renaming and invitation acceptance return teams with exactly `{ id, name, slug, role }`, where `role` is `owner` or `member` for the authenticated user. Internal `ownerId` and timestamps are omitted. Invitation preview returns only `{ id, name, slug }` because it does not confirm membership. Member listing returns `{ users: [{ id, email, name, avatarUrl, role }] }`.
+
 ## Functional requirements
 
 Checked requirements are integrated; mock interactions are not considered complete.

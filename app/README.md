@@ -108,3 +108,26 @@ Deep linking uses Tauri's deep-link and single-instance plugins. During Windows 
 5. Test manual paste, cancellation, revocation, expired/exhausted links, renaming followed by another action, removing a member, and leaving as a member. An owner cannot leave or remove themselves.
 
 `pnpm test:auth` runs the frontend suite, including team state, invitation parsing/startup delivery and confirmation UI tests. `pnpm build` checks TypeScript and builds the frontend. In `src-tauri`, run `cargo check` and `cargo test` for native verification. Real Windows browser-to-widget activation and live Google sign-in still require manual testing.
+
+## Files
+
+The selected team's files use `GET /api/teams/:teamId/files?limit=10&cursor=...`. **Carregar mais** appends pages until `nextCursor` is null. Changing teams aborts the previous listing and discards late responses. Failed pages preserve the loaded rows and retry the same cursor.
+
+Uploads send one multipart `file` per request. Files chosen in the native picker are read through the filesystem plugin, scoped to the selected paths. Successful uploads leave the queue; a partial failure keeps only unconfirmed/unattempted files. A lost response is not retried automatically because the API has no upload idempotency contract. The list refreshes after the batch. The status counts files, not bytes.
+
+Each row downloads on click. Its link button calls `GET /api/files/:fileId/url` anew and copies the five-minute URL. In Tauri, downloading opens a save dialog and streams the public download endpoint's redirect to a temporary file before replacing the chosen destination. Native authentication requests still reject redirects; the separate public download client follows up to five redirects and sends no Bearer token. Inline preview, screenshots, deletion and WebSocket updates are outside this integration.
+
+For HTTP integration checks without the real backend, run from the repository root:
+
+```powershell
+postman simulation run app/tests/fixtures/files.sim.yaml --port 4511 --no-history
+```
+
+In another terminal, from `app/`:
+
+```powershell
+$env:FILES_SIMULATION_URL = 'http://localhost:4511/teamdrop-files'
+pnpm test:auth
+```
+
+Without that variable, the three HTTP simulation tests are skipped; the unit/component tests still run. The mock is derived from the local API source and is never used by production code. Native download and session tests run with `cargo test` from `app/src-tauri/`; the real-vault test remains opt-in.

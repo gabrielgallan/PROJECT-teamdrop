@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod auth;
+mod files;
 #[cfg(windows)]
 mod window_frame;
 
@@ -48,10 +49,12 @@ fn main() {
         }))
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .manage(auth::SessionManager::default())
         .invoke_handler(tauri::generate_handler![
             quit_app,
+            files::download_file,
             open_google_login,
             auth::auth_restore_session,
             auth::auth_exchange_login,

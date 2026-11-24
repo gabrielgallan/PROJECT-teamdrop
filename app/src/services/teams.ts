@@ -5,20 +5,19 @@ export interface ApiTeam {
 	id: string
 	name: string
 	slug: string
-	ownerId: string
-	role?: 'owner' | 'member'
+	role: 'owner' | 'member'
 }
 export interface InvitePreview {
 	team: Pick<ApiTeam, 'id' | 'name' | 'slug'>
 	alreadyMember: boolean
 }
 
-export function teamView(team: ApiTeam, userId: string): TeamSettings {
+export function teamView(team: ApiTeam): TeamSettings {
 	return {
 		id: team.id,
 		name: team.name,
 		slug: team.slug,
-		role: team.role ?? (team.ownerId === userId ? 'owner' : 'member'),
+		role: team.role,
 		members: [],
 	}
 }

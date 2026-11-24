@@ -1,5 +1,6 @@
-import { ArrowLeft, Box, Loader2 } from 'lucide-react'
+import { Box, Loader2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { ScreenHeader } from '../components/screen-header'
 import { parseInviteLink, setPendingInvite } from '../services/invites'
 import type { ApiTeam, InvitePreview } from '../services/teams'
 import { acceptInvite, previewInvite, teamError } from '../services/teams'
@@ -67,18 +68,8 @@ export function AcceptInviteScreen({
 	}
 	return (
 		<main className="flex h-full flex-col overflow-y-auto bg-zinc-800/60 text-white/90">
-			<header className="flex items-center gap-2 px-4 pt-3 pb-5">
-				<button
-					ref={back}
-					type="button"
-					disabled={busy}
-					onClick={onClose}
-					aria-label="Voltar"
-					className="grid size-8 place-items-center text-white/70 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-indigo-300"
-				>
-					<ArrowLeft size={16} />
-				</button>
-				<h1 className="text-sm font-medium">Entrar com convite</h1>
+			<header>
+				<ScreenHeader title="Entrar com convite" backLabel="Voltar" onBack={onClose} backRef={back} disabled={busy} />
 			</header>
 			<section
 				className={token
@@ -144,7 +135,7 @@ export function AcceptInviteScreen({
 							Você foi convidado para o time{' '}
 							<strong>{preview.team.name}</strong>.
 						</p>
-						<div className="mt-5 flex justify-center gap-2">
+						<div className="mt-4 flex justify-center gap-2">
 							<button
 								type="button"
 								disabled={busy}
@@ -165,7 +156,7 @@ export function AcceptInviteScreen({
 					</>
 				) : null}
 				{error && (
-					<div role="alert" className="mt-3 text-red-300">
+					<div role="alert" className="mt-2 text-red-300">
 						<p>{error}</p>
 						{!loading && !busy && token && (
 							<button

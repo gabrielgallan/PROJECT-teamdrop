@@ -26,9 +26,9 @@ export function FilePreview({
 				type="button"
 				disabled={sharing}
 				onClick={onBack}
-				className="mb-4 flex items-center gap-2 self-start text-xs text-white/65 hover:text-white"
+				className="mb-4 flex min-h-8 items-center gap-2 self-start text-ui text-white/70 hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-300"
 			>
-				<ArrowLeft size={14} />
+				<ArrowLeft size={16} />
 				{onShare ? 'Descartar captura' : 'Voltar aos arquivos'}
 			</button>
 			<h2 className="break-words font-medium">{file.name}</h2>
@@ -66,18 +66,18 @@ export function FilePreview({
 						type="button"
 						disabled={expired}
 						onClick={() => onCopy(file)}
-						className="flex items-center justify-center gap-2 bg-white/5 py-2 hover:bg-white/10"
+						className="flex items-center justify-center gap-2 bg-white/5 px-3 py-2 text-ui hover:bg-white/10"
 					>
-						<Copy size={14} />
+						<Copy size={16} />
 						Copiar link
 					</button>
 					<button
 						type="button"
 						disabled={expired}
 						onClick={() => onDownload(file)}
-						className="flex items-center justify-center gap-2 bg-white/5 py-2 hover:bg-white/10"
+						className="flex items-center justify-center gap-2 bg-white/5 px-3 py-2 text-ui hover:bg-white/10"
 					>
-						<Download size={14} />
+						<Download size={16} />
 						Baixar
 					</button>
 				</div>

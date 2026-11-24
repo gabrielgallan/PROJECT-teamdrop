@@ -1,4 +1,4 @@
-import { CloudUpload, X } from 'lucide-react'
+import { CloudUpload, Loader2, X } from 'lucide-react'
 import type { DropzoneState } from 'react-dropzone'
 import { Progress } from './progress'
 
@@ -11,6 +11,7 @@ interface FileDropzoneProps {
 	disabled?: boolean
 	progress?: number
 	progressLabel?: string
+	status?: string
 }
 
 export function FileDropzone({
@@ -22,10 +23,10 @@ export function FileDropzone({
 	disabled,
 	progress,
 	progressLabel = 'Preparando arquivos',
+	status,
 }: FileDropzoneProps) {
 	const { getRootProps, getInputProps, isDragActive } = dropzone
 	const firstFile = files[0]
-	const otherFiles = files.length - 1
 	const border = isDragActive ? 'border-white/20 bg-white/5' : 'border-white/10'
 
 	return (
@@ -36,7 +37,11 @@ export function FileDropzone({
 			})}
 		>
 			<input {...getInputProps()} />
-			{progress !== undefined ? (
+			{status ? (
+				<div role="status" className="flex flex-1 items-center justify-center gap-2 text-xs text-white/70">
+					<Loader2 className="size-4 animate-spin" aria-hidden="true" />{status}
+				</div>
+			) : progress !== undefined ? (
 				<div className="flex flex-1 flex-col items-center justify-center gap-3 px-8">
 					<span className="text-xs text-white/65">
 						{progressLabel}… {Math.round(progress)}%
@@ -53,13 +58,12 @@ export function FileDropzone({
 						className="flex min-w-0 items-center gap-2 text-white/90 before:absolute before:inset-0 before:rounded-md hover:before:bg-white/5"
 					>
 						<CloudUpload aria-hidden="true" className="size-4 shrink-0 stroke-2" />
-						{firstFile ? (
-							<>
-								<span className="truncate" title={firstFile.name}>
-									{firstFile.name}
-								</span>
-								{otherFiles > 0 && <span className="shrink-0 text-white/70">+{otherFiles}</span>}
-							</>
+						{files.length > 1 ? (
+							<span>{files.length} arquivos carregados</span>
+						) : firstFile ? (
+							<span className="truncate" title={firstFile.name}>
+								{firstFile.name}
+							</span>
 						) : (
 							'Arraste arquivos aqui…'
 						)}

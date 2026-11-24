@@ -37,7 +37,7 @@ export function ConfirmationDialog({
 					{error}
 				</p>
 			)}
-			<div className="mt-5 flex flex-wrap justify-end gap-2 text-xs">
+			<div className="mt-4 flex flex-wrap justify-end gap-2 text-xs">
 				<button
 					ref={cancelButton}
 					type="button"

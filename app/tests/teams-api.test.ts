@@ -3,7 +3,7 @@ import { configureAuthAccess } from '../src/services/api'
 import * as teams from '../src/services/teams'
 
 const teamId = '019ab000-0000-7000-8000-000000000001'
-const team = { id: teamId, slug: 'different-from-id', name: 'Team', ownerId: 'owner' }
+const team = { id: teamId, slug: 'different-from-id', name: 'Team', role: 'owner' as const }
 let requests: Request[]
 
 beforeEach(() => {
@@ -18,6 +18,21 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('team HTTP contract', () => {
+	it('uses the server role without requiring an owner ID', async () => {
+		const created = await teams.createTeam('Team')
+		expect(teams.teamView(created)).toMatchObject({ id: teamId, role: 'owner' })
+		expect(teams.teamView({ ...created, role: 'member' }).role).toBe('member')
+	})
+
+	it('maps public members and preserves the owner role', async () => {
+		vi.stubGlobal('fetch', vi.fn(async () => Response.json({ users: [{
+			id: 'owner', name: null, email: 'owner@example.com', avatarUrl: null, role: 'owner',
+		}] })))
+		expect(await teams.listMembers(teamId)).toMatchObject([{
+			id: 'owner', name: 'owner@example.com', role: 'owner',
+		}])
+	})
+
 	it('uses team IDs for rename, members, removal and leaving', async () => {
 		await teams.renameTeam(teamId, 'Renamed')
 		await teams.listMembers(teamId)

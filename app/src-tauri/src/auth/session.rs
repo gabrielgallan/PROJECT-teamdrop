@@ -259,6 +259,10 @@ impl SessionManager {
         self.token(&mut state, rejected).await
     }
 
+    pub async fn api_base_url(&self) -> Result<String, AuthError> {
+        Ok(self.state.lock().await.client()?.base_url)
+    }
+
     pub async fn exchange(
         &self,
         ticket: &str,

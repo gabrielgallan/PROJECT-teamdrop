@@ -2,6 +2,9 @@ import './styles/global.css'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useSession } from './hooks/use-session'
 import { useTeamSettings } from './hooks/use-team-settings'
+import { AcceptInviteScreen } from './screens/accept-invite-screen'
+import { DropsScreen } from './screens/drops-screen'
+import { LoginScreen } from './screens/login-screen'
 import {
 	getPendingInvite,
 	initializeInvites,
@@ -9,9 +12,6 @@ import {
 	subscribeInvites,
 } from './services/invites'
 import type { SessionUser } from './types/auth'
-import { AcceptInviteScreen } from './screens/accept-invite-screen'
-import { DropsScreen } from './screens/drops-screen'
-import { LoginScreen } from './screens/login-screen'
 
 export function App() {
 	const auth = useSession()

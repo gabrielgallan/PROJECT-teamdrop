@@ -1,0 +1,10 @@
+version: 1
+name: teamdrop-files
+slug: teamdrop-files
+protocol: http
+port: 4500
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

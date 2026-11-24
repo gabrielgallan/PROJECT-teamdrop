@@ -13,13 +13,15 @@ import { APP_GUARD, NestFactory, Reflector } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
 import { PrismaPg } from '@prisma/adapter-pg'
 import pg from 'pg'
-import { AccessTokenGuard } from '../dist/src/auth/guards/access-token.guard.js'
-import { AccessTokenService } from '../dist/src/auth/services/access-token.service.js'
+import { AccessTokenGuard } from '../dist/src/http/auth/guards/access-token.guard.js'
+import { AccessTokenService } from '../dist/src/http/auth/services/access-token.service.js'
 import { PrismaClient } from '../dist/src/database/prisma/client/client.js'
 import { CryptographyModule } from '../dist/src/cryptography/cryptography.module.js'
 import { CryptographyService } from '../dist/src/cryptography/cryptography.service.js'
-import { SessionService } from '../dist/src/auth/services/session.service.js'
-import { DesktopTicketService } from '../dist/src/auth/services/desktop-ticket.service.js'
+import { SessionService } from '../dist/src/http/auth/services/session.service.js'
+import { DesktopTicketService } from '../dist/src/http/auth/services/desktop-ticket.service.js'
+import { AuthController } from '../dist/src/http/auth/auth.controller.js'
+import { AuthService } from '../dist/src/http/auth/services/auth.service.js'
 import { TeamsController } from '../dist/src/http/teams/teams.controller.js'
 import { TeamsService } from '../dist/src/http/teams/teams.service.js'
 import { InvitesController } from '../dist/src/http/invites/invites.controller.js'
@@ -142,8 +144,31 @@ before(
 		class TestModule {}
 		Module({
 			imports: [CryptographyModule],
-			controllers: [TeamsController, InvitesController, InvitePageController],
+			controllers: [AuthController, TeamsController, InvitesController, InvitePageController],
 			providers: [
+				{
+					provide: DesktopTicketService,
+					useFactory: (crypto) => {
+						const values = new Map()
+						return new DesktopTicketService({
+							set: async (key, value) => { values.set(key, value) },
+							get: async (key) => values.get(key) ?? null,
+							getDel: async (key) => {
+								const value = values.get(key)
+								values.delete(key)
+								return value ?? null
+							},
+						}, crypto)
+					},
+					inject: [CryptographyService],
+				},
+				{
+					provide: AuthService,
+					useFactory: (tickets, crypto) => new AuthService(
+						null, prisma, null, tickets, new SessionService(prisma, tokens, crypto), crypto,
+					),
+					inject: [DesktopTicketService, CryptographyService],
+				},
 				{
 					provide: TeamsService,
 					useFactory: () => new TeamsService(prisma),
@@ -191,6 +216,58 @@ test('requires authentication and rejects blank names through HTTP', async () =>
 			400,
 		)
 	}
+})
+
+test('desktop login, restoration, renewal and logout use the minimal public user contract', async () => {
+	const tickets = app.get(DesktopTicketService)
+	const crypto = app.get(CryptographyService)
+	const verifier = 'v'.repeat(43)
+	const ticket = await tickets.create(crypto.hashToken(verifier))
+	const exchange = () => request('POST', '/api/auth/desktop/exchange', null, {
+		ticket, codeVerifier: verifier,
+	})
+	assert.deepEqual((await exchange()).body, { status: 'pending' })
+	await tickets.complete(ticket, owner.id)
+	const completed = await exchange()
+	assert.equal(completed.status, 200)
+	assert.equal(completed.body.status, 'complete')
+	const publicUser = { id: owner.id, email: owner.email, name: owner.name, avatarUrl: owner.avatarUrl }
+	assert.deepEqual(completed.body.user, publicUser)
+	assert.equal((await exchange()).status, 401)
+	const rotated = await request('POST', '/api/auth/refresh', null, {
+		refreshToken: completed.body.refreshToken,
+	})
+	assert.equal(rotated.status, 200)
+	assert.notEqual(rotated.body.refreshToken, completed.body.refreshToken)
+	const profile = await fetch(baseUrl + '/api/auth/profile', {
+		headers: { Authorization: `Bearer ${rotated.body.accessToken}` },
+	})
+	assert.equal(profile.status, 200)
+	assert.deepEqual(await profile.json(), { user: publicUser })
+	assert.equal((await request('POST', '/api/auth/logout', null, {
+		refreshToken: rotated.body.refreshToken,
+	})).status, 204)
+	assert.equal((await request('POST', '/api/auth/refresh', null, {
+		refreshToken: rotated.body.refreshToken,
+	})).status, 401)
+})
+
+test('creation, listing and renaming return only the team fields used by the app', async () => {
+	const team = await createTeam()
+	assert.deepEqual(Object.keys(team).sort(), ['id', 'name', 'role', 'slug'])
+	assert.equal(team.role, 'owner')
+	await prisma.member.create({ data: { teamId: team.id, userId: member.id } })
+	for (const [actor, role] of [[owner, 'owner'], [member, 'member']]) {
+		const listed = await request('GET', '/api/teams', actor)
+		assert.equal(listed.status, 200)
+		assert.deepEqual(listed.body.teams.find((item) => item.id === team.id), { ...team, role })
+	}
+	const renamed = await request('PATCH', `/api/teams/${team.id}`, owner, {
+		newName: `Renamed ${randomUUID()}`,
+	})
+	assert.equal(renamed.status, 200)
+	assert.deepEqual(Object.keys(renamed.body.team).sort(), ['id', 'name', 'role', 'slug'])
+	assert.equal(renamed.body.team.role, 'owner')
 })
 
 test('only the owner can list members, with the correct roles and public fields', async () => {

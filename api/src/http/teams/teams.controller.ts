@@ -49,7 +49,7 @@ export class TeamsController {
 		})
 
 		return {
-			team: TeamsPresenter.toHTTP(team),
+			team: TeamsPresenter.toHTTP(team, user.userId),
 		}
 	}
 
@@ -70,7 +70,7 @@ export class TeamsController {
 		})
 
 		return {
-			team: TeamsPresenter.toHTTP(team),
+			team: TeamsPresenter.toHTTP(team, user.userId),
 		}
 	}
 

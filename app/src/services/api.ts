@@ -13,7 +13,7 @@ export class ApiError extends Error {
 	}
 }
 
-async function responseData<T>(response: Response): Promise<T> {
+export async function responseData<T>(response: Response): Promise<T> {
 	if (!response.ok) {
 		const body = await response.json().catch(() => null)
 		throw new ApiError(response.status, typeof body?.code === 'string' ? body.code : 'API_ERROR')
@@ -48,7 +48,7 @@ export function configureAuthAccess(access: AuthAccess) {
 	authAccess = access
 }
 
-export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestInit & { timeoutMs?: number } = {}): Promise<T> {
 	if (!path.startsWith('/api/') || path.includes('://')) throw new Error('Caminho de API inválido.')
 	if (!authAccess) throw new Error('Autenticação não inicializada.')
 	const access = authAccess
@@ -71,8 +71,8 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 	const fetchWithTimeout = (value: Request) =>
 		fetch(value, {
 			signal: options.signal
-				? AbortSignal.any([options.signal, AbortSignal.timeout(15_000)])
-				: AbortSignal.timeout(15_000),
+				? AbortSignal.any([options.signal, AbortSignal.timeout(options.timeoutMs ?? 15_000)])
+				: AbortSignal.timeout(options.timeoutMs ?? 15_000),
 		})
 	const response = await fetchWithTimeout(request)
 	if (response.status !== 401) return responseData<T>(response)

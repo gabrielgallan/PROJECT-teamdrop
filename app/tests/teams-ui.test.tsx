@@ -35,7 +35,6 @@ const team = {
 	id: 'team',
 	slug: 'original',
 	name: 'Original',
-	ownerId: user.id,
 	role: 'owner' as const,
 }
 const token = 'a'.repeat(43)
@@ -187,7 +186,7 @@ describe('invitation confirmation', () => {
 			createInvite: vi.fn().mockResolvedValue(link),
 		} as unknown as TeamActions
 		const props = {
-			team: api.teamView(team, user.id),
+			team: api.teamView(team),
 			currentUserId: user.id,
 			onBack: vi.fn(),
 			actions,

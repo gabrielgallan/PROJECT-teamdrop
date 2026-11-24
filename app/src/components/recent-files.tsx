@@ -11,8 +11,9 @@ import {
 	Inbox,
 	Link,
 	Music,
+	Loader2,
 } from 'lucide-react'
-import type { SharedFile } from '../types/team'
+import type { TeamFile } from '../types/file'
 import { Avatar } from './avatar'
 
 const fileIcons: Record<string, LucideIcon> = {
@@ -56,126 +57,61 @@ export function relativeTime(date: number, now: number) {
 	return `há ${Math.floor(minutes / 1440)} d`
 }
 
-export function RecentFiles({
-	files,
-	now,
-	onPreview,
-	onCopy,
-}: {
-	files: SharedFile[]
+interface RecentFilesProps {
+	files: TeamFile[]
 	now: number
-	onPreview: (file: SharedFile) => void
-	onCopy: (file: SharedFile) => void
-}) {
-	return (
-		<section
-			aria-label="Arquivos recentes da equipe"
-			className="min-h-0 flex-1 overflow-y-auto px-2 pb-3"
-		>
-			{files.length === 0 ? (
-				<div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-white/60">
-					<Inbox size={24} />
-					<p>Nenhum arquivo por aqui.</p>
-					<p className="text-xs">Compartilhe o primeiro com a equipe.</p>
-				</div>
-			) : (
-				<ul>
-					{files.map((file) => (
-						<SharedFileItem
-							key={file.id}
-							file={file}
-							now={now}
-							onPreview={onPreview}
-							onCopy={onCopy}
-						/>
-					))}
-				</ul>
-			)}
-		</section>
-	)
+	loading: boolean
+	error: string
+	hasMore: boolean
+	onLoadMore: () => void
+	onRetry: () => void
+	onDownload: (file: TeamFile) => void
+	onCopy: (file: TeamFile) => void
+	copyingId: string | null
+	downloadingId: string | null
 }
 
-function SharedFileItem({
-	file,
-	now,
-	onPreview,
-	onCopy,
-}: {
-	file: SharedFile
-	now: number
-	onPreview: (file: SharedFile) => void
-	onCopy: (file: SharedFile) => void
-}) {
-	const expired = file.expiresAt <= now
-
-	const extension = file.name.includes('.') ? (file.name.split('.').pop()?.toLowerCase() ?? '') : ''
-
-	const Icon = fileIcons[extension] ?? (file.kind === 'image' ? Image : File)
-
+export function RecentFiles({ files, now, loading, error, hasMore, onLoadMore, onRetry, onDownload, onCopy, copyingId, downloadingId }: RecentFilesProps) {
 	return (
-		<li className="group flex items-center gap-1 rounded-lg px-2 transition-colors hover:bg-white/5">
-			<button
-				type="button"
-				disabled={expired}
-				onClick={() => onPreview(file)}
-				className="flex min-w-0 flex-1 items-center gap-2.5 py-3 text-left focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-default"
-			>
-				<span
-					className={`grid size-10 shrink-0 place-items-center rounded-lg bg-white/5 ${
-						expired ? 'text-white/30' : 'text-white/70'
-					}`}
-				>
-					<Icon size={18} aria-hidden="true" />
-				</span>
-
-				<span className="min-w-0 flex-1">
-					<span className="flex min-w-0 items-center gap-1.5">
-						{file.isNew && !expired && (
-							<span title="Novo arquivo" className="size-1.5 shrink-0 rounded-full bg-indigo-400">
-								<span className="sr-only">Novo arquivo</span>
+		<section aria-label="Arquivos recentes da equipe" aria-busy={loading} className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
+			{files.length > 0 && <ul className="item-list">
+				{files.map((file) => {
+					const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
+					const Icon = fileIcons[extension] ?? (file.kind === 'image' ? Image : File)
+					return <li key={file.id} className="list-row group transition-colors hover:bg-white/4">
+						<button type="button" onClick={() => onDownload(file)} disabled={Boolean(downloadingId)}
+							aria-label={`Baixar ${file.name}`} aria-busy={downloadingId === file.id}
+							title={`Baixar ${file.name} (${file.size})`}
+							className="flex min-w-0 flex-1 items-center gap-3 text-left focus-visible:ring-2 focus-visible:ring-indigo-300">
+							<span className="item-icon text-white/70">
+								{downloadingId === file.id ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Icon size={18} aria-hidden="true" />}
 							</span>
-						)}
-
-						<span
-							title={file.name}
-							className={`min-w-0 flex-1 truncate text-[13px] font-medium ${
-								expired ? 'text-white/40' : 'text-white/90'
-							}`}
-						>
-							{file.name}
-						</span>
-					</span>
-
-					<span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] text-white/50">
-						<Avatar member={file.member} size="small" className={`size-4 ${file.member.color}`} />
-
-						<span className="min-w-0 truncate" title={file.member.name}>
-							{file.member.name}
-						</span>
-
-						<time
-							className="shrink-0 tabular-nums"
-							dateTime={new Date(file.createdAt).toISOString()}
-						>
-							{relativeTime(file.createdAt, now)}
-						</time>
-					</span>
-				</span>
-			</button>
-
-			{expired ? (
-				<span className="shrink-0 text-[10px] text-white/40">Expirado</span>
-			) : (
-				<button
-					type="button"
-					onClick={() => onCopy(file)}
-					aria-label={`Copiar link de ${file.name}`}
-					title="Copiar link"
-					className="grid size-8 shrink-0 place-items-center rounded-lg text-white/45 transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-300"
-				>
-					<Link size={14} aria-hidden="true" />
-				</button>
-			)}
-		</li>
+							<span className="min-w-0 flex-1">
+								<span className="block truncate text-ui font-medium text-white/90">{file.name}</span>
+								<span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-caption text-white/50">
+									<Avatar member={file.member} size="small" className={`size-4 ${file.member.color}`} />
+									<span className="min-w-0 truncate" title={file.member.name}>{file.member.name}</span>
+									<time className="shrink-0 tabular-nums" dateTime={new Date(file.createdAt).toISOString()}>{relativeTime(file.createdAt, now)}</time>
+								</span>
+							</span>
+						</button>
+						<button type="button" onClick={() => onCopy(file)} disabled={Boolean(copyingId)}
+							aria-label={`Gerar e copiar link de ${file.name}`} title="Gerar e copiar link · válido por 5 minutos"
+							className="icon-button text-white/45 transition-colors hover:bg-white/10 hover:text-white">
+							{copyingId === file.id ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <Link size={16} aria-hidden="true" />}
+						</button>
+					</li>
+				})}
+			</ul>}
+			{loading && <p role="status" className="flex items-center justify-center gap-2 py-4 text-xs text-white/70"><Loader2 className="size-4 animate-spin" aria-hidden="true" />Carregando arquivos…</p>}
+			{error && <div role="alert" className="space-y-2 px-2 py-3 text-xs text-red-300">
+				<p>{error}</p><button type="button" onClick={onRetry} disabled={loading} className="underline focus-visible:ring-2 focus-visible:ring-indigo-300">Tentar novamente</button>
+			</div>}
+			{!loading && !error && files.length === 0 && <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-white/60">
+				<Inbox size={24} aria-hidden="true" /><p className="text-xs">Compartilhe com a equipe</p>
+			</div>}
+			{hasMore && !error && <button type="button" onClick={onLoadMore} disabled={loading}
+				className="my-2 w-full rounded-md bg-white/5 px-3 py-2 text-xs hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-indigo-300">{loading ? 'Carregando…' : 'Carregar mais'}</button>}
+		</section>
 	)
 }

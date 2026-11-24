@@ -3,5 +3,5 @@
 	"identifier": "main",
 	"description": "Allows the widget to open the native file picker.",
 	"windows": ["main"],
-	"permissions": ["dialog:allow-open", "deep-link:allow-get-current", "core:event:allow-listen", "core:event:allow-unlisten"]
+	"permissions": ["dialog:allow-open", "fs:allow-read-file", "deep-link:allow-get-current", "core:event:allow-listen", "core:event:allow-unlisten"]
 }

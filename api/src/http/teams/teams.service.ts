@@ -153,7 +153,7 @@ export class TeamsService {
 			users: members.map((member) => {
 				return {
 					...member,
-					memberRole: member.id === team.ownerId ? 'owner' : 'member',
+					role: member.id === team.ownerId ? 'owner' : 'member',
 				}
 			}),
 		}

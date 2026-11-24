@@ -1,9 +1,11 @@
 import { FileInput, Loader2, Power, Settings } from 'lucide-react'
 import { useRef } from 'react'
 import { FileDropzone } from '../components/file-dropzone'
-import { FilePreview } from '../components/file-preview'
 import { MenuItem } from '../components/menu-item'
 import { RecentFiles } from '../components/recent-files'
+import { Separator } from '../components/separator'
+import { TeamSwitcher } from '../components/team-switcher'
+import { useSelectedTeam } from '../hooks/use-selected-team'
 import { useDrops } from '../hooks/use-drops'
 import type { TeamActions } from '../hooks/use-team-settings'
 import type { SessionUser } from '../types/auth'
@@ -31,16 +33,21 @@ export function DropsScreen({
 	onSettingsChange: (value: boolean) => void
 }) {
 	const settingsButton = useRef<HTMLButtonElement>(null)
+	const { team, selectTeam } = useSelectedTeam(user.id, teamSettings.teams, !teamSettings.loading && !teamSettings.error)
 	const {
 		files,
 		pending,
 		sharing,
-		preparing,
-		progress,
 		busy,
+		loading,
+		listingError,
+		nextCursor,
+		loadMore,
+		retry,
+		uploadStatus,
+		copyingId,
+		downloadingId,
 		dropzone,
-		activePreview,
-		capture,
 		error,
 		notice,
 		now,
@@ -49,11 +56,9 @@ export function DropsScreen({
 		share,
 		copyLink,
 		download,
-		closePreview,
-		openPreview,
 		clearSelection,
 		dismissError,
-	} = useDrops(!settingsOpen)
+	} = useDrops(team, !settingsOpen)
 
 	if (settingsOpen) {
 		return (
@@ -73,64 +78,62 @@ export function DropsScreen({
 
 	return (
 		<main className="relative flex h-full flex-col overflow-hidden bg-zinc-900/50 text-white/90">
-			{activePreview ? (
-				<FilePreview
-					file={activePreview}
-					onBack={closePreview}
-					onCopy={copyLink}
-					onDownload={download}
-					onShare={capture ? () => share() : undefined}
-					sharing={sharing}
+			<div className="shrink-0 space-y-4 pt-4">
+				<FileDropzone
+					dropzone={dropzone}
+					files={pending}
+					error=""
+					onSelect={selectFiles}
+					onClear={clearSelection}
+					disabled={busy || !team}
+					status={sharing ? uploadStatus : undefined}
 				/>
-			) : (
-				<>
-					<div className="shrink-0 space-y-3 pt-4">
-						<FileDropzone
-							dropzone={dropzone}
-							files={pending}
-							error=""
-							onSelect={selectFiles}
-							onClear={clearSelection}
-							disabled={busy}
-							progress={busy ? progress : undefined}
-							progressLabel={preparing ? 'Preparando arquivos' : 'Compartilhando arquivos'}
-						/>
-						{pending.length > 0 && (
-							<div className="mx-4 flex items-center justify-between gap-2">
-								<button
-									type="button"
-									onClick={() => share()}
-									disabled={busy}
-									className="shrink-0 flex items-center gap-2 justify-center bg-indigo-400 transition-colors duration-200 w-full h-8 text-xs text-indigo-100 hover:bg-indigo-400/70"
-								>
-									{sharing ? <Loader2 className="size-4 animate-spin" /> : <>Compartilhar</>}
-								</button>
-							</div>
-						)}
-
-						<div className="mx-2">
-							<MenuItem disabled={busy} onClick={selectFiles} aria-keyshortcuts="Control+O">
-								<FileInput aria-hidden="true" className="size-4" />
-								Selecionar arquivos
-								<span className="ml-auto text-xs text-white/55">Ctrl+O</span>
-							</MenuItem>
-							<MenuItem ref={settingsButton} onClick={() => setSettingsOpen(true)}>
-								<Settings aria-hidden="true" className="size-4" />
-								Configurações
-							</MenuItem>
-							<MenuItem onClick={quit} aria-keyshortcuts="Control+Q">
-								<Power aria-hidden="true" className="size-4" />
-								Sair
-								<span className="ml-auto text-xs text-white/55">Ctrl+Q</span>
-							</MenuItem>
-						</div>
-						<div className="mx-4 flex items-center justify-between border-t border-white/8 pb-1 pt-4">
-							<h2 className="text-xs font-medium text-white/75">Drops do time</h2>
-						</div>
+				{pending.length > 0 && (
+					<div className="mx-4 flex items-center justify-between gap-2">
+						<button
+							type="button"
+							onClick={() => share()}
+							disabled={busy || !team}
+							className="shrink-0 flex items-center gap-2 justify-center bg-indigo-400 transition-colors duration-200 w-full h-8 text-xs text-indigo-100 hover:bg-indigo-400/70"
+						>
+							{sharing ? <Loader2 className="size-4 animate-spin" /> : <span className="truncate px-2" title={team?.name}>Compartilhar em {team?.name}</span>}
+						</button>
 					</div>
-					<RecentFiles files={files} now={now} onPreview={openPreview} onCopy={copyLink} />
-				</>
-			)}
+				)}
+
+				<div className="menu-group">
+					<TeamSwitcher
+						teams={teamSettings.teams}
+						selectedId={team?.id ?? null}
+						onSelect={selectTeam}
+						onManage={() => setSettingsOpen(true)}
+						onRetry={() => void teamSettings.refresh()}
+						loading={teamSettings.loading}
+						error={teamSettings.error}
+						disabled={busy || teamSettings.busy}
+					/>
+					<MenuItem disabled={busy || !team} onClick={selectFiles} aria-keyshortcuts="Control+O">
+						<FileInput aria-hidden="true" className="size-4" />
+						Selecionar arquivos
+						<span className="ml-auto text-xs text-white/55">Ctrl+O</span>
+					</MenuItem>
+					<MenuItem ref={settingsButton} onClick={() => setSettingsOpen(true)}>
+						<Settings aria-hidden="true" className="size-4" />
+						Configurações
+					</MenuItem>
+					<MenuItem onClick={quit} aria-keyshortcuts="Control+Q">
+						<Power aria-hidden="true" className="size-4" />
+						Sair
+						<span className="ml-auto text-xs text-white/55">Ctrl+Q</span>
+					</MenuItem>
+				</div>
+				<Separator />
+			</div>
+
+			<h2 className="section-title truncate" title={team?.name}>{team ? `Recentes · ${team.name}` : 'Arquivos recentes'}</h2>
+			<RecentFiles files={files} now={now} loading={loading} error={listingError}
+				hasMore={Boolean(nextCursor)} onLoadMore={loadMore} onRetry={retry}
+				onDownload={download} onCopy={copyLink} copyingId={copyingId} downloadingId={downloadingId} />
 			{authError && (
 				<div role="alert" className="px-4 py-2 text-xs text-red-300">
 					<p>{authError}</p>

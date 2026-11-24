@@ -22,7 +22,7 @@ export function useTeamSettings(user: SessionUser) {
 			if (!active.current || signal?.aborted || revision.current !== before) return
 			setTeams((previous) =>
 				data.map((team) => ({
-					...api.teamView(team, user.id),
+					...api.teamView(team),
 					members: previous.find((item) => item.id === team.id)?.members ?? [],
 				})),
 			)
@@ -81,7 +81,7 @@ export function useTeamSettings(user: SessionUser) {
 			revision.current++
 			if (active.current)
 				setTeams((items) => [
-					api.teamView(team, user.id),
+					api.teamView(team),
 					...items.filter((item) => item.id !== team.id),
 				])
 		},
@@ -92,7 +92,7 @@ export function useTeamSettings(user: SessionUser) {
 			}),
 		createTeam: (name: string) =>
 			run(async () => {
-				const team = api.teamView(await api.createTeam(name.trim()), user.id)
+				const team = api.teamView(await api.createTeam(name.trim()))
 				if (active.current) setTeams((items) => [team, ...items])
 				return true
 			}),
