@@ -11,7 +11,7 @@ import {
 	UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
@@ -21,9 +21,12 @@ import { AuthenticatedUser } from '..//auth/services/auth.service.js'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
 import { TeamIdDto, teamIdSchema } from '../teams/teams.controller.js'
 import { DeleteFileDto, deleteFileSchema } from './dtos/delete-file.dto.js'
-import { ListFilesDto, listFilesSchema } from './dtos/list-files.dto.js'
+import { ListFilesDto, ListFilesResponseDto, listFilesSchema } from './dtos/list-files.dto.js'
 import { FilesService } from './files.service.js'
 import { FilesPresenter } from './presenters/files.presenter.js'
+import { ApiErrorResponseDto } from '../dtos/api-error-response.dto.js'
+import { UploadFileResponseDto } from './dtos/upload-file.dto.js'
+import { GenerateFileUrlResponseDto } from './dtos/generate-url.dto.js'
 
 const fileIdSchema = z.object({
 	fileId: z.uuid(),
@@ -36,6 +39,36 @@ class FileIdDto extends createZodDto(fileIdSchema) {}
 export class FilesController {
 	constructor(private readonly filesService: FilesService) {}
 
+	// Upload file
+	@ApiOperation({
+		summary: 'Upload team file',
+	})
+	@ApiResponse({
+		status: 201,
+		description: 'File uploaded successfully.',
+		type: UploadFileResponseDto,
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: 'Authentication required or invalid access token.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'Resource not found or inaccessible to the authenticated user.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 503,
+		description: 'File storage service is unavailable.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiBearerAuth()
 	@Post('teams/:teamId/files')
 	@HttpCode(201)
 	@UseInterceptors(FileInterceptor('file'))
@@ -62,6 +95,31 @@ export class FilesController {
 		}
 	}
 
+	// List files
+	@ApiOperation({
+		summary: 'List team files',
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'File list retrived successfully.',
+		type: ListFilesResponseDto,
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: 'Authentication required or invalid access token.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'Resource not found or inaccessible to the authenticated user.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiBearerAuth()
 	@Get('teams/:teamId/files')
 	@HttpCode(200)
 	async listFiles(
@@ -85,6 +143,24 @@ export class FilesController {
 		}
 	}
 
+	// Preview file
+	@ApiOperation({
+		summary: 'Preview file',
+	})
+	@ApiResponse({
+		status: 302,
+		description: 'Redirects to the file preview URL.'
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'Resource not found or inaccessible to the authenticated user.',
+		type: ApiErrorResponseDto,
+	})
 	@Public()
 	@Get('files/:fileId/preview')
 	@HttpCode(302)
@@ -97,6 +173,24 @@ export class FilesController {
 		return response.redirect(url)
 	}
 
+	// Download file
+	@ApiOperation({
+		summary: 'Download file',
+	})
+	@ApiResponse({
+		status: 302,
+		description: 'Redirects to the file download URL.'
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'Resource not found or inaccessible to the authenticated user.',
+		type: ApiErrorResponseDto,
+	})
 	@Public()
 	@Get('files/:fileId/download')
 	@HttpCode(302)
@@ -109,6 +203,25 @@ export class FilesController {
 		return response.redirect(url)
 	}
 
+	// Get file URL
+	@ApiOperation({
+		summary: 'Get file URL',
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'File URL retrieved successfully.',
+		type: GenerateFileUrlResponseDto
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'Resource not found or inaccessible to the authenticated user.',
+		type: ApiErrorResponseDto,
+	})
 	@Public()
 	@Get('files/:fileId/url')
 	@HttpCode(200)
@@ -120,6 +233,35 @@ export class FilesController {
 		}
 	}
 
+	// Delete file
+	@ApiOperation({
+		summary: 'Delete team file',
+	})
+	@ApiResponse({
+		status: 204,
+		description: 'File successfully deleted.',
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Data validation failed.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: 'Authentication required or invalid access token.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'Resource not found or inaccessible to the authenticated user.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
+		status: 503,
+		description: 'File storage service is unavailable.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiBearerAuth()
 	@Delete('teams/:teamId/files/:fileId')
 	@HttpCode(204)
 	async deleteFile(

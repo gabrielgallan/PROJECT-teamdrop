@@ -43,7 +43,7 @@ export class FilesService {
 
 		if (!membership) {
 			throw new NotFoundException({
-				message: 'Resource not found',
+				message: 'User membership not found',
 			})
 		}
 
@@ -93,7 +93,7 @@ export class FilesService {
 
 		if (!membership) {
 			throw new NotFoundException({
-				message: 'Resource not found',
+				message: 'User membership not found',
 			})
 		}
 
@@ -191,7 +191,7 @@ export class FilesService {
 		try {
 			await this.storageService.delete(file.storageKey)
 		} catch {
-			throw new BadGatewayException({
+			throw new ServiceUnavailableException({
 				message: 'File storage service is unavailable',
 			})
 		}
