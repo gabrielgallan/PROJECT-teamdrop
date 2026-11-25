@@ -1,7 +1,6 @@
-import type { Readable } from 'node:stream'
 import { BlobSASPermissions, BlobServiceClient, type ContainerClient } from '@azure/storage-blob'
 import { Injectable, Logger } from '@nestjs/common'
-import { EnvService } from '../../env/env.service.js'
+import { EnvService } from '../../common/env/env.service.js'
 import { StorageService, StorageUrlType } from '../storage.interface.js'
 
 @Injectable()
@@ -53,7 +52,10 @@ export class AzureStorageService implements StorageService {
 			const url = await blob.generateSasUrl({
 				permissions: BlobSASPermissions.parse('r'),
 				expiresOn: new Date(Date.now() + 5 * 60 * 1000),
-				contentDisposition: type === 'download' ? `attachment; filename*=UTF-8''${encodeURIComponent(String(fileName))}` : undefined,
+				contentDisposition:
+					type === 'download'
+						? `attachment; filename*=UTF-8''${encodeURIComponent(String(fileName))}`
+						: undefined,
 				contentType: type === 'download' ? 'application/octet-stream' : undefined,
 			})
 
@@ -72,7 +74,7 @@ export class AzureStorageService implements StorageService {
 	async delete(key: string) {
 		try {
 			const blob = this.container.getBlockBlobClient(key)
-			
+
 			const response = await blob.deleteIfExists({
 				deleteSnapshots: 'include',
 			})

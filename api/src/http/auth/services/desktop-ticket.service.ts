@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { CacheRepository } from '../../../cache/cache.interface.js'
-import { CryptographyService } from '../../../cryptography/cryptography.service.js'
+import { CacheRepository } from '../../../common/cache/cache.interface.js'
+import { CryptographyService } from '../../../common/cryptography/cryptography.service.js'
 
 export const LOGIN_TTL_SECONDS = 300
 

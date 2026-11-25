@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { CryptographyService } from '../../../cryptography/cryptography.service.js'
+import { CryptographyService } from '../../../common/cryptography/cryptography.service.js'
 import { PrismaService } from '../../../database/prisma/prisma.service.js'
 import { AccessTokenService } from './access-token.service.js'
 import { TokenPair } from './auth.service.js'

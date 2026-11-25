@@ -1,7 +1,7 @@
 import { setTimeout as delay } from 'node:timers/promises'
 import { BadGatewayException, BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { z } from 'zod'
-import { EnvService } from '../../../env/env.service.js'
+import { EnvService } from '../../../common/env/env.service.js'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GOOGLE_USERINFO_URL = 'https://openidconnect.googleapis.com/v1/userinfo'

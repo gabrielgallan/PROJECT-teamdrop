@@ -15,18 +15,18 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
-import { CurrentUser } from '../auth/decorators/current-user.decorator.js'
-import { Public } from '../auth/decorators/public.decorator.js'
-import { AuthenticatedUser } from '..//auth/services/auth.service.js'
-import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
-import { TeamIdDto, teamIdSchema } from '../teams/teams.controller.js'
+import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
+import { Public } from '../../auth/decorators/public.decorator.js'
+import { AuthenticatedUser } from '../../auth/services/auth.service.js'
+import { ApiErrorResponseDto } from '../../dtos/api-error-response.dto.js'
+import { ZodValidationPipe } from '../../pipes/zod-validation.pipe.js'
+import { TeamIdDto, teamIdSchema } from '../../teams/presentation/teams.controller.js'
+import { FilesService } from '../application/files.service.js'
 import { DeleteFileDto, deleteFileSchema } from './dtos/delete-file.dto.js'
-import { ListFilesDto, ListFilesResponseDto, listFilesSchema } from './dtos/list-files.dto.js'
-import { FilesService } from './files.service.js'
-import { FilesPresenter } from './presenters/files.presenter.js'
-import { ApiErrorResponseDto } from '../dtos/api-error-response.dto.js'
-import { UploadFileResponseDto } from './dtos/upload-file.dto.js'
 import { GenerateFileUrlResponseDto } from './dtos/generate-url.dto.js'
+import { ListFilesDto, ListFilesResponseDto, listFilesSchema } from './dtos/list-files.dto.js'
+import { UploadFileResponseDto } from './dtos/upload-file.dto.js'
+import { FilesPresenter } from './files.presenter.js'
 
 const fileIdSchema = z.object({
 	fileId: z.uuid(),
@@ -149,7 +149,7 @@ export class FilesController {
 	})
 	@ApiResponse({
 		status: 302,
-		description: 'Redirects to the file preview URL.'
+		description: 'Redirects to the file preview URL.',
 	})
 	@ApiResponse({
 		status: 400,
@@ -179,7 +179,7 @@ export class FilesController {
 	})
 	@ApiResponse({
 		status: 302,
-		description: 'Redirects to the file download URL.'
+		description: 'Redirects to the file download URL.',
 	})
 	@ApiResponse({
 		status: 400,
@@ -210,7 +210,7 @@ export class FilesController {
 	@ApiResponse({
 		status: 200,
 		description: 'File URL retrieved successfully.',
-		type: GenerateFileUrlResponseDto
+		type: GenerateFileUrlResponseDto,
 	})
 	@ApiResponse({
 		status: 400,

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { EnvModule } from '../env/env.module.js'
+import { EnvModule } from '../common/env/env.module.js'
 import { AzureStorageService } from './azure/azure-storage.service.js'
 import { StorageService } from './storage.interface.js'
 

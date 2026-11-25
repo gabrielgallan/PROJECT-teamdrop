@@ -1,11 +1,11 @@
 import { ForbiddenException, GoneException, Injectable, NotFoundException } from '@nestjs/common'
-import { CryptographyService } from '../../cryptography/cryptography.service.js'
+import { CryptographyService } from '../../common/cryptography/cryptography.service.js'
+import { EnvService } from '../../common/env/env.service.js'
 import { PrismaService } from '../../database/prisma/prisma.service.js'
-import { EnvService } from '../../env/env.service.js'
 import { AcceptTeamInviteServiceDto } from './dtos/accept-team-invite.dto.js'
 import { CreateTeamInviteServiceDto } from './dtos/create-team-invite.dto.js'
-import { RevokeTeamInvitesServiceDto } from './dtos/revoke-team-invites.dto.js'
 import { GetInviteDetailsServiceDto } from './dtos/get-invite-details.dto.js'
+import { RevokeTeamInvitesServiceDto } from './dtos/revoke-team-invites.dto.js'
 
 @Injectable()
 export class InvitesService {
@@ -20,16 +20,16 @@ export class InvitesService {
 			where: {
 				teamId_userId: {
 					teamId,
-					userId
-				}
+					userId,
+				},
 			},
 			include: {
 				team: {
 					select: {
-						ownerId: true
-					}
-				}
-			}
+						ownerId: true,
+					},
+				},
+			},
 		})
 
 		if (!membership) {
@@ -86,16 +86,16 @@ export class InvitesService {
 			where: {
 				teamId_userId: {
 					teamId,
-					userId
-				}
+					userId,
+				},
 			},
 			include: {
 				team: {
 					select: {
-						ownerId: true
-					}
-				}
-			}
+						ownerId: true,
+					},
+				},
+			},
 		})
 
 		if (!membership) {
@@ -133,44 +133,44 @@ export class InvitesService {
 
 	async getInviteDetails({ userId, token }: GetInviteDetailsServiceDto) {
 		const invite = await this.prisma.invite.findUnique({
-			where: { 
-				tokenHash: this.cryptoService.hashToken(token, 'hex')
+			where: {
+				tokenHash: this.cryptoService.hashToken(token, 'hex'),
 			},
-			include: { 
-				team: { 
-					select: { 
-						id: true, 
-						name: true, 
-						slug: true 
-					} 
-				} 
+			include: {
+				team: {
+					select: {
+						id: true,
+						name: true,
+						slug: true,
+					},
+				},
 			},
 		})
 
 		if (!invite || invite.revokedAt || invite.expiresAt.getTime() <= Date.now()) {
-			throw new GoneException({ 
-				message: 'Invalid or expired invitation' 
+			throw new GoneException({
+				message: 'Invalid or expired invitation',
 			})
 		}
 
 		const membership = await this.prisma.member.findUnique({
-			where: { 
-				teamId_userId: { 
-					teamId: invite.teamId, 
-					userId 
-				} 
+			where: {
+				teamId_userId: {
+					teamId: invite.teamId,
+					userId,
+				},
 			},
 		})
 
 		if (!membership && invite.uses >= invite.maxUses) {
-			throw new GoneException({ 
-				message: 'Invitation usage limit reached' 
+			throw new GoneException({
+				message: 'Invitation usage limit reached',
 			})
 		}
 
 		return {
-			team: invite.team, 
-			alreadyMember: Boolean(membership)
+			team: invite.team,
+			alreadyMember: Boolean(membership),
 		}
 	}
 
@@ -222,9 +222,9 @@ export class InvitesService {
 			})
 
 			const team = await db.team.findUniqueOrThrow({ where: { id: invite.teamId } })
-			
+
 			const result = { team: { ...team, role: team.ownerId === userId ? 'owner' : 'member' } }
-			
+
 			if (membership) return result
 
 			if (invite.uses >= invite.maxUses) {

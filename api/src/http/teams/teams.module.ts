@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { DatabaseModule } from '../../database/database.module.js'
-import { TeamsController } from './teams.controller.js'
-import { TeamsService } from './teams.service.js'
+import { TeamsService } from './application/teams.service.js'
+import { TeamsController } from './presentation/teams.controller.js'
 
 @Module({
 	imports: [DatabaseModule],

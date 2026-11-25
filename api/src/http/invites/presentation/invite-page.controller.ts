@@ -1,8 +1,8 @@
 import { Controller, Get, Param } from '@nestjs/common'
 import { ApiExcludeController } from '@nestjs/swagger'
-import { Public } from '../auth/decorators/public.decorator.js'
-import { HtmlPage } from '../html/page.decorator.js'
-import { htmlPageTemplate } from '../html/page.template.js'
+import { Public } from '../../auth/decorators/public.decorator.js'
+import { HtmlPage } from '../../html/page.decorator.js'
+import { htmlPageTemplate } from '../../html/page.template.js'
 
 @ApiExcludeController()
 @Controller('invites')

@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
-import { TeamIdDto } from '../../teams/teams.controller.js'
 import { PublicTeamDto } from '../../teams/dtos/team.dto.js'
 
 export const acceptTeamInviteSchema = z.object({

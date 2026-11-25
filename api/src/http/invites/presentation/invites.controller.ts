@@ -1,15 +1,27 @@
 import { Body, Controller, Delete, Get, Header, HttpCode, Param, Post } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { CurrentUser } from '../auth/decorators/current-user.decorator.js'
-import { AuthenticatedUser } from '../auth/services/auth.service.js'
-import { ZodValidationPipe } from '../pipes/zod-validation.pipe.js'
-import { TeamsPresenter } from '../teams/presenters/teams.presenter.js'
-import { TeamIdDto, teamIdSchema } from '../teams/teams.controller.js'
-import { AcceptTeamInviteDto, AcceptTeamInviteResponseDto, acceptTeamInviteSchema } from './dtos/accept-team-invite.dto.js'
-import { CreateInviteResponseDto, CreateTeamInviteDto, createTeamInviteSchema } from './dtos/create-team-invite.dto.js'
-import { InvitesService } from './invites.service.js'
-import { ApiErrorResponseDto } from '../dtos/api-error-response.dto.js'
-import { GetInviteDetailsDto, GetInviteDetailsResponseDto, getInviteDetailsSchema } from './dtos/get-invite-details.dto.js'
+import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
+import { AuthenticatedUser } from '../../auth/services/auth.service.js'
+import { ApiErrorResponseDto } from '../../dtos/api-error-response.dto.js'
+import { ZodValidationPipe } from '../../pipes/zod-validation.pipe.js'
+import { TeamIdDto, teamIdSchema } from '../../teams/presentation/teams.controller.js'
+import { TeamsPresenter } from '../../teams/presentation/teams.presenter.js'
+import { InvitesService } from '../application/invites.service.js'
+import {
+	AcceptTeamInviteDto,
+	AcceptTeamInviteResponseDto,
+	acceptTeamInviteSchema,
+} from './dtos/accept-team-invite.dto.js'
+import {
+	CreateInviteResponseDto,
+	CreateTeamInviteDto,
+	createTeamInviteSchema,
+} from './dtos/create-team-invite.dto.js'
+import {
+	GetInviteDetailsDto,
+	GetInviteDetailsResponseDto,
+	getInviteDetailsSchema,
+} from './dtos/get-invite-details.dto.js'
 
 @ApiTags('Invites')
 @ApiBearerAuth()
@@ -118,7 +130,7 @@ export class InvitesController {
 	@ApiResponse({
 		status: 200,
 		description: 'Invite details and user membership status retrieved successfully.',
-		type: GetInviteDetailsResponseDto
+		type: GetInviteDetailsResponseDto,
 	})
 	@ApiResponse({
 		status: 400,
@@ -160,7 +172,7 @@ export class InvitesController {
 	@ApiResponse({
 		status: 201,
 		description: 'Team invite successfully accepted.',
-		type: AcceptTeamInviteResponseDto
+		type: AcceptTeamInviteResponseDto,
 	})
 	@ApiResponse({
 		status: 400,

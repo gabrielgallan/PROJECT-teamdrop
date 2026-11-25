@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { EnvModule } from '../env/env.module.js'
+import { EnvModule } from '../common/env/env.module.js'
 import { PrismaService } from './prisma/prisma.service.js'
 
 @Module({
