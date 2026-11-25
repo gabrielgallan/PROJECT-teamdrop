@@ -7,6 +7,7 @@ import { MenuItem } from '../components/menu-item'
 import { RecentFiles } from '../components/recent-files'
 import { Separator } from '../components/separator'
 import { UploadPanel } from '../components/upload-panel'
+import { ToastViewport } from '../components/toast'
 
 export function DropsScreen() {
 	const navigate = useNavigate()
@@ -57,6 +58,7 @@ export function DropsScreen() {
 					{error}
 				</p>
 			)}
+			<ToastViewport />
 		</main>
 	)
 }

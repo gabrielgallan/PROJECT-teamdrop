@@ -22,7 +22,7 @@ import { useFileActions } from '../../hooks/use-file-actions'
 import { errorMessage } from '../../lib/api-error'
 import type { TeamFile } from '../../types/file'
 import { Avatar } from './avatar'
-import { OperationFeedback } from './operation-feedback'
+import { Toast } from './toast'
 
 const icons: Record<string, LucideIcon> = {
 	png: Image,
@@ -130,13 +130,13 @@ export function RecentFileItem({ file }: RecentFileItemProps) {
 				</p>
 			)}
 			{copy.isSuccess && (
-				<OperationFeedback
+				<Toast
 					key={`copy-${copy.submittedAt}`}
 					message="Link copiado · válido por 5 minutos"
 				/>
 			)}
 			{download.isSuccess && download.data && (
-				<OperationFeedback
+				<Toast
 					key={`download-${download.submittedAt}`}
 					message={isDesktop() ? 'Arquivo salvo' : 'Download solicitado'}
 				/>
