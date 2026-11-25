@@ -22,3 +22,27 @@ export interface TeamFile {
 	member: Member
 	kind: 'image' | 'document'
 }
+
+export interface SharedFile {
+	isNew?: boolean
+	id: string
+	teamId: string
+	name: string
+	size: string
+	member: Member
+	createdAt: number
+	expiresAt: number
+	url: string
+	link: string
+	kind: 'image' | 'document'
+	text?: string
+}
+
+export interface PendingFile {
+	id: string
+	name: string
+	file?: File
+	path?: string
+	kind: 'image' | 'document'
+	url?: string
+}
