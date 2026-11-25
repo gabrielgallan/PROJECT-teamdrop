@@ -1,4 +1,7 @@
 {
+	"engines": {
+		"node": "^24.14.0"
+	},
 	"name": "@teamdrop/api",
 	"version": "0.1.0",
 	"type": "module",
@@ -10,8 +13,7 @@
 		"db:dev": "prisma migrate dev",
 		"db:prod": "prisma migrate deploy",
 		"db:push": "prisma db push",
-		"db:generate": "prisma generate",
-		"jwt:generate": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('base64url'))\""
+		"db:generate": "prisma generate"
 	},
 	"dependencies": {
 		"@azure/storage-blob": "12.34.0",
