@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { envSchema } from './common/env/env.js'
-import { EnvModule } from './common/env/env.module.js'
-import { AuthModule } from './http/auth/auth.module.js'
-import { HttpMoodule } from './http/http.module.js'
-import { WebSocketModule } from './websocket/websocket.module.js'
+import { APP_GUARD } from '@nestjs/core'
+import { ThrottlerModule } from '@nestjs/throttler'
+import { RateLimitGuard } from './common/http/guards/rate-limit.guard.js'
+import { envSchema } from './infrastructure/env/env.js'
+import { EnvModule } from './infrastructure/env/env.module.js'
+import { HealthModule } from './infrastructure/health/health.module.js'
+import { AuthModule } from './modules/auth/auth.module.js'
+import { FilesModule } from './modules/files/files.module.js'
+import { InvitesModule } from './modules/invites/invites.module.js'
+import { TeamsModule } from './modules/teams/teams.module.js'
 
 @Module({
 	imports: [
@@ -13,9 +18,34 @@ import { WebSocketModule } from './websocket/websocket.module.js'
 			isGlobal: true,
 			validate: (env) => envSchema.parse(env),
 		}),
-		HttpMoodule,
+		ThrottlerModule.forRoot([
+			{
+				name: 'short', // 5 req / 1s
+				ttl: 1_000,
+				limit: 5,
+			},
+			{
+				name: 'medium', // 30 req / 10s
+				ttl: 10_000,
+				limit: 30,
+			},
+			{
+				name: 'long', // 100 req / 1min
+				ttl: 60_000,
+				limit: 100,
+			},
+		]),
+		HealthModule,
 		AuthModule,
-		WebSocketModule,
+		TeamsModule,
+		InvitesModule,
+		FilesModule,
+	],
+	providers: [
+		{
+			provide: APP_GUARD,
+			useClass: RateLimitGuard,
+		},
 	],
 })
 export class AppModule {}

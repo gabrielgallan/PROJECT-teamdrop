@@ -2,8 +2,8 @@ import { Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { AppModule } from './app.module.js'
-import { EnvService } from './common/env/env.service.js'
-import { configureSwagger } from './config/swagger.config.js'
+import { configureApiReference } from './config/api-reference/api-reference.config.js'
+import { EnvService } from './infrastructure/env/env.service.js'
 
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -32,7 +32,7 @@ async function bootstrap() {
 		maxAge: 86400,
 	})
 
-	configureSwagger(app)
+	configureApiReference(app)
 
 	app
 		.listen(port)
