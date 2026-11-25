@@ -9,11 +9,9 @@ import {
 	FileText,
 	Film,
 	Image,
-	Link,
 	Loader2,
 	type LucideIcon,
 	Music,
-	QrCode,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { isDesktop } from '../../desktop/app.commands'
@@ -22,6 +20,7 @@ import { useFileActions } from '../../hooks/use-file-actions'
 import { errorMessage } from '../../lib/api-error'
 import type { TeamFile } from '../../types/file'
 import { Avatar } from './avatar'
+import { FileActionsMenu } from './file-actions-menu'
 import { Toast } from './toast'
 
 const icons: Record<string, LucideIcon> = {
@@ -91,7 +90,7 @@ export function RecentFileItem({ file }: RecentFileItemProps) {
 								addSuffix: true,
 							})}
 
-							<p>por</p>
+							<span>por</span>
 						</time>
 						<Avatar
 							member={file.member}
@@ -101,35 +100,21 @@ export function RecentFileItem({ file }: RecentFileItemProps) {
 					</span>
 				</span>
 			</button>
-			<div className="flex shrink-0 items-center gap-1">
-				<button
-					type="button"
-					onClick={() => copy.mutate({ fileId: file.id })}
-					disabled={!canQuery || copy.isPending}
-					className="icon-button text-white/45 transition-colors hover:bg-white/10 hover:text-white"
-				>
-					{copy.isPending ? (
-						<Loader2 size={16} className="animate-spin" aria-hidden="true" />
-					) : (
-						<Link size={16} aria-hidden="true" />
-					)}
-				</button>
-				<button
-					id={`qr-${file.id}`}
-					type="button"
-					onClick={() =>
-						void navigate(
-							`/teams/${encodeURIComponent(file.teamId)}/files/${encodeURIComponent(file.id)}/qr`,
-							{ state: { fileName: file.name } },
-						)
-					}
-					aria-label={`Exibir QR Code de ${file.name}`}
-					title="Exibir QR Code"
-					className="icon-button text-white/45 transition-colors hover:bg-white/10 hover:text-white"
-				>
-					<QrCode size={16} aria-hidden="true" />
-				</button>
-			</div>
+			<FileActionsMenu
+				fileId={file.id}
+				fileName={file.name}
+				disabled={!canQuery}
+				copying={copy.isPending}
+				downloading={download.isPending}
+				onDownload={() => download.mutate(file)}
+				onCopy={() => copy.mutate({ fileId: file.id })}
+				onQrCode={() =>
+					void navigate(
+						`/teams/${encodeURIComponent(file.teamId)}/files/${encodeURIComponent(file.id)}/qr`,
+						{ state: { fileName: file.name } },
+					)
+				}
+			/>
 			{error && (
 				<p role="alert" className="w-full px-2 text-xs text-red-300">
 					{error}

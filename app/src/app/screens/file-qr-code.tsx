@@ -36,7 +36,7 @@ function FileQrCode({ teamId, fileId }: { teamId: string; fileId: string }) {
 				? location.state.fileName
 				: 'Arquivo compartilhado'),
 	}
-	const back = useScreenBack('/', `qr-${fileId}`)
+	const back = useScreenBack('/', `file-actions-${fileId}`)
 	const now = useNow()
 	const color = '#ffffffb0'
 	const remaining = query.data
