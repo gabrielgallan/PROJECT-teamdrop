@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Box, Loader2 } from 'lucide-react'
+import { Box } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { getInviteDetails } from '../../api/invites/get-invite-details'
@@ -11,6 +11,7 @@ import { useScreenBack } from '../../hooks/use-navigation'
 import { errorMessage } from '../../lib/api-error'
 import { AuthNotice } from '../components/auth-notice'
 import { ScreenHeader } from '../components/screen-header'
+import { Skeleton } from '../components/skeleton'
 
 export function AcceptInviteScreen() {
 	const { token = '' } = useParams()
@@ -103,10 +104,15 @@ function AcceptInvite({ token }: { token: string }) {
 						</button>
 					</form>
 				) : loading ? (
-					<p role="status" className="flex items-center justify-center gap-2">
-						<Loader2 size={16} className="animate-spin" />
-						Verificando convite…
-					</p>
+					<div role="status" className="flex flex-col items-center gap-4">
+						<span className="sr-only">Verificando convite…</span>
+						<Skeleton className="mb-4 size-14 rounded-xl" />
+						<Skeleton className="h-3 w-4/5" />
+						<Skeleton className="h-3 w-1/2" />
+						<div aria-hidden="true" className="mt-2 flex w-full justify-center gap-2">
+							<Skeleton className="h-8 w-20" /><Skeleton className="h-8 w-24" />
+						</div>
+					</div>
 				) : success || preview?.alreadyMember ? (
 					<>
 						<p role="status">

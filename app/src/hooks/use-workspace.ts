@@ -8,8 +8,8 @@ function useWorkspace() {
 }
 
 export function useSelectedTeam() {
-	const { team, selectTeam } = useWorkspace()
-	return { team, selectTeam }
+	const { team, selectTeam, teamsLoading } = useWorkspace()
+	return { team, selectTeam, teamsLoading }
 }
 
 export function useTeamUploadQueue() {

@@ -10,6 +10,7 @@
 }
 
 :root {
+	--skeleton-color: rgb(255 255 255 / 14%);
 	user-select: none;
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -56,6 +57,19 @@ a {
 }
 
 @layer components {
+	.skeleton {
+		display: block;
+		border-radius: var(--radius-md);
+		background-color: var(--skeleton-color);
+		animation: skeleton-pulse 1.8s ease-in-out infinite;
+	}
+
+	.skeleton-qr-cell {
+		color: var(--skeleton-color);
+		fill: currentColor;
+		animation: skeleton-pulse 1.8s ease-in-out infinite;
+	}
+
 	.progress-indeterminate {
 		width: 40%;
 		animation: upload-progress 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
@@ -103,7 +117,18 @@ a {
 	to { transform: translateX(250%); }
 }
 
+@keyframes skeleton-pulse {
+	0%, 100% { opacity: 0.4; }
+	50% { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+	.skeleton,
+	.skeleton-qr-cell {
+		animation: none;
+		opacity: 1;
+	}
+
 	.progress-indeterminate {
 		animation: none;
 		transform: translateX(75%);

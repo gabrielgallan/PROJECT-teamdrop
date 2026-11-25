@@ -37,7 +37,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 	}
 
 	return (
-		<WorkspaceContext value={{ team, selectTeam, queue, scroll: scroll.current }}>
+		<WorkspaceContext value={{ team, teamsLoading: canQuery && listing.isPending, selectTeam, queue, scroll: scroll.current }}>
 			{children}
 		</WorkspaceContext>
 	)

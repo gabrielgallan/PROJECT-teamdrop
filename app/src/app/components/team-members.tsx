@@ -9,6 +9,7 @@ import { queryKeys } from '../../api/query-keys'
 import { memberView } from '../utils/presentation'
 import { Avatar } from './avatar'
 import { ConfirmationDialog } from './confirmation-dialog'
+import { ListSkeleton } from './skeleton'
 
 export function TeamMembers({ teamId, teamName, canManage }: { teamId: string; teamName: string; canManage: boolean }) {
 	const { user, canQuery } = useAuth()
@@ -27,8 +28,8 @@ export function TeamMembers({ teamId, teamName, canManage }: { teamId: string; t
 	}
 	return <>
 		<h2 id="team-members-title" tabIndex={-1} className="section-title">Membros</h2>
-		<section aria-labelledby="team-members-title" className="shrink-0 px-2 pb-4">
-			{listing.isPending && <p role="status" className="px-2 text-xs text-white/70">Carregando membros…</p>}
+		<section aria-labelledby="team-members-title" aria-busy={listing.isFetching} className="shrink-0 px-2 pb-4">
+			{listing.isPending && canQuery && <ListSkeleton variant="member" />}
 			{listing.error && <div role="alert" className="px-2 text-xs text-red-300">{errorMessage(listing.error)}{' '}
 				<button type="button" disabled={!canQuery || listing.isFetching} onClick={() => void listing.refetch()} className="underline">Atualizar membros</button>
 			</div>}

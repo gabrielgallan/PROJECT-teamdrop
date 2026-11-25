@@ -1,4 +1,4 @@
-import { Box, Check, ChevronDown, Loader2, Search } from 'lucide-react'
+import { Box, Check, ChevronDown, Search } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
@@ -7,6 +7,7 @@ import { userTeamsQuery } from '../../api/teams/queries'
 import { useSelectedTeam, useTeamUploadQueue } from '../../hooks/use-workspace'
 import { errorMessage } from '../../lib/api-error'
 import { MenuItem } from './menu-item'
+import { Skeleton } from './skeleton'
 
 export function TeamSwitcher() {
 	const { user, canQuery } = useAuth()
@@ -73,7 +74,8 @@ export function TeamSwitcher() {
 			<MenuItem
 				ref={trigger}
 				disabled={disabled || loading || single}
-				className={single && !disabled ? 'disabled:opacity-100' : ''}
+				className={loading || (single && !disabled) ? 'disabled:opacity-100' : ''}
+				aria-busy={loading}
 				aria-label={selected ? `Time atual: ${selected.name}` : loading ? 'Carregando times' : 'Selecionar ou criar um time'}
 				aria-haspopup={canOpen ? 'dialog' : undefined}
 				aria-expanded={canOpen ? open : undefined}
@@ -87,9 +89,9 @@ export function TeamSwitcher() {
 					}
 				}}
 			>
-				{loading ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Box aria-hidden="true" />}
+				{loading ? <Skeleton className="size-4 shrink-0" /> : <Box aria-hidden="true" />}
 				<span className="min-w-0 flex-1 truncate text-left" title={selected?.name}>
-					{loading ? 'Carregando times…' : selected?.name ?? (error ? 'Recarregar times' : 'Selecionar ou criar um time')}
+					{loading ? <Skeleton className="h-3 w-28" /> : selected?.name ?? (error ? 'Recarregar times' : 'Selecionar ou criar um time')}
 				</span>
 				{!loading && !single && teams.length > 0 && <ChevronDown aria-hidden="true" />}
 			</MenuItem>

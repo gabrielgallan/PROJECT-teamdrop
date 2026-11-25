@@ -1,6 +1,6 @@
 import { ReactQRCode } from '@lglab/react-qr-code'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Loader2, QrCode, RefreshCw } from 'lucide-react'
+import { QrCode, RefreshCw } from 'lucide-react'
 import { useLocation, useParams } from 'react-router'
 import { fileUrlQuery, teamFilesQuery } from '../../api/files/queries'
 import { useAuth } from '../../hooks/use-auth'
@@ -9,6 +9,7 @@ import { useNow } from '../../hooks/use-now'
 import { errorMessage } from '../../lib/api-error'
 import { AuthNotice } from '../components/auth-notice'
 import { ScreenHeader } from '../components/screen-header'
+import { QrCodeSkeleton } from '../components/skeleton'
 
 export function FileQrCodeScreen() {
 	const { teamId = '', fileId = '' } = useParams()
@@ -40,6 +41,7 @@ function FileQrCode({ teamId, fileId }: { teamId: string; fileId: string }) {
 	const color = '#ffffffb0'
 	const remaining = query.data ? Math.max(0, Math.ceil((query.data.expiresAt - now) / 1000)) : 0
 	const expired = Boolean(query.data) && remaining === 0
+	const generating = canQuery && (query.isPending || (query.isFetching && expired))
 	return (
 		<main className="flex h-full flex-col overflow-y-auto bg-zinc-900/50 text-white/90">
 			<AuthNotice />
@@ -57,14 +59,8 @@ function FileQrCode({ teamId, fileId }: { teamId: string; fileId: string }) {
 				<p className="w-full break-words text-ui font-medium" title={file.name}>
 					{file.name}
 				</p>
-				{query.isFetching ? (
-					<div
-						role="status"
-						className="flex min-h-60 items-center justify-center gap-2 text-xs text-white/70"
-					>
-						<Loader2 className="size-4 animate-spin" aria-hidden="true" />
-						Gerando QR Code…
-					</div>
+				{generating ? (
+					<QrCodeSkeleton />
 				) : query.data && !expired ? (
 					<>
 						<div

@@ -1,6 +1,7 @@
 import { Loader2, Package } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
 import { useSession } from '../../hooks/use-session'
+import { ProfileSkeleton } from '../components/skeleton'
 
 export function LoginScreen() {
 	const { status, busy, error, needsLogin, login, retry } = useSession()
@@ -18,9 +19,7 @@ export function LoginScreen() {
 			<Package className="mx-auto size-14 stroke-[1.5]" />
 
 			{isRestoring ? (
-				<p role="status" className="mt-8 text-center text-sm text-white/70">
-					Restaurando sessão…
-				</p>
+				<ProfileSkeleton label="Restaurando sessão…" className="mt-8 justify-center" />
 			) : (
 				<div className="mt-8 space-y-4">
 					{canLogin && (

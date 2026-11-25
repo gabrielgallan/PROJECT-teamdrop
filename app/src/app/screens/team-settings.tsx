@@ -15,6 +15,7 @@ import { TeamMembers } from '../components/team-members'
 import { TeamNameForm } from '../components/team-name-form'
 import { ConfirmationDialog } from '../components/confirmation-dialog'
 import { MenuItem } from '../components/menu-item'
+import { Skeleton } from '../components/skeleton'
 
 export function TeamSettingsScreen() {
 	const { teamId = '' } = useParams()
@@ -39,10 +40,15 @@ function TeamSettings({ teamId }: { teamId: string }) {
 					{...back}
 				/>
 				<AuthNotice />
-				{listing.isPending && (
-					<p role="status" className="mx-4 text-xs text-white/70">
-						Carregando time…
-					</p>
+				{listing.isPending && canQuery && (
+					<div role="status" aria-busy="true" className="mx-4 space-y-4">
+						<span className="sr-only">Carregando time…</span>
+						<Skeleton className="h-3 w-24" />
+						<Skeleton className="h-11 w-full" />
+						<Skeleton className="h-3 w-28" />
+						<Skeleton className="h-8 w-full" />
+						<Skeleton className="h-8 w-full" />
+					</div>
 				)}
 				{listing.error && (
 					<div role="alert" className="mx-4 text-xs text-red-300">

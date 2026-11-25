@@ -12,6 +12,7 @@ import { CreateTeamDialog } from '../components/create-team-dialog'
 import { MenuItem } from '../components/menu-item'
 import { ScreenHeader } from '../components/screen-header'
 import { Separator } from '../components/separator'
+import { ListSkeleton } from '../components/skeleton'
 import { memberView } from '../utils/presentation'
 
 export function SettingsScreen() {
@@ -86,13 +87,12 @@ export function SettingsScreen() {
 			</h2>
 			<section
 				aria-labelledby="settings-teams-title"
+				aria-busy={listing.isFetching}
 				className="min-h-0 flex-1 overflow-y-auto px-2 pb-4"
 			>
 				{listing.isPending ? (
-					<p role="status" className="px-2 py-4 text-xs text-white/70">
-						Carregando times…
-					</p>
-				) : teams.length === 0 ? (
+					listing.isFetching && <ListSkeleton variant="team" />
+				) : !listing.error && teams.length === 0 ? (
 					<p className="px-2 py-4 text-xs leading-relaxed text-white/70">
 						Você ainda não participa de nenhum time.
 					</p>
