@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
 
-export type TeamRole = 'member' | 'owner'
+export type Role = 'member' | 'owner' | 'invited'
 
-// Responses
-export class PublicTeamDto {
+export class TeamDto {
 	@ApiProperty({
 		example: 'a7cd927d-de92-4af8-b16c-797bb1ec1641',
 	})
@@ -20,18 +19,22 @@ export class PublicTeamDto {
 	slug!: string
 
 	@ApiProperty({
-		example: 'owner',
-		enum: ['owner', 'member'],
+		type: Date,
+		example: '2026-11-25T12:00:00.000Z',
 	})
-	role!: TeamRole
+	createdAt!: Date
+
+	@ApiProperty({
+		type: Date,
+		example: '2026-11-25T15:30:00.000Z',
+	})
+	updatedAt!: Date
 }
 
-export class GetTeamsResponseDto {
-	@ApiProperty({ type: [PublicTeamDto] })
-	teams!: PublicTeamDto[]
-}
-
-export class CreateTeamResponseDto {
-	@ApiProperty({ type: PublicTeamDto })
-	team!: PublicTeamDto
+export class PublicTeamDto extends TeamDto {
+	@ApiProperty({
+		enum: ['owner', 'member', 'invited'],
+		example: 'owner',
+	})
+	role!: string
 }

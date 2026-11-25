@@ -2,6 +2,7 @@ import {
 	File,
 	Prisma,
 } from '../../../infrastructure/database/prisma/client/client.js'
+import { PublicFileDto } from './dtos/file.dto.js'
 
 export type PrismaFileWithAuthor = Prisma.FileGetPayload<{
 	include: {
@@ -16,7 +17,7 @@ export type PrismaFileWithAuthor = Prisma.FileGetPayload<{
 }>
 
 export class FilesPresenter {
-	static toHTTP(file: File) {
+	static toHTTP(file: File): PublicFileDto {
 		const { authorId, teamId, storageKey, ...data } = file
 
 		return {

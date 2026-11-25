@@ -7,4 +7,4 @@ export interface ICacheService {
 	delete(key: string): Promise<void>
 }
 
-export const CacheService = Symbol.for('cache:ICacheService');
+export const CacheService = Symbol.for('cache:ICacheService')

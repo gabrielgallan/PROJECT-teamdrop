@@ -7,10 +7,12 @@ import {
 import { CryptographyService } from '../../../common/cryptography/cryptography.service.js'
 import { PrismaService } from '../../../infrastructure/database/prisma/prisma.service.js'
 import { EnvService } from '../../../infrastructure/env/env.service.js'
-import { AcceptTeamInviteServiceDto } from '../presentation/dtos/accept-team-invite.dto.js'
-import { CreateTeamInviteServiceDto } from '../presentation/dtos/create-team-invite.dto.js'
-import { GetInviteDetailsServiceDto } from '../presentation/dtos/get-invite-details.dto.js'
-import { RevokeTeamInvitesServiceDto } from '../presentation/dtos/revoke-team-invites.dto.js'
+import {
+	AcceptTeamInviteServiceInput,
+	CreateTeamInviteServiceInput,
+	GetInviteDetailsServiceInput,
+	RevokeTeamInvitesServiceInput,
+} from './invites.types.js'
 
 @Injectable()
 export class InvitesService {
@@ -25,7 +27,7 @@ export class InvitesService {
 		teamId,
 		maxUses,
 		expiresIn,
-	}: CreateTeamInviteServiceDto) {
+	}: CreateTeamInviteServiceInput) {
 		const membership = await this.prisma.member.findUnique({
 			where: {
 				teamId_userId: {
@@ -91,7 +93,7 @@ export class InvitesService {
 		}
 	}
 
-	async revokeTeamInvites({ userId, teamId }: RevokeTeamInvitesServiceDto) {
+	async revokeTeamInvites({ userId, teamId }: RevokeTeamInvitesServiceInput) {
 		const membership = await this.prisma.member.findUnique({
 			where: {
 				teamId_userId: {
@@ -141,19 +143,13 @@ export class InvitesService {
 		return
 	}
 
-	async getInviteDetails({ userId, token }: GetInviteDetailsServiceDto) {
+	async getInviteDetails({ userId, token }: GetInviteDetailsServiceInput) {
 		const invite = await this.prisma.invite.findUnique({
 			where: {
 				tokenHash: this.cryptoService.hashToken(token, 'hex'),
 			},
 			include: {
-				team: {
-					select: {
-						id: true,
-						name: true,
-						slug: true,
-					},
-				},
+				team: true,
 			},
 		})
 
@@ -183,12 +179,19 @@ export class InvitesService {
 		}
 
 		return {
-			team: invite.team,
-			alreadyMember: Boolean(membership),
+			team: {
+				...invite.team,
+				role:
+					invite.team.ownerId === membership?.userId
+						? 'owner'
+						: membership
+							? 'member'
+							: 'invited',
+			},
 		}
 	}
 
-	async acceptInvite({ userId, token }: AcceptTeamInviteServiceDto) {
+	async acceptInvite({ userId, token }: AcceptTeamInviteServiceInput) {
 		const tokenHash = this.cryptoService.hashToken(token, 'hex')
 
 		return this.prisma.$transaction(async (db) => {

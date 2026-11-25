@@ -15,30 +15,18 @@ import {
 	ApiTags,
 } from '@nestjs/swagger'
 import { ApiErrorResponseDto } from '../../../common/http/dtos/api-error-response.dto.js'
-import { ZodValidationPipe } from '../../../common/http/pipes/zod-validation.pipe.js'
 import { CurrentUser } from '../../auth/presentation/decorators/current-user.decorator.js'
 import { AuthenticatedUser } from '../../auth/services/auth.service.js'
-import {
-	TeamIdDto,
-	teamIdSchema,
-} from '../../teams/presentation/teams.controller.js'
+import { PublicTeamDto } from '../../teams/presentation/dtos/team.dto.js'
+import { TeamIdDto } from '../../teams/presentation/teams.controller.js'
 import { TeamsPresenter } from '../../teams/presentation/teams.presenter.js'
 import { InvitesService } from '../application/invites.service.js'
-import {
-	AcceptTeamInviteDto,
-	AcceptTeamInviteResponseDto,
-	acceptTeamInviteSchema,
-} from './dtos/accept-team-invite.dto.js'
+import { AcceptTeamInviteDto } from './dtos/accept-team-invite.dto.js'
 import {
 	CreateInviteResponseDto,
 	CreateTeamInviteDto,
-	createTeamInviteSchema,
 } from './dtos/create-team-invite.dto.js'
-import {
-	GetInviteDetailsDto,
-	GetInviteDetailsResponseDto,
-	getInviteDetailsSchema,
-} from './dtos/get-invite-details.dto.js'
+import { GetInviteDetailsDto } from './dtos/get-invite-details.dto.js'
 
 @ApiTags('Invites')
 @ApiBearerAuth()
@@ -81,7 +69,7 @@ export class InvitesController {
 	@Header('Cache-Control', 'no-store')
 	async createTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
-		@Body(new ZodValidationPipe(createTeamInviteSchema))
+		@Body()
 		body: CreateTeamInviteDto,
 	) {
 		const { teamId, maxUses, expiresIn } = body
@@ -131,7 +119,7 @@ export class InvitesController {
 	@HttpCode(204)
 	async revokeTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
-		@Body(new ZodValidationPipe(teamIdSchema)) body: TeamIdDto,
+		@Body() body: TeamIdDto,
 	) {
 		const { teamId } = body
 
@@ -151,7 +139,7 @@ export class InvitesController {
 		status: 200,
 		description:
 			'Invite details and user membership status retrieved successfully.',
-		type: GetInviteDetailsResponseDto,
+		type: PublicTeamDto,
 	})
 	@ApiResponse({
 		status: 400,
@@ -173,18 +161,15 @@ export class InvitesController {
 	@Header('Cache-Control', 'no-store')
 	async getInviteDetails(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(getInviteDetailsSchema))
+		@Param()
 		param: GetInviteDetailsDto,
 	) {
-		const { team, alreadyMember } = await this.invitesService.getInviteDetails({
+		const { team } = await this.invitesService.getInviteDetails({
 			userId: user.userId,
 			token: param.token,
 		})
 
-		return {
-			team,
-			alreadyMember,
-		}
+		return TeamsPresenter.toHTTP(team)
 	}
 
 	// Accept invite
@@ -192,9 +177,8 @@ export class InvitesController {
 		summary: 'Accept invite',
 	})
 	@ApiResponse({
-		status: 201,
+		status: 204,
 		description: 'Team invite successfully accepted.',
-		type: AcceptTeamInviteResponseDto,
 	})
 	@ApiResponse({
 		status: 400,
@@ -212,20 +196,18 @@ export class InvitesController {
 		type: ApiErrorResponseDto,
 	})
 	@Post(':token/accept')
-	@HttpCode(201)
+	@HttpCode(204)
 	@Header('Cache-Control', 'no-store')
 	async acceptTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(acceptTeamInviteSchema))
+		@Param()
 		param: AcceptTeamInviteDto,
 	) {
-		const { team } = await this.invitesService.acceptInvite({
+		await this.invitesService.acceptInvite({
 			userId: user.userId,
 			token: param.token,
 		})
 
-		return {
-			team: TeamsPresenter.teamWithRoleToHTTP(team),
-		}
+		return
 	}
 }

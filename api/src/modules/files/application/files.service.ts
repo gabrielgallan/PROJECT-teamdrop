@@ -6,11 +6,16 @@ import {
 } from '@nestjs/common'
 import { v7 as uuidv7 } from 'uuid'
 import { PrismaService } from '../../../infrastructure/database/prisma/prisma.service.js'
-import { IStorageService, StorageService } from '../../../infrastructure/storage/storage.interface.js'
+import {
+	IStorageService,
+	StorageService,
+} from '../../../infrastructure/storage/storage.interface.js'
 import { FilesEmitterService } from '../../../infrastructure/websocket/events/files/files-emitter.service.js'
-import { DeleteFileServiceDto } from '../presentation/dtos/delete-file.dto.js'
-import { ListFilesServiceDto } from '../presentation/dtos/list-files.dto.js'
-import { UploadFileServiceDto } from '../presentation/dtos/upload-file.dto.js'
+import {
+	DeleteFileServiceInput,
+	ListFilesServiceInput,
+	UploadFileServiceInput,
+} from './files.types.js'
 
 @Injectable()
 export class FilesService {
@@ -28,7 +33,7 @@ export class FilesService {
 		fileData,
 		fileMimeType,
 		fileSize,
-	}: UploadFileServiceDto) {
+	}: UploadFileServiceInput) {
 		const membership = await this.prisma.member.findUnique({
 			where: {
 				teamId_userId: {
@@ -78,7 +83,12 @@ export class FilesService {
 		}
 	}
 
-	async listFiles({ userId, teamId, cursor, limit = 10 }: ListFilesServiceDto) {
+	async listFiles({
+		userId,
+		teamId,
+		cursor,
+		limit = 10,
+	}: ListFilesServiceInput) {
 		const membership = await this.prisma.member.findUnique({
 			where: {
 				teamId_userId: {
@@ -181,7 +191,7 @@ export class FilesService {
 		}
 	}
 
-	async deleteFile({ userId, teamId, fileId }: DeleteFileServiceDto) {
+	async deleteFile({ userId, teamId, fileId }: DeleteFileServiceInput) {
 		const file = await this.prisma.file.findUnique({
 			where: {
 				id: fileId,

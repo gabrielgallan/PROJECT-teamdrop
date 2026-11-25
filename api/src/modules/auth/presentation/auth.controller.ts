@@ -34,7 +34,6 @@ import {
 	GoogleCallbackQueryDto,
 	googleCallbackQuerySchema,
 } from './dtos/google-callback.dto.js'
-import { ProfileResponseDto } from './dtos/public-user.dto.js'
 import {
 	RefreshTokenDto,
 	RefreshTokenResponseDto,
@@ -45,6 +44,7 @@ import {
 	StartDesktopLoginResponseDto,
 	startDesktopLoginSchema,
 } from './dtos/start-desktop.dto.js'
+import { ProfileResponseDto } from './dtos/user.dto.js'
 import { UserPresenter } from './presenters/user.presenter.js'
 
 @ApiTags('Authentication')

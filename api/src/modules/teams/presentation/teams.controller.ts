@@ -17,25 +17,21 @@ import {
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
 import { ApiErrorResponseDto } from '../../../common/http/dtos/api-error-response.dto.js'
-import { ZodValidationPipe } from '../../../common/http/pipes/zod-validation.pipe.js'
 import { CurrentUser } from '../../auth/presentation/decorators/current-user.decorator.js'
+import { UserMembershipDto } from '../../auth/presentation/dtos/user.dto.js'
 import { AuthenticatedUser } from '../../auth/services/auth.service.js'
 import { TeamsService } from '../application/teams.service.js'
-import { CreateTeamDto, createTeamSchema } from './dtos/create-team.dto.js'
-import { GetMembersResponseDto } from './dtos/member.dto.js'
-import {
-	RemoveMemberDto,
-	removeMemberSchema,
-} from './dtos/remove-member.dto.js'
-import { CreateTeamResponseDto, GetTeamsResponseDto } from './dtos/team.dto.js'
-import { UpdateTeamDto, updateTeamSchema } from './dtos/update-team.dto.js'
+import { CreateTeamDto } from './dtos/create-team.dto.js'
+import { RemoveMemberDto } from './dtos/remove-member.dto.js'
+import { PublicTeamDto } from './dtos/team.dto.js'
+import { UpdateTeamDto } from './dtos/update-team.dto.js'
 import { TeamsPresenter } from './teams.presenter.js'
 
-export const teamIdSchema = z.object({
-	teamId: z.string(),
-})
-
-export class TeamIdDto extends createZodDto(teamIdSchema) {}
+export class TeamIdDto extends createZodDto(
+	z.object({
+		teamId: z.string(),
+	}),
+) {}
 
 @ApiTags('Teams')
 @ApiBearerAuth()
@@ -50,7 +46,8 @@ export class TeamsController {
 	@ApiResponse({
 		status: 200,
 		description: 'User teams retrieved successfully.',
-		type: GetTeamsResponseDto,
+		type: PublicTeamDto,
+		isArray: true,
 	})
 	@ApiResponse({
 		status: 401,
@@ -64,9 +61,7 @@ export class TeamsController {
 			userId: user.userId,
 		})
 
-		return {
-			teams: teams.map(TeamsPresenter.teamWithRoleToHTTP),
-		}
+		return teams.map(TeamsPresenter.toHTTP)
 	}
 
 	// Create team
@@ -76,7 +71,7 @@ export class TeamsController {
 	@ApiResponse({
 		status: 201,
 		description: 'Team created successfully.',
-		type: CreateTeamResponseDto,
+		type: PublicTeamDto,
 	})
 	@ApiResponse({
 		status: 400,
@@ -96,7 +91,7 @@ export class TeamsController {
 	@Post()
 	@HttpCode(201)
 	async createTeam(
-		@Body(new ZodValidationPipe(createTeamSchema)) body: CreateTeamDto,
+		@Body() body: CreateTeamDto,
 		@CurrentUser() user: AuthenticatedUser,
 	) {
 		const { name } = body
@@ -106,9 +101,7 @@ export class TeamsController {
 			userId: user.userId,
 		})
 
-		return {
-			team: TeamsPresenter.toHTTP(team, user.userId),
-		}
+		return TeamsPresenter.toHTTP(team)
 	}
 
 	// Update team
@@ -118,7 +111,7 @@ export class TeamsController {
 	@ApiResponse({
 		status: 200,
 		description: 'Team updated successfully.',
-		type: CreateTeamResponseDto,
+		type: PublicTeamDto,
 	})
 	@ApiResponse({
 		status: 400,
@@ -144,8 +137,8 @@ export class TeamsController {
 	@HttpCode(200)
 	async updateTeam(
 		@CurrentUser() user: AuthenticatedUser,
-		@Body(new ZodValidationPipe(updateTeamSchema)) body: UpdateTeamDto,
-		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
+		@Body() body: UpdateTeamDto,
+		@Param() param: TeamIdDto,
 	) {
 		const { newName } = body
 		const { teamId } = param
@@ -156,9 +149,7 @@ export class TeamsController {
 			newName,
 		})
 
-		return {
-			team: TeamsPresenter.toHTTP(team, user.userId),
-		}
+		return TeamsPresenter.toHTTP(team)
 	}
 
 	// Get members
@@ -168,7 +159,8 @@ export class TeamsController {
 	@ApiResponse({
 		status: 200,
 		description: 'Team members retrieved successfully.',
-		type: GetMembersResponseDto,
+		type: UserMembershipDto,
+		isArray: true,
 	})
 	@ApiResponse({
 		status: 400,
@@ -187,9 +179,9 @@ export class TeamsController {
 	})
 	@Get(':teamId/members')
 	@HttpCode(200)
-	async getTeamMembers(
+	async listTeamMembers(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
+		@Param() param: TeamIdDto,
 	) {
 		const { teamId } = param
 
@@ -198,9 +190,7 @@ export class TeamsController {
 			teamId,
 		})
 
-		return {
-			users,
-		}
+		return users
 	}
 
 	// Leave from team
@@ -235,7 +225,7 @@ export class TeamsController {
 	@HttpCode(204)
 	async leaveFromTeam(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
+		@Param() param: TeamIdDto,
 	) {
 		const { teamId } = param
 
@@ -280,7 +270,7 @@ export class TeamsController {
 	@HttpCode(204)
 	async removeMemberFromTeam(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(removeMemberSchema)) param: RemoveMemberDto,
+		@Param() param: RemoveMemberDto,
 	) {
 		const { teamId, memberId } = param
 

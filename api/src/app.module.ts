@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { APP_GUARD } from '@nestjs/core'
+import { APP_GUARD, APP_PIPE } from '@nestjs/core'
 import { ThrottlerModule } from '@nestjs/throttler'
+import { ZodValidationPipe } from 'nestjs-zod'
 import { RateLimitGuard } from './common/http/guards/rate-limit.guard.js'
 import { envSchema } from './infrastructure/env/env.js'
 import { EnvModule } from './infrastructure/env/env.module.js'
@@ -45,6 +46,10 @@ import { TeamsModule } from './modules/teams/teams.module.js'
 		{
 			provide: APP_GUARD,
 			useClass: RateLimitGuard,
+		},
+		{
+			provide: APP_PIPE,
+			useClass: ZodValidationPipe,
 		},
 	],
 })

@@ -21,30 +21,22 @@ import { Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
 import { ApiErrorResponseDto } from '../../../common/http/dtos/api-error-response.dto.js'
-import { ZodValidationPipe } from '../../../common/http/pipes/zod-validation.pipe.js'
 import { CurrentUser } from '../../auth/presentation/decorators/current-user.decorator.js'
 import { Public } from '../../auth/presentation/decorators/public.decorator.js'
 import { AuthenticatedUser } from '../../auth/services/auth.service.js'
-import {
-	TeamIdDto,
-	teamIdSchema,
-} from '../../teams/presentation/teams.controller.js'
+import { TeamIdDto } from '../../teams/presentation/teams.controller.js'
 import { FilesService } from '../application/files.service.js'
-import { DeleteFileDto, deleteFileSchema } from './dtos/delete-file.dto.js'
+import { DeleteFileDto } from './dtos/delete-file.dto.js'
+import { PublicFileDto } from './dtos/file.dto.js'
 import { GenerateFileUrlResponseDto } from './dtos/generate-url.dto.js'
-import {
-	ListFilesDto,
-	ListFilesResponseDto,
-	listFilesSchema,
-} from './dtos/list-files.dto.js'
-import { UploadFileResponseDto } from './dtos/upload-file.dto.js'
+import { ListFilesDto, ListFilesResponseDto } from './dtos/list-files.dto.js'
 import { FilesPresenter } from './files.presenter.js'
 
-const fileIdSchema = z.object({
-	fileId: z.uuid(),
-})
-
-class FileIdDto extends createZodDto(fileIdSchema) {}
+class FileIdDto extends createZodDto(
+	z.object({
+		fileId: z.uuid(),
+	}),
+) {}
 
 @ApiTags('Files')
 @Controller('api')
@@ -58,7 +50,7 @@ export class FilesController {
 	@ApiResponse({
 		status: 201,
 		description: 'File uploaded successfully.',
-		type: UploadFileResponseDto,
+		type: PublicFileDto,
 	})
 	@ApiResponse({
 		status: 400,
@@ -87,7 +79,7 @@ export class FilesController {
 	@UseInterceptors(FileInterceptor('file'))
 	async uploadFile(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
+		@Param() param: TeamIdDto,
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8')
@@ -103,9 +95,7 @@ export class FilesController {
 			fileSize: file.size,
 		})
 
-		return {
-			file: FilesPresenter.toHTTP(result.file),
-		}
+		return FilesPresenter.toHTTP(result.file)
 	}
 
 	// List files
@@ -138,8 +128,8 @@ export class FilesController {
 	@HttpCode(200)
 	async listFiles(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(teamIdSchema)) param: TeamIdDto,
-		@Query(new ZodValidationPipe(listFilesSchema)) query: ListFilesDto,
+		@Param() param: TeamIdDto,
+		@Query() query: ListFilesDto,
 	) {
 		const { teamId } = param
 		const { limit, cursor } = query
@@ -179,10 +169,7 @@ export class FilesController {
 	@Public()
 	@Get('files/:fileId/preview')
 	@HttpCode(302)
-	async previewFile(
-		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
-		@Res() response: Response,
-	) {
+	async previewFile(@Param() param: FileIdDto, @Res() response: Response) {
 		const { url } = await this.filesService.getFilePreviewUrl(param.fileId)
 
 		return response.redirect(url)
@@ -210,10 +197,7 @@ export class FilesController {
 	@Public()
 	@Get('files/:fileId/download')
 	@HttpCode(302)
-	async downloadFile(
-		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
-		@Res() response: Response,
-	) {
+	async downloadFile(@Param() param: FileIdDto, @Res() response: Response) {
 		const { url } = await this.filesService.getFileDownloadUrl(param.fileId)
 
 		return response.redirect(url)
@@ -242,9 +226,7 @@ export class FilesController {
 	@Public()
 	@Get('files/:fileId/url')
 	@HttpCode(200)
-	async generateUrl(
-		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
-	) {
+	async generateUrl(@Param() param: FileIdDto) {
 		const { url } = await this.filesService.getFilePreviewUrl(param.fileId)
 
 		return {
@@ -286,7 +268,7 @@ export class FilesController {
 	@HttpCode(204)
 	async deleteFile(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(deleteFileSchema)) param: DeleteFileDto,
+		@Param() param: DeleteFileDto,
 	) {
 		await this.filesService.deleteFile({
 			userId: user.userId,
