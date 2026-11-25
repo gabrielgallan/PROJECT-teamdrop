@@ -31,7 +31,6 @@ export interface SharedFile {
 	size: string
 	member: Member
 	createdAt: number
-	expiresAt: number
 	url: string
 	link: string
 	kind: 'image' | 'document'

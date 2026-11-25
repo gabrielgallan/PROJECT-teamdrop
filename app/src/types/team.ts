@@ -10,7 +10,13 @@ export interface Team {
 	id: string
 	name: string
 	slug: string
+	createdAt: string
+	updatedAt: string
 	role: 'owner' | 'member'
+}
+
+export interface InviteTeam extends Omit<Team, 'role'> {
+	role: Team['role'] | 'invited'
 }
 
 export interface TeamMember {

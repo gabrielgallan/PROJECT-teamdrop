@@ -12,9 +12,9 @@ export interface GetTeamMembersResponse {
 export async function getTeamMembers(
 	{ teamId }: GetTeamMembersRequest,
 	signal?: AbortSignal,
-) {
+): Promise<GetTeamMembersResponse> {
 	const response = await api
 		.get(`api/teams/${encodeURIComponent(teamId)}/members`, { signal })
-		.json<GetTeamMembersResponse>()
-	return response
+		.json<TeamMember[]>()
+	return { users: response }
 }

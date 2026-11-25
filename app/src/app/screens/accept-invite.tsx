@@ -39,8 +39,10 @@ function AcceptInvite({ token }: { token: string }) {
 	const busy = accept.isPending
 	const loading = Boolean(token) && query.isFetching && !query.data
 	const preview = query.data
-	const success = accept.data?.team.name
-	const error = inputError || errorMessage(accept.error || query.error)
+	const success = accept.isSuccess
+	const alreadyMember = preview?.role === 'owner' || preview?.role === 'member'
+	const error =
+		inputError || errorMessage(accept.error || (!success && query.error))
 	const back = useScreenBack('/settings', 'accept-invite-button', busy)
 	const close = () => {
 		setPendingInvite(null)
@@ -125,11 +127,11 @@ function AcceptInvite({ token }: { token: string }) {
 							<Skeleton className="h-8 w-24" />
 						</div>
 					</div>
-				) : success || preview?.alreadyMember ? (
+				) : success || alreadyMember ? (
 					<>
 						<p role="status">
 							{success ? 'Você faz parte do time' : 'Você já participa do time'}{' '}
-							<strong>{success || preview?.team.name}</strong>.
+							<strong>{preview?.name}</strong>.
 						</p>
 						<button
 							type="button"
@@ -142,8 +144,7 @@ function AcceptInvite({ token }: { token: string }) {
 				) : preview ? (
 					<>
 						<p>
-							Você foi convidado para o time{' '}
-							<strong>{preview.team.name}</strong>.
+							Você foi convidado para o time <strong>{preview.name}</strong>.
 						</p>
 						<div className="mt-4 flex justify-center gap-2">
 							<button
@@ -158,7 +159,8 @@ function AcceptInvite({ token }: { token: string }) {
 								type="button"
 								disabled={busy || !canQuery}
 								onClick={() => {
-									if (!busy && canQuery) accept.mutate({ token })
+									if (!busy && canQuery)
+										accept.mutate({ token, teamId: preview.id })
 								}}
 								className="min-h-8 bg-indigo-400 px-3 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-300"
 							>

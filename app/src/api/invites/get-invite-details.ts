@@ -1,14 +1,11 @@
 import { api } from '../../lib/ky'
-import type { Team } from '../../types/team'
+import type { InviteTeam } from '../../types/team'
 
 export interface GetInviteDetailsRequest {
 	token: string
 }
 
-export interface GetInviteDetailsResponse {
-	team: Pick<Team, 'id' | 'name' | 'slug'>
-	alreadyMember: boolean
-}
+export type GetInviteDetailsResponse = InviteTeam
 
 export async function getInviteDetails(
 	{ token }: GetInviteDetailsRequest,

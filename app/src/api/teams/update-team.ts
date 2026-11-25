@@ -13,12 +13,12 @@ export interface UpdateTeamResponse {
 export async function updateTeam(
 	{ teamId, newName }: UpdateTeamRequest,
 	signal?: AbortSignal,
-) {
+): Promise<UpdateTeamResponse> {
 	const response = await api
 		.patch(`api/teams/${encodeURIComponent(teamId)}`, {
 			json: { newName },
 			signal,
 		})
-		.json<UpdateTeamResponse>()
-	return response
+		.json<Team>()
+	return { team: response }
 }

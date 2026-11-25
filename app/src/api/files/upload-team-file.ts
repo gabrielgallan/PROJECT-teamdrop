@@ -5,9 +5,7 @@ export interface UploadTeamFileRequest {
 	teamId: string
 	file: File
 }
-export interface UploadTeamFileResponse {
-	file: ApiFile
-}
+export type UploadTeamFileResponse = ApiFile
 
 export async function uploadTeamFile(
 	{ teamId, file }: UploadTeamFileRequest,

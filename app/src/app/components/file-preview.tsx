@@ -19,7 +19,6 @@ export function FilePreview({
 	onShare,
 	sharing,
 }: FilePreviewProps) {
-	const expired = file.expiresAt <= Date.now()
 	return (
 		<section className="flex min-h-0 flex-1 flex-col p-4">
 			<button
@@ -68,7 +67,6 @@ export function FilePreview({
 				<div className="grid grid-cols-2 gap-2">
 					<button
 						type="button"
-						disabled={expired}
 						onClick={() => onCopy(file)}
 						className="flex items-center justify-center gap-2 bg-white/5 px-3 py-2 text-ui hover:bg-white/10"
 					>
@@ -77,7 +75,6 @@ export function FilePreview({
 					</button>
 					<button
 						type="button"
-						disabled={expired}
 						onClick={() => onDownload(file)}
 						className="flex items-center justify-center gap-2 bg-white/5 px-3 py-2 text-ui hover:bg-white/10"
 					>

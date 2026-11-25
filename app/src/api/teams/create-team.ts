@@ -12,9 +12,9 @@ export interface CreateTeamResponse {
 export async function createTeam(
 	{ name }: CreateTeamRequest,
 	signal?: AbortSignal,
-) {
+): Promise<CreateTeamResponse> {
 	const response = await api
 		.post('api/teams', { json: { name }, signal })
-		.json<CreateTeamResponse>()
-	return response
+		.json<Team>()
+	return { team: response }
 }
