@@ -1,15 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { Box, Crown, Link, Loader2, LogOut, Plus, Settings, X } from 'lucide-react'
+import { Box, Crown, Link, Loader2, LogOut, Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useLeaveTeam } from '../../api/teams/mutations'
 import { userTeamsQuery } from '../../api/teams/queries'
 import { useAuth } from '../../hooks/use-auth'
 import { useScreenBack } from '../../hooks/use-navigation'
 import { errorMessage } from '../../lib/api-error'
 import { AuthNotice } from '../components/auth-notice'
 import { Avatar } from '../components/avatar'
-import { ConfirmationDialog } from '../components/confirmation-dialog'
 import { CreateTeamDialog } from '../components/create-team-dialog'
 import { MenuItem } from '../components/menu-item'
 import { ScreenHeader } from '../components/screen-header'
@@ -19,23 +17,15 @@ import { memberView } from '../utils/presentation'
 export function SettingsScreen() {
 	const auth = useAuth()
 	const listing = useQuery({ ...userTeamsQuery(auth.user.id), enabled: auth.canQuery })
-	const leave = useLeaveTeam()
 	const navigate = useNavigate()
 	const [createOpen, setCreateOpen] = useState(false)
-	const [leavingId, setLeavingId] = useState<string | null>(null)
 	const createButton = useRef<HTMLButtonElement>(null)
 	const back = useScreenBack(
 		'/',
 		'settings-button',
-		createOpen || Boolean(leavingId) || leave.isPending,
+		createOpen,
 	)
 	const teams = listing.data?.teams ?? []
-	const leaving = teams.find((team) => team.id === leavingId)
-	const closeLeave = () => {
-		setLeavingId(null)
-		leave.reset()
-		requestAnimationFrame(() => document.getElementById(`manage-team-${leavingId}`)?.focus())
-	}
 	return (
 		<main className="flex h-full flex-col overflow-hidden bg-zinc-800/60 text-white/90">
 			<header className="shrink-0 pb-4">
@@ -91,7 +81,7 @@ export function SettingsScreen() {
 				)}
 			</header>
 			<Separator />
-			<h2 id="settings-teams-title" className="section-title">
+			<h2 id="settings-teams-title" tabIndex={-1} className="section-title">
 				Seus times
 			</h2>
 			<section
@@ -110,31 +100,32 @@ export function SettingsScreen() {
 					<ul className="item-list">
 						{teams.map((team) => (
 							<li key={team.id}>
-								<div className="list-row">
-									<span className="item-icon text-white/70"><Box size={18} aria-hidden="true" /></span>
-									<span className="min-w-0 flex-1 truncate text-ui" title={team.name}>{team.name}</span>
-									{team.role === 'owner' && <span className="shrink-0 text-indigo-400" title="Você é proprietário">
-										<Crown size={16} aria-hidden="true" /><span className="sr-only">Você é proprietário</span>
-									</span>}
-									<button id={`manage-team-${team.id}`} type="button" disabled={!auth.canQuery || leave.isPending}
-										onClick={() => team.role === 'owner' ? void navigate(`/settings/teams/${encodeURIComponent(team.id)}`) : setLeavingId(team.id)}
-										aria-label={team.role === 'owner' ? `Gerenciar ${team.name}` : `Sair do time ${team.name}`}
-										title={team.role === 'owner' ? 'Gerenciar time' : 'Sair do time'}
-										className="icon-button text-white/60 hover:bg-white/5 hover:text-white">
-										{team.role === 'owner' ? <Settings size={16} aria-hidden="true" /> : <X size={16} aria-hidden="true" />}
-									</button>
-								</div>
+								<button
+									id={`manage-team-${team.id}`}
+									type="button"
+									disabled={!auth.canQuery}
+									onClick={() => void navigate(`/settings/teams/${encodeURIComponent(team.id)}`)}
+									aria-label={team.role === 'owner' ? `Gerenciar ${team.name}` : `Abrir time ${team.name}`}
+									className="list-row group w-full text-left transition-colors hover:bg-white/4 focus-visible:ring-2 focus-visible:ring-indigo-300"
+								>
+									<span className="item-icon text-white/70">
+										<Box size={18} aria-hidden="true" />
+									</span>
+									<span className="min-w-0 flex-1 truncate text-ui" title={team.name}>
+										{team.name}
+									</span>
+									{team.role === 'owner' && (
+										<span className="shrink-0 text-indigo-400" title="Você é proprietário">
+											<Crown size={16} aria-hidden="true" />
+											<span className="sr-only">Você é proprietário</span>
+										</span>
+									)}
+								</button>
 							</li>
 						))}
 					</ul>
 				)}
 			</section>
-			{leaving && <ConfirmationDialog title="Sair do time" message={`Deseja sair do time ${leaving.name}?`} confirmLabel="Sair do time"
-				busy={leave.isPending} error={errorMessage(leave.error)} onCancel={() => { if (!leave.isPending) closeLeave() }}
-				onConfirm={() => leave.mutate({ teamId: leaving.id }, { onSuccess: () => {
-					setLeavingId(null)
-					requestAnimationFrame(() => back.backRef.current?.focus())
-				} })} />}
 			{createOpen && (
 				<CreateTeamDialog
 					onClose={() => {

@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from 'react-router'
+import { LogOut } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router'
+import { useLeaveTeam } from '../../api/teams/mutations'
 import { userTeamsQuery } from '../../api/teams/queries'
 import { useAuth } from '../../hooks/use-auth'
 import { useScreenBack } from '../../hooks/use-navigation'
@@ -10,6 +13,8 @@ import { Separator } from '../components/separator'
 import { TeamInvites } from '../components/team-invites'
 import { TeamMembers } from '../components/team-members'
 import { TeamNameForm } from '../components/team-name-form'
+import { ConfirmationDialog } from '../components/confirmation-dialog'
+import { MenuItem } from '../components/menu-item'
 
 export function TeamSettingsScreen() {
 	const { teamId = '' } = useParams()
@@ -20,6 +25,10 @@ function TeamSettings({ teamId }: { teamId: string }) {
 	const { user, canQuery } = useAuth()
 	const listing = useQuery({ ...userTeamsQuery(user.id), enabled: canQuery })
 	const team = listing.data?.teams.find((item) => item.id === teamId)
+	const navigate = useNavigate()
+	const leave = useLeaveTeam()
+	const [leaving, setLeaving] = useState(false)
+	const leaveButton = useRef<HTMLButtonElement>(null)
 	const back = useScreenBack('/settings', `manage-team-${teamId}`)
 	return (
 		<main className="flex h-full flex-col overflow-y-auto bg-zinc-800/60 text-white/90">
@@ -48,9 +57,9 @@ function TeamSettings({ teamId }: { teamId: string }) {
 						</button>
 					</div>
 				)}
-				{listing.isSuccess && team?.role !== 'owner' && (
+				{listing.isSuccess && !team && (
 					<p role="alert" className="mx-4 text-xs text-red-300">
-						O time não está disponível para gerenciamento.
+						O time não está mais disponível.
 					</p>
 				)}
 				{team?.role === 'owner' && (
@@ -59,12 +68,35 @@ function TeamSettings({ teamId }: { teamId: string }) {
 						<TeamInvites teamId={teamId} />
 					</>
 				)}
+				{team?.role === 'member' && (
+					<div className="menu-group">
+						<MenuItem ref={leaveButton} variant="danger" disabled={!canQuery || leave.isPending}
+							onClick={() => { leave.reset(); setLeaving(true) }}>
+							<LogOut aria-hidden="true" />Sair do time
+						</MenuItem>
+					</div>
+				)}
 			</header>
-			{team?.role === 'owner' && (
+			{team && (
 				<>
 					<Separator />
-					<TeamMembers teamId={teamId} teamName={team.name} />
+					<TeamMembers teamId={teamId} teamName={team.name} canManage={team.role === 'owner'} />
 				</>
+			)}
+			{leaving && team && (
+				<ConfirmationDialog title="Sair do time" message={`Deseja sair do time ${team.name}?`}
+					confirmLabel="Sair do time" busy={leave.isPending} error={errorMessage(leave.error)}
+					onCancel={() => {
+						if (leave.isPending) return
+						setLeaving(false)
+						requestAnimationFrame(() => leaveButton.current?.focus())
+					}}
+					onConfirm={() => {
+						if (!canQuery || leave.isPending || team.role !== 'member') return
+						leave.mutate({ teamId }, { onSuccess: () => {
+							void navigate('/settings', { replace: true, state: { focusId: 'settings-teams-title' } })
+						} })
+					}} />
 			)}
 		</main>
 	)

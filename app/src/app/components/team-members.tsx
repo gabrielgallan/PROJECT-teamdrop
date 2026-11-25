@@ -10,7 +10,7 @@ import { memberView } from '../utils/presentation'
 import { Avatar } from './avatar'
 import { ConfirmationDialog } from './confirmation-dialog'
 
-export function TeamMembers({ teamId, teamName }: { teamId: string; teamName: string }) {
+export function TeamMembers({ teamId, teamName, canManage }: { teamId: string; teamName: string; canManage: boolean }) {
 	const { user, canQuery } = useAuth()
 	const listing = useQuery({
 		queryKey: queryKeys.members(user.id, teamId),
@@ -38,15 +38,15 @@ export function TeamMembers({ teamId, teamName }: { teamId: string; teamName: st
 					<Avatar member={view} className={`size-9 ${view.color}`} />
 					<span className="min-w-0 flex-1 truncate text-ui" title={view.name}>{member.id === user.id ? 'Você' : view.name}</span>
 					{member.role === 'owner' ? <span className="grid size-8 shrink-0 place-items-center text-indigo-400" title="Proprietário"><Crown size={16} aria-hidden="true" /><span className="sr-only">Proprietário</span></span>
-						: <button id={`remove-member-${member.id}`} type="button" disabled={!canQuery || remove.isPending}
+						: canManage ? <button id={`remove-member-${member.id}`} type="button" disabled={!canQuery || remove.isPending}
 							onClick={() => { remove.reset(); setPendingId(member.id) }} aria-label={`Remover ${view.name}`} title={`Remover ${view.name}`}
-							className="icon-button text-white/60 hover:bg-white/5 hover:text-white"><X size={16} aria-hidden="true" /></button>}
+							className="icon-button text-white/60 hover:bg-white/5 hover:text-white"><X size={16} aria-hidden="true" /></button> : null}
 				</div></li>
 			})}</ul>
 		</section>
-		{pending && <ConfirmationDialog title="Remover membro" message={`Remover ${pending.name || pending.email} do time ${teamName}?`} confirmLabel="Remover membro"
+		{pending && canManage && <ConfirmationDialog title="Remover membro" message={`Remover ${pending.name || pending.email} do time ${teamName}?`} confirmLabel="Remover membro"
 			busy={remove.isPending} error={errorMessage(remove.error)} onCancel={() => { if (!remove.isPending) close() }}
-			onConfirm={() => { if (canQuery && !remove.isPending) remove.mutate({ teamId, memberId: pending.id }, { onSuccess: () => {
+			onConfirm={() => { if (canManage && canQuery && !remove.isPending) remove.mutate({ teamId, memberId: pending.id }, { onSuccess: () => {
 				setPendingId(null)
 				requestAnimationFrame(() => document.getElementById('team-members-title')?.focus())
 			} }) }} />}
