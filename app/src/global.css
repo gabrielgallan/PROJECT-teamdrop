@@ -56,6 +56,11 @@ a {
 }
 
 @layer components {
+	.progress-indeterminate {
+		width: 40%;
+		animation: upload-progress 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+	}
+
 	.team-switcher-popover:popover-open {
 		display: flex;
 	}
@@ -90,6 +95,18 @@ a {
 
 	.icon-button > svg {
 		@apply size-4;
+	}
+}
+
+@keyframes upload-progress {
+	from { transform: translateX(-100%); }
+	to { transform: translateX(250%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.progress-indeterminate {
+		animation: none;
+		transform: translateX(75%);
 	}
 }
 

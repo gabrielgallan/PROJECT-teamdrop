@@ -1,4 +1,4 @@
-import { CloudUpload, Loader2, X } from 'lucide-react'
+import { CheckCircle2, CloudUpload, X } from 'lucide-react'
 import type { DropzoneState } from 'react-dropzone'
 import { Progress } from './progress'
 
@@ -12,6 +12,7 @@ interface FileDropzoneProps {
 	progress?: number
 	progressLabel?: string
 	status?: string
+	success?: string
 }
 
 export function FileDropzone({
@@ -24,6 +25,7 @@ export function FileDropzone({
 	progress,
 	progressLabel = 'Preparando arquivos',
 	status,
+	success,
 }: FileDropzoneProps) {
 	const { getRootProps, getInputProps, isDragActive } = dropzone
 	const firstFile = files[0]
@@ -38,8 +40,24 @@ export function FileDropzone({
 		>
 			<input {...getInputProps()} />
 			{status ? (
-				<div role="status" className="flex flex-1 items-center justify-center gap-2 text-xs text-white/70">
-					<Loader2 className="size-4 animate-spin" aria-hidden="true" />{status}
+				<div className="flex flex-1 flex-col items-center justify-center gap-3 px-8">
+					<p role="status" className="text-xs text-white/75">
+						{status}
+					</p>
+					<Progress label={status} className="w-full" />
+				</div>
+			) : success ? (
+				<div role="status" className="flex flex-1 items-center justify-center">
+					<span className="sr-only">{success}</span>
+					<button
+						type="button"
+						onClick={onSelect}
+						disabled={disabled}
+						aria-label="Selecionar arquivos"
+						className="grid size-12 place-items-center text-indigo-300 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-indigo-300"
+					>
+						<CheckCircle2 className="size-8 text-indigo-400" aria-hidden="true" />
+					</button>
 				</div>
 			) : progress !== undefined ? (
 				<div className="flex flex-1 flex-col items-center justify-center gap-3 px-8">

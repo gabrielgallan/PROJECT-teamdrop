@@ -39,6 +39,7 @@ export function UploadPanel({ children }: { children: ReactNode }) {
 				onClear={queue.clear}
 				disabled={busy || !team}
 				status={queue.status || undefined}
+				success={queue.success || undefined}
 			/>
 			{queue.pending.length > 0 && (
 				<div className="mx-4 flex items-center justify-between gap-2">
@@ -49,7 +50,7 @@ export function UploadPanel({ children }: { children: ReactNode }) {
 						className="shrink-0 flex items-center gap-2 justify-center bg-indigo-400 transition-colors duration-200 w-full h-8 text-xs text-indigo-100 hover:bg-indigo-400/70"
 					>
 						{queue.sharing ? (
-							<Loader2 className="size-4 animate-spin" />
+							<Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
 						) : (
 							<span className="truncate px-2" title={team?.name}>
 								Compartilhar em {team?.name}

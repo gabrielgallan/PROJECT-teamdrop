@@ -10,8 +10,8 @@ import { queryKeys } from '../api/query-keys'
 import type { PendingFile } from '../types/file'
 import { uploadBatch } from '../api/files/upload-batch'
 
-interface UploadState { teamId: string | null; pending: PendingFile[]; status: string; error: string }
-const empty = (teamId: string | null): UploadState => ({ teamId, pending: [], status: '', error: '' })
+interface UploadState { teamId: string | null; pending: PendingFile[]; status: string; error: string; success: string }
+const empty = (teamId: string | null): UploadState => ({ teamId, pending: [], status: '', error: '', success: '' })
 
 export function useUploadQueue(teamId: string | null) {
 	const { session, canQuery } = useAuth()
@@ -29,13 +29,17 @@ export function useUploadQueue(teamId: string | null) {
 		return () => { controller.current?.abort(); controller.current = null }
 	}, [teamId])
 	useEffect(() => { if (!canQuery) controller.current?.abort() }, [canQuery])
-
+	useEffect(() => {
+		if (!state.success) return
+		const timer = setTimeout(() => setState((previous) => ({ ...previous, success: '' })), 2000)
+		return () => clearTimeout(timer)
+	}, [state.success])
 
 	async function share() {
 		if (!teamId || !canQuery || liveTeam.current !== teamId || !state.pending.length || state.teamId !== teamId || controller.current) return
 		const active = new AbortController()
 		controller.current = active
-		setState((previous) => ({ ...previous, error: '' }))
+		setState((previous) => ({ ...previous, error: '', success: '' }))
 		try {
 			await uploadBatch([...state.pending], active.signal, async (item, signal) => {
 				const file = await uploadContent(item)
@@ -44,7 +48,10 @@ export function useUploadQueue(teamId: string | null) {
 			}, (item) => setState((previous) => previous.teamId === teamId
 				? { ...previous, pending: previous.pending.filter((value) => value.id !== item.id) } : previous),
 			(current, total) => setState((previous) => previous.teamId === teamId
-				? { ...previous, status: `Enviando ${current} de ${total}…` } : previous))
+				? { ...previous, status: total === 1 ? 'Enviando arquivo…' : `Enviando ${current} de ${total}…` } : previous))
+			if (controller.current === active && !active.signal.aborted) {
+				setState((previous) => ({ ...previous, success: state.pending.length === 1 ? 'Arquivo enviado' : 'Arquivos enviados' }))
+			}
 		} catch (failure) {
 			if (!active.signal.aborted && !isCancelled(failure)) setState((previous) => previous.teamId === teamId ? {
 				...previous, error: failure instanceof ApiError ? errorMessage(failure)
