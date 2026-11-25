@@ -31,7 +31,7 @@ export function FilePreview({
 				<ArrowLeft size={16} />
 				{onShare ? 'Descartar captura' : 'Voltar aos arquivos'}
 			</button>
-			<h2 className="break-words font-medium">{file.name}</h2>
+			<h2 className="wrap-break-word font-medium">{file.name}</h2>
 			<div className="mb-4 mt-2 flex items-center gap-2 text-xs text-white/60">
 				<Avatar member={file.member} />
 				{file.member.name}
@@ -39,9 +39,13 @@ export function FilePreview({
 			</div>
 			<div className="flex min-h-0 flex-1 mb-4 items-center justify-center overflow-auto rounded-md bg-black/20 p-3">
 				{file.kind === 'image' ? (
-					<img src={file.url} alt={file.name} className="max-h-full max-w-full object-contain" />
+					<img
+						src={file.url}
+						alt={file.name}
+						className="max-h-full max-w-full object-contain"
+					/>
 				) : file.text ? (
-					<pre className="w-full whitespace-pre-wrap break-words text-xs leading-relaxed text-white/75">
+					<pre className="w-full whitespace-pre-wrap wrap-break-word text-xs leading-relaxed text-white/75">
 						{file.text}
 					</pre>
 				) : (

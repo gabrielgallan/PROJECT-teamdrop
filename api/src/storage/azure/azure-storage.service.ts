@@ -1,4 +1,8 @@
-import { BlobSASPermissions, BlobServiceClient, type ContainerClient } from '@azure/storage-blob'
+import {
+	BlobSASPermissions,
+	BlobServiceClient,
+	type ContainerClient,
+} from '@azure/storage-blob'
 import { Injectable, Logger } from '@nestjs/common'
 import { EnvService } from '../../common/env/env.service.js'
 import { StorageService, StorageUrlType } from '../storage.interface.js'
@@ -38,14 +42,20 @@ export class AzureStorageService implements StorageService {
 
 			const duration = Math.round(performance.now() - startedAt)
 
-			this.logger.log(`Blob uploaded: ${key} (${data.byteLength} bytes, ${duration}ms)`)
+			this.logger.log(
+				`Blob uploaded: ${key} (${data.byteLength} bytes, ${duration}ms)`,
+			)
 		} catch (error) {
 			this.logger.error(`Failed to upload blob: ${key}`, error)
 			throw error
 		}
 	}
 
-	async generateUrl(key: string, type: StorageUrlType = 'preview', fileName?: string) {
+	async generateUrl(
+		key: string,
+		type: StorageUrlType = 'preview',
+		fileName?: string,
+	) {
 		try {
 			const blob = this.container.getBlockBlobClient(key)
 
@@ -56,7 +66,8 @@ export class AzureStorageService implements StorageService {
 					type === 'download'
 						? `attachment; filename*=UTF-8''${encodeURIComponent(String(fileName))}`
 						: undefined,
-				contentType: type === 'download' ? 'application/octet-stream' : undefined,
+				contentType:
+					type === 'download' ? 'application/octet-stream' : undefined,
 			})
 
 			this.logger.log(`Blob ${type} URL generated: ${key}`)

@@ -16,7 +16,9 @@ export function TeamInvites({ teamId }: { teamId: string }) {
 	const create = useAccountMutation(createTeamInvite)
 	const revoke = useAccountMutation(revokeTeamInvites)
 	const copy = useMutation({ mutationFn: copyText })
-	const [confirmation, setConfirmation] = useState<'replace' | 'revoke' | null>(null)
+	const [confirmation, setConfirmation] = useState<'replace' | 'revoke' | null>(
+		null,
+	)
 	const inviteButton = useRef<HTMLButtonElement>(null)
 	const revokeButton = useRef<HTMLButtonElement>(null)
 	const busy = create.isPending || revoke.isPending
@@ -29,18 +31,20 @@ export function TeamInvites({ teamId }: { teamId: string }) {
 	}
 	useEffect(() => {
 		if (!confirmation) return
-		const escape = (event: KeyboardEvent) => {
+		const handleEscape = (event: KeyboardEvent) => {
 			if (event.key === 'Escape') {
 				event.preventDefault()
 				cancel()
 			}
 		}
-		window.addEventListener('keydown', escape)
-		return () => window.removeEventListener('keydown', escape)
+		window.addEventListener('keydown', handleEscape)
+		return () => window.removeEventListener('keydown', handleEscape)
 	})
 	return (
 		<>
-			<h2 className="mx-4 mb-2 text-xs font-medium text-white/75">Convite do time</h2>
+			<h2 className="mx-4 mb-2 text-xs font-medium text-white/75">
+				Convite do time
+			</h2>
 			{url && (
 				<div className="mx-4 mb-2 space-y-2">
 					<div className="flex min-w-0 items-center gap-1 rounded-md bg-white/5 p-1">
@@ -61,8 +65,8 @@ export function TeamInvites({ teamId }: { teamId: string }) {
 						</button>
 					</div>
 					<p className="mt-2 text-xs leading-relaxed text-white/75">
-						Copie este link agora. Ao sair desta tela, será necessário gerar outro para obter um
-						link novamente.
+						Copie este link agora. Ao sair desta tela, será necessário gerar
+						outro para obter um link novamente.
 					</p>
 					{copy.error && (
 						<p role="alert" className="mt-2 text-xs text-red-300">
@@ -108,7 +112,9 @@ export function TeamInvites({ teamId }: { teamId: string }) {
 						confirmLabel={confirmation === 'replace' ? 'Gerar link' : 'Revogar'}
 						onCancel={cancel}
 						busy={busy || !canQuery}
-						error={errorMessage(confirmation === 'replace' ? create.error : revoke.error)}
+						error={errorMessage(
+							confirmation === 'replace' ? create.error : revoke.error,
+						)}
 						onConfirm={() => {
 							if (busy || !canQuery) return
 							if (confirmation === 'replace')
@@ -139,7 +145,10 @@ export function TeamInvites({ teamId }: { teamId: string }) {
 				</div>
 			)}
 			{revoke.isSuccess && (
-				<OperationFeedback key={revoke.submittedAt} message="Convites revogados." />
+				<OperationFeedback
+					key={revoke.submittedAt}
+					message="Convites revogados."
+				/>
 			)}
 		</>
 	)

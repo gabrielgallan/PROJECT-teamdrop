@@ -31,7 +31,10 @@ export class AccessTokenService {
 		)
 
 		if (expiresAt <= now) {
-			throw new UnauthorizedException({ code: 'INVALID_REFRESH_TOKEN', message: 'Session expired' })
+			throw new UnauthorizedException({
+				code: 'INVALID_REFRESH_TOKEN',
+				message: 'Session expired',
+			})
 		}
 
 		const accessToken = await this.jwt.signAsync(

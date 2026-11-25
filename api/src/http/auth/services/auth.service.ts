@@ -5,10 +5,18 @@ import { CryptographyService } from '../../../common/cryptography/cryptography.s
 import { PrismaService } from '../../../database/prisma/prisma.service.js'
 import { GoogleOAuthService } from '../oauth/google-oauth.service.js'
 import { UserPresenter } from '../presenters/user.presenter.js'
-import { DesktopTicketService, LOGIN_TTL_SECONDS } from './desktop-ticket.service.js'
+import {
+	DesktopTicketService,
+	LOGIN_TTL_SECONDS,
+} from './desktop-ticket.service.js'
 import { SessionService } from './session.service.js'
 
-const userSelect = { id: true, email: true, name: true, avatarUrl: true } as const
+const userSelect = {
+	id: true,
+	email: true,
+	name: true,
+	avatarUrl: true,
+} as const
 
 export interface AuthenticatedUser {
 	userId: string
@@ -69,14 +77,19 @@ export class AuthService {
 	}
 
 	async completeGoogleLogin(state: string, code?: string, error?: string) {
-		const attempt = await this.cache.getDel(`auth:oauth:${this.cryptoService.hashToken(state)}`)
+		const attempt = await this.cache.getDel(
+			`auth:oauth:${this.cryptoService.hashToken(state)}`,
+		)
 
 		if (!attempt)
 			throw new UnauthorizedException({
 				message: 'Invalid or expired OAuth state',
 			})
 
-		const { codeVerifier, ticket } = JSON.parse(attempt) as { codeVerifier: string; ticket: string }
+		const { codeVerifier, ticket } = JSON.parse(attempt) as {
+			codeVerifier: string
+			ticket: string
+		}
 
 		if (error || !code) {
 			await this.tickets.complete(ticket)
@@ -86,7 +99,10 @@ export class AuthService {
 
 		let stage = 'google-oauth'
 		try {
-			const profile = await this.googleOAuth.authenticate({ code, codeVerifier })
+			const profile = await this.googleOAuth.authenticate({
+				code,
+				codeVerifier,
+			})
 
 			stage = 'database'
 			const user = await this.prisma.$transaction(async (db) => {
@@ -118,7 +134,9 @@ export class AuthService {
 						email: profile.email,
 						name: profile.name,
 						avatarUrl: profile.avatarUrl,
-						accounts: { create: { provider: 'GOOGLE', providerAccountId: profile.id } },
+						accounts: {
+							create: { provider: 'GOOGLE', providerAccountId: profile.id },
+						},
 					},
 					select: userSelect,
 				})
@@ -126,12 +144,16 @@ export class AuthService {
 			stage = 'complete-ticket'
 			return await this.tickets.complete(ticket, user.id)
 		} catch (err) {
-			const code = err && typeof err === 'object' && 'code' in err ? err.code : undefined
+			const code =
+				err && typeof err === 'object' && 'code' in err ? err.code : undefined
 			this.logger.error({
 				message: 'Google login failed',
 				stage,
 				errorType: err instanceof Error ? err.name : 'UnknownError',
-				code: typeof code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(code) ? code : undefined,
+				code:
+					typeof code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(code)
+						? code
+						: undefined,
 			})
 
 			await this.tickets.complete(ticket)

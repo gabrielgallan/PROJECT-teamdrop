@@ -1,11 +1,16 @@
-import { ForbiddenException, GoneException, Injectable, NotFoundException } from '@nestjs/common'
-import { CryptographyService } from '../../common/cryptography/cryptography.service.js'
-import { EnvService } from '../../common/env/env.service.js'
-import { PrismaService } from '../../database/prisma/prisma.service.js'
-import { AcceptTeamInviteServiceDto } from './dtos/accept-team-invite.dto.js'
-import { CreateTeamInviteServiceDto } from './dtos/create-team-invite.dto.js'
-import { GetInviteDetailsServiceDto } from './dtos/get-invite-details.dto.js'
-import { RevokeTeamInvitesServiceDto } from './dtos/revoke-team-invites.dto.js'
+import {
+	ForbiddenException,
+	GoneException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common'
+import { CryptographyService } from '../../../common/cryptography/cryptography.service.js'
+import { EnvService } from '../../../common/env/env.service.js'
+import { PrismaService } from '../../../database/prisma/prisma.service.js'
+import { AcceptTeamInviteServiceDto } from '../presentation/dtos/accept-team-invite.dto.js'
+import { CreateTeamInviteServiceDto } from '../presentation/dtos/create-team-invite.dto.js'
+import { GetInviteDetailsServiceDto } from '../presentation/dtos/get-invite-details.dto.js'
+import { RevokeTeamInvitesServiceDto } from '../presentation/dtos/revoke-team-invites.dto.js'
 
 @Injectable()
 export class InvitesService {
@@ -15,7 +20,12 @@ export class InvitesService {
 		private cryptoService: CryptographyService,
 	) {}
 
-	async createTeamInvite({ userId, teamId, maxUses, expiresIn }: CreateTeamInviteServiceDto) {
+	async createTeamInvite({
+		userId,
+		teamId,
+		maxUses,
+		expiresIn,
+	}: CreateTeamInviteServiceDto) {
 		const membership = await this.prisma.member.findUnique({
 			where: {
 				teamId_userId: {
@@ -147,7 +157,11 @@ export class InvitesService {
 			},
 		})
 
-		if (!invite || invite.revokedAt || invite.expiresAt.getTime() <= Date.now()) {
+		if (
+			!invite ||
+			invite.revokedAt ||
+			invite.expiresAt.getTime() <= Date.now()
+		) {
 			throw new GoneException({
 				message: 'Invalid or expired invitation',
 			})
@@ -206,7 +220,11 @@ export class InvitesService {
 				},
 			})
 
-			if (!invite || invite.revokedAt || invite.expiresAt.getTime() <= Date.now()) {
+			if (
+				!invite ||
+				invite.revokedAt ||
+				invite.expiresAt.getTime() <= Date.now()
+			) {
 				throw new GoneException({
 					message: 'Invalid or expired invitation',
 				})
@@ -221,9 +239,13 @@ export class InvitesService {
 				},
 			})
 
-			const team = await db.team.findUniqueOrThrow({ where: { id: invite.teamId } })
+			const team = await db.team.findUniqueOrThrow({
+				where: { id: invite.teamId },
+			})
 
-			const result = { team: { ...team, role: team.ownerId === userId ? 'owner' : 'member' } }
+			const result = {
+				team: { ...team, role: team.ownerId === userId ? 'owner' : 'member' },
+			}
 
 			if (membership) return result
 

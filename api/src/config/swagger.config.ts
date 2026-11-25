@@ -15,7 +15,10 @@ export const configureSwagger = (app: INestApplication): void => {
 			description: 'TeamDrop access token (15 minutes)',
 		})
 		.setLicense('MIT', 'https://opensource.org/licenses/MIT')
-		.addTag('Authentication', 'Endpoints for user authentication, session management, and token lifecycle')
+		.addTag(
+			'Authentication',
+			'Endpoints for user authentication, session management, and token lifecycle',
+		)
 		.addTag('Teams', 'Endpoints for team management')
 		.addTag('Invites', 'Endpoints for team invites management')
 		.addTag('Files', 'Endpoints for files management')

@@ -33,13 +33,18 @@ pnpm build
 
 ```json
 {
-  "status": "complete",
-  "accessToken": "<JWT>",
-  "refreshToken": "<opaque secret>",
-  "tokenType": "Bearer",
-  "expiresIn": 900,
-  "refreshExpiresAt": "<ISO 8601 date>",
-  "user": { "id": "<UUID>", "email": "user@example.com", "name": null, "avatarUrl": null }
+	"status": "complete",
+	"accessToken": "<JWT>",
+	"refreshToken": "<opaque secret>",
+	"tokenType": "Bearer",
+	"expiresIn": 900,
+	"refreshExpiresAt": "<ISO 8601 date>",
+	"user": {
+		"id": "<UUID>",
+		"email": "user@example.com",
+		"name": null,
+		"avatarUrl": null
+	}
 }
 ```
 
@@ -47,11 +52,11 @@ The ticket can only be exchanged once and requires the original desktop verifier
 
 ### Access, renewal and logout
 
-| Endpoint | Authentication | Response |
-| --- | --- | --- |
-| `GET /api/auth/profile` | `Authorization: Bearer <accessToken>` | `200 { user }` |
-| `POST /api/auth/refresh` | JSON `{ "refreshToken": "..." }` | `200` with a new token pair |
-| `POST /api/auth/logout` | JSON `{ "refreshToken": "..." }` | `204`, including when already invalid |
+| Endpoint                 | Authentication                        | Response                              |
+| ------------------------ | ------------------------------------- | ------------------------------------- |
+| `GET /api/auth/profile`  | `Authorization: Bearer <accessToken>` | `200 { user }`                        |
+| `POST /api/auth/refresh` | JSON `{ "refreshToken": "..." }`      | `200` with a new token pair           |
+| `POST /api/auth/logout`  | JSON `{ "refreshToken": "..." }`      | `204`, including when already invalid |
 
 Refresh responses contain `accessToken`, `refreshToken`, `tokenType`, `expiresIn` and `refreshExpiresAt`. They replace the refresh token without extending the original 30-day deadline. Access JWTs never outlive that deadline, so `expiresIn` may be less than 900 near session expiry.
 
@@ -59,11 +64,11 @@ The desktop should store the refresh token in the OS credential vault and keep t
 
 Malformed inputs return `400`. Authentication failures return `401` with a top-level `code`:
 
-| Code | Meaning |
-| --- | --- |
-| `INVALID_ACCESS_TOKEN` | Missing token, invalid signature, algorithm or claims |
-| `ACCESS_TOKEN_EXPIRED` | Valid access token whose lifetime ended; renew then retry the original request once |
-| `INVALID_REFRESH_TOKEN` | Refresh is unknown, expired, revoked or already rotated; sign in again |
+| Code                    | Meaning                                                                             |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `INVALID_ACCESS_TOKEN`  | Missing token, invalid signature, algorithm or claims                               |
+| `ACCESS_TOKEN_EXPIRED`  | Valid access token whose lifetime ended; renew then retry the original request once |
+| `INVALID_REFRESH_TOKEN` | Refresh is unknown, expired, revoked or already rotated; sign in again              |
 
 Routes are protected by the global access-token guard unless marked `@Public()`. Controllers can use `@CurrentUser()` for `{ userId, sessionId }`; it performs no database lookup. Team authorization must still be checked by the resource handling the request. Full request/response contracts are available at `/reference`.
 
@@ -84,19 +89,19 @@ HTTP tests exercise real Nest controllers, guards, JWTs and Prisma persistence, 
 
 All `/api/teams` and `/api/invites` routes require a Bearer access token. Listing members and managing invitations are restricted to the owner. The public invitation page is read-only and requires no authentication.
 
-| Endpoint | Input | Response |
-| --- | --- | --- |
-| `GET /api/teams` | — | `200 { teams: [...] }`, including each team's `role` and `slug` |
-| `POST /api/teams` | `{ "name": "Product" }` | `201 { team }` |
-| `PATCH /api/teams/:teamId` | `{ "newName": "Design" }` | `200 { team }`, with the updated slug |
-| `GET /api/teams/:teamId/members` | — | `200 { users: [...] }`, including public profile fields and role |
-| `DELETE /api/teams/:teamId/members/me` | — | `204`; an owner cannot leave |
-| `DELETE /api/teams/:teamId/members/:memberId` | — | `204`; owner only, cannot remove themselves |
-| `POST /api/teams/:teamId/invites` | `{ "maxUses": 100, "expiresIn": 604800 }` | `201 { url }`; limits optional |
-| `DELETE /api/teams/:teamId/invites` | — | `204`; revokes all previous invitations, repeated calls succeed |
-| `GET /invites/:token` | Public browser navigation | HTML with a button to open `teamdrop://invite?token=...`; no membership change |
-| `GET /api/invites/:token/preview` | — | `200 { team: { id, name, slug }, alreadyMember }`; no usage increment |
-| `POST /api/invites/accept` | `{ "token": "..." }` | `200 { team }`, including role; confirms membership |
+| Endpoint                                      | Input                                     | Response                                                                       |
+| --------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------ |
+| `GET /api/teams`                              | —                                         | `200 { teams: [...] }`, including each team's `role` and `slug`                |
+| `POST /api/teams`                             | `{ "name": "Product" }`                   | `201 { team }`                                                                 |
+| `PATCH /api/teams/:teamId`                    | `{ "newName": "Design" }`                 | `200 { team }`, with the updated slug                                          |
+| `GET /api/teams/:teamId/members`              | —                                         | `200 { users: [...] }`, including public profile fields and role               |
+| `DELETE /api/teams/:teamId/members/me`        | —                                         | `204`; an owner cannot leave                                                   |
+| `DELETE /api/teams/:teamId/members/:memberId` | —                                         | `204`; owner only, cannot remove themselves                                    |
+| `POST /api/teams/:teamId/invites`             | `{ "maxUses": 100, "expiresIn": 604800 }` | `201 { url }`; limits optional                                                 |
+| `DELETE /api/teams/:teamId/invites`           | —                                         | `204`; revokes all previous invitations, repeated calls succeed                |
+| `GET /invites/:token`                         | Public browser navigation                 | HTML with a button to open `teamdrop://invite?token=...`; no membership change |
+| `GET /api/invites/:token/preview`             | —                                         | `200 { team: { id, name, slug }, alreadyMember }`; no usage increment          |
+| `POST /api/invites/accept`                    | `{ "token": "..." }`                      | `200 { team }`, including role; confirms membership                            |
 
 The previous `GET /api/invites/:token` acceptance route is removed. Invitation links lead to the public page; the authenticated widget previews and explicitly confirms them. Set `PUBLIC_BASE_URL` to the externally reachable origin of this API in production (HTTPS). If omitted locally, it defaults to `http://localhost:<PORT>`. `localhost` links only work on the same computer. The public page uses no third-party resources and sends `Cache-Control: no-store` and `Referrer-Policy: no-referrer`. Invitation tokens are masked in application HTTP paths and must also be redacted in any proxy/access logs.
 

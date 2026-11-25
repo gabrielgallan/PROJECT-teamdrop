@@ -1,12 +1,12 @@
 import { htmlPageStyles } from './page.style.js'
 
 interface HtmlPageTemplateOptions {
-  title: string
-  content: string
+	title: string
+	content: string
 }
 
 export function htmlPageTemplate({ title, content }: HtmlPageTemplateOptions) {
-  return `
+	return `
     <!doctype html>
     <html lang="pt-BR">
       <head>

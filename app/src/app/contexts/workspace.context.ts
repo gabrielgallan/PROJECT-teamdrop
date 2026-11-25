@@ -10,4 +10,6 @@ interface WorkspaceContextValue {
 	scroll: Map<string, number>
 }
 
-export const WorkspaceContext = createContext<WorkspaceContextValue | null>(null)
+export const WorkspaceContext = createContext<WorkspaceContextValue | null>(
+	null,
+)

@@ -9,7 +9,12 @@ export function Progress({
 	label = 'Compartilhando arquivos',
 	className = '',
 }: ProgressProps) {
-	const percentage = value === undefined ? undefined : Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0
+	const percentage =
+		value === undefined
+			? undefined
+			: Number.isFinite(value)
+				? Math.min(100, Math.max(0, value))
+				: 0
 
 	return (
 		<div
@@ -17,12 +22,18 @@ export function Progress({
 			aria-label={label}
 			aria-valuemin={0}
 			aria-valuemax={100}
-			aria-valuenow={percentage === undefined ? undefined : Math.round(percentage)}
+			aria-valuenow={
+				percentage === undefined ? undefined : Math.round(percentage)
+			}
 			className={`h-2 overflow-hidden rounded-full bg-white/10 ${className}`}
 		>
 			<div
 				className={`h-full origin-left rounded-full bg-indigo-400 ${percentage === undefined ? 'progress-indeterminate' : 'transition-transform duration-100 ease-linear motion-reduce:transition-none'}`}
-				style={percentage === undefined ? undefined : { transform: `scaleX(${percentage / 100})` }}
+				style={
+					percentage === undefined
+						? undefined
+						: { transform: `scaleX(${percentage / 100})` }
+				}
 			/>
 		</div>
 	)

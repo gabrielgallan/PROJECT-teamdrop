@@ -31,7 +31,9 @@ export function ConfirmationDialog({
 			}}
 			initialFocusRef={cancelButton}
 		>
-			<p className="break-words text-xs leading-relaxed text-white/80">{message}</p>
+			<p className="wrap-break-word text-xs leading-relaxed text-white/80">
+				{message}
+			</p>
 			{error && (
 				<p role="alert" className="mt-2 text-xs text-red-300">
 					{error}

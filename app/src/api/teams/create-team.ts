@@ -13,6 +13,8 @@ export async function createTeam(
 	{ name }: CreateTeamRequest,
 	signal?: AbortSignal,
 ) {
-	const response = await api.post('api/teams', { json: { name }, signal }).json<CreateTeamResponse>()
+	const response = await api
+		.post('api/teams', { json: { name }, signal })
+		.json<CreateTeamResponse>()
 	return response
 }

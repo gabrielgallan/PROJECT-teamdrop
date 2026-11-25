@@ -15,7 +15,9 @@ import { RoomsService } from './services/rooms.service.js'
 	namespace: 'files',
 	transports: ['websocket'],
 })
-export class WebSocketGatewayService implements OnGatewayInit, OnGatewayConnection {
+export class WebSocketGatewayService
+	implements OnGatewayInit, OnGatewayConnection
+{
 	@WebSocketServer()
 	private server!: Namespace
 
@@ -27,7 +29,10 @@ export class WebSocketGatewayService implements OnGatewayInit, OnGatewayConnecti
 	afterInit(server: Namespace) {
 		server.use(async (socket, next) => {
 			try {
-				const token = socket.handshake.headers.authorization?.replace(/^Bearer\s+/i, '')
+				const token = socket.handshake.headers.authorization?.replace(
+					/^Bearer\s+/i,
+					'',
+				)
 
 				if (typeof token !== 'string' || !token) {
 					return next(new Error('Unauthorized'))

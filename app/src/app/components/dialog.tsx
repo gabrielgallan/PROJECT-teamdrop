@@ -9,7 +9,13 @@ interface DialogProps {
 	initialFocusRef?: RefObject<HTMLElement | null>
 }
 
-export function Dialog({ open, onClose, title, children, initialFocusRef }: DialogProps) {
+export function Dialog({
+	open,
+	onClose,
+	title,
+	children,
+	initialFocusRef,
+}: DialogProps) {
 	const dialog = useRef<HTMLDialogElement>(null)
 	const titleId = useId()
 
@@ -70,7 +76,10 @@ export function Dialog({ open, onClose, title, children, initialFocusRef }: Dial
 			className="m-auto max-h-[calc(100%-2rem)] w-[calc(100%-2rem)] max-w-sm overflow-y-auto rounded-xl border border-white/10 p-4 text-white/90 bg-zinc-800"
 		>
 			<div className="mb-4 flex items-center justify-between gap-3">
-				<h2 id={titleId} className="min-w-0 break-words text-sm font-medium">
+				<h2
+					id={titleId}
+					className="min-w-0 wrap-break-word text-sm font-medium"
+				>
 					{title}
 				</h2>
 				<button

@@ -11,7 +11,12 @@ import {
 	UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import {
+	ApiBearerAuth,
+	ApiOperation,
+	ApiResponse,
+	ApiTags,
+} from '@nestjs/swagger'
 import { Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
@@ -20,11 +25,18 @@ import { Public } from '../../auth/decorators/public.decorator.js'
 import { AuthenticatedUser } from '../../auth/services/auth.service.js'
 import { ApiErrorResponseDto } from '../../dtos/api-error-response.dto.js'
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe.js'
-import { TeamIdDto, teamIdSchema } from '../../teams/presentation/teams.controller.js'
+import {
+	TeamIdDto,
+	teamIdSchema,
+} from '../../teams/presentation/teams.controller.js'
 import { FilesService } from '../application/files.service.js'
 import { DeleteFileDto, deleteFileSchema } from './dtos/delete-file.dto.js'
 import { GenerateFileUrlResponseDto } from './dtos/generate-url.dto.js'
-import { ListFilesDto, ListFilesResponseDto, listFilesSchema } from './dtos/list-files.dto.js'
+import {
+	ListFilesDto,
+	ListFilesResponseDto,
+	listFilesSchema,
+} from './dtos/list-files.dto.js'
 import { UploadFileResponseDto } from './dtos/upload-file.dto.js'
 import { FilesPresenter } from './files.presenter.js'
 
@@ -60,7 +72,8 @@ export class FilesController {
 	})
 	@ApiResponse({
 		status: 404,
-		description: 'Resource not found or inaccessible to the authenticated user.',
+		description:
+			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
 	@ApiResponse({
@@ -116,7 +129,8 @@ export class FilesController {
 	})
 	@ApiResponse({
 		status: 404,
-		description: 'Resource not found or inaccessible to the authenticated user.',
+		description:
+			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
 	@ApiBearerAuth()
@@ -158,7 +172,8 @@ export class FilesController {
 	})
 	@ApiResponse({
 		status: 404,
-		description: 'Resource not found or inaccessible to the authenticated user.',
+		description:
+			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
 	@Public()
@@ -188,7 +203,8 @@ export class FilesController {
 	})
 	@ApiResponse({
 		status: 404,
-		description: 'Resource not found or inaccessible to the authenticated user.',
+		description:
+			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
 	@Public()
@@ -219,13 +235,16 @@ export class FilesController {
 	})
 	@ApiResponse({
 		status: 404,
-		description: 'Resource not found or inaccessible to the authenticated user.',
+		description:
+			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
 	@Public()
 	@Get('files/:fileId/url')
 	@HttpCode(200)
-	async generateUrl(@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto) {
+	async generateUrl(
+		@Param(new ZodValidationPipe(fileIdSchema)) param: FileIdDto,
+	) {
 		const { url } = await this.filesService.getFilePreviewUrl(param.fileId)
 
 		return {
@@ -253,7 +272,8 @@ export class FilesController {
 	})
 	@ApiResponse({
 		status: 404,
-		description: 'Resource not found or inaccessible to the authenticated user.',
+		description:
+			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
 	@ApiResponse({

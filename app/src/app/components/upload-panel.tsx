@@ -1,17 +1,20 @@
 import { FileInput, Loader2 } from 'lucide-react'
 import { type ReactNode, useEffect } from 'react'
 import { useAuth } from '../../hooks/use-auth'
+import { useFilePicker } from '../../hooks/use-file-picker'
+import { useSelectedTeam, useTeamUploadQueue } from '../../hooks/use-workspace'
 import { FileDropzone } from './file-dropzone'
 import { MenuItem } from './menu-item'
 import { TeamSwitcher } from './team-switcher'
-import { useSelectedTeam, useTeamUploadQueue } from '../../hooks/use-workspace'
-import { useFilePicker } from '../../hooks/use-file-picker'
 
 export function UploadPanel({ children }: { children: ReactNode }) {
 	const { canQuery } = useAuth()
 	const { team } = useSelectedTeam()
 	const queue = useTeamUploadQueue()
-	const picker = useFilePicker(queue.prepare, !team || !canQuery || queue.sharing)
+	const picker = useFilePicker(
+		queue.prepare,
+		!team || !canQuery || queue.sharing,
+	)
 	const busy = picker.choosing || queue.sharing || !canQuery
 	useEffect(() => {
 		const shortcut = (event: KeyboardEvent) => {

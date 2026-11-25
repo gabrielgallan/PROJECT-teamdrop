@@ -1,17 +1,14 @@
 import { useSyncExternalStore } from 'react'
+import { authStore } from '../auth/auth.store'
 import {
 	cancelLogin,
 	restoreSession,
 	signInWithGoogle,
 	signOut,
 } from '../auth/session'
-import { authStore } from '../auth/auth.store'
 
 export function useSession() {
-	const state = useSyncExternalStore(
-		authStore.subscribe,
-		authStore.getSnapshot,
-	)
+	const state = useSyncExternalStore(authStore.subscribe, authStore.getSnapshot)
 
 	return {
 		...state,

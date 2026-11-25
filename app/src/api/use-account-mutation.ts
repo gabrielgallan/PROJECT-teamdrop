@@ -1,4 +1,8 @@
-import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+	type QueryClient,
+	useMutation,
+	useQueryClient,
+} from '@tanstack/react-query'
 import { authStore } from '../auth/auth.store'
 import { useAuth } from '../hooks/use-auth'
 
@@ -16,7 +20,11 @@ export function useAccountMutation<TData, TVariables>(
 	return useMutation({
 		mutationFn: async (variables: TVariables) => {
 			const state = authStore.getSnapshot()
-			if (state.session !== session || state.needsLogin || state.busy !== null) {
+			if (
+				state.session !== session ||
+				state.needsLogin ||
+				state.busy !== null
+			) {
 				throw new DOMException('Session unavailable', 'AbortError')
 			}
 			return mutationFn(variables)

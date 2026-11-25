@@ -17,24 +17,29 @@ import { memberView } from '../utils/presentation'
 
 export function SettingsScreen() {
 	const auth = useAuth()
-	const listing = useQuery({ ...userTeamsQuery(auth.user.id), enabled: auth.canQuery })
+	const listing = useQuery({
+		...userTeamsQuery(auth.user.id),
+		enabled: auth.canQuery,
+	})
 	const navigate = useNavigate()
 	const [createOpen, setCreateOpen] = useState(false)
 	const createButton = useRef<HTMLButtonElement>(null)
-	const back = useScreenBack(
-		'/',
-		'settings-button',
-		createOpen,
-	)
+	const back = useScreenBack('/', 'settings-button', createOpen)
 	const teams = listing.data?.teams ?? []
 	return (
 		<main className="flex h-full flex-col overflow-hidden bg-zinc-800/60 text-white/90">
 			<header className="shrink-0 pb-4">
-				<ScreenHeader title="Configurações" backLabel="Voltar aos arquivos" {...back} />
+				<ScreenHeader
+					title="Configurações"
+					backLabel="Voltar aos arquivos"
+					{...back}
+				/>
 				<div className="mx-4 flex items-center gap-3 pb-4">
 					<Avatar member={memberView(auth.user)} className="size-10" />
 					<div className="min-w-0">
-						<p className="truncate text-sm">{auth.user.name || auth.user.email}</p>
+						<p className="truncate text-sm">
+							{auth.user.name || auth.user.email}
+						</p>
 						<p className="truncate text-xs text-white/60">{auth.user.email}</p>
 					</div>
 				</div>
@@ -55,7 +60,10 @@ export function SettingsScreen() {
 						<Link className="size-4" />
 						Entrar com convite
 					</MenuItem>
-					<MenuItem disabled={auth.busy !== null} onClick={() => void auth.logout()}>
+					<MenuItem
+						disabled={auth.busy !== null}
+						onClick={() => void auth.logout()}
+					>
 						{auth.busy === 'logout' ? (
 							<Loader2 className="size-4 animate-spin" />
 						) : (
@@ -104,18 +112,32 @@ export function SettingsScreen() {
 									id={`manage-team-${team.id}`}
 									type="button"
 									disabled={!auth.canQuery}
-									onClick={() => void navigate(`/settings/teams/${encodeURIComponent(team.id)}`)}
-									aria-label={team.role === 'owner' ? `Gerenciar ${team.name}` : `Abrir time ${team.name}`}
+									onClick={() =>
+										void navigate(
+											`/settings/teams/${encodeURIComponent(team.id)}`,
+										)
+									}
+									aria-label={
+										team.role === 'owner'
+											? `Gerenciar ${team.name}`
+											: `Abrir time ${team.name}`
+									}
 									className="list-row group w-full text-left transition-colors hover:bg-white/4 focus-visible:ring-2 focus-visible:ring-indigo-300"
 								>
 									<span className="item-icon text-white/70">
 										<Box size={18} aria-hidden="true" />
 									</span>
-									<span className="min-w-0 flex-1 truncate text-ui" title={team.name}>
+									<span
+										className="min-w-0 flex-1 truncate text-ui"
+										title={team.name}
+									>
 										{team.name}
 									</span>
 									{team.role === 'owner' && (
-										<span className="shrink-0 text-indigo-400" title="Você é proprietário">
+										<span
+											className="shrink-0 text-indigo-400"
+											title="Você é proprietário"
+										>
 											<Crown size={16} aria-hidden="true" />
 											<span className="sr-only">Você é proprietário</span>
 										</span>

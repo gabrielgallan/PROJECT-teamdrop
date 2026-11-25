@@ -81,7 +81,9 @@ export function RecentFileItem({ file }: RecentFileItemProps) {
 					)}
 				</span>
 				<span className="min-w-0 flex-1">
-					<span className="block truncate text-ui font-medium text-white/90">{file.name}</span>
+					<span className="block truncate text-ui font-medium text-white/90">
+						{file.name}
+					</span>
 					<span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-caption text-white/50">
 						<time className="shrink-0 tabular-nums flex gap-1">
 							{formatDistanceToNowStrict(file.createdAt, {
@@ -91,7 +93,11 @@ export function RecentFileItem({ file }: RecentFileItemProps) {
 
 							<p>por</p>
 						</time>
-						<Avatar member={file.member} size="small" className={`size-4 ${file.member.color}`} />
+						<Avatar
+							member={file.member}
+							size="small"
+							className={`size-4 ${file.member.color}`}
+						/>
 					</span>
 				</span>
 			</button>

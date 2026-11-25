@@ -18,7 +18,9 @@ function Workspace() {
 	const pending = useSyncExternalStore(subscribeInvites, getPendingInvite)
 	const location = useLocation()
 	useRestoreFocus()
-	const invitePath = pending ? `/invites/${encodeURIComponent(pending)}/accept` : null
+	const invitePath = pending
+		? `/invites/${encodeURIComponent(pending)}/accept`
+		: null
 	return invitePath && location.pathname !== invitePath ? (
 		<Navigate to={invitePath} replace />
 	) : (

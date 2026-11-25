@@ -6,6 +6,8 @@ export interface GetUserTeamsResponse {
 }
 
 export async function getUserTeams(signal?: AbortSignal) {
-	const response = await api.get('api/teams', { signal }).json<GetUserTeamsResponse>()
+	const response = await api
+		.get('api/teams', { signal })
+		.json<GetUserTeamsResponse>()
 	return response
 }

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Header, HttpCode, Post, Query } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	Get,
+	Header,
+	HttpCode,
+	Post,
+	Query,
+} from '@nestjs/common'
 import {
 	ApiBearerAuth,
 	ApiExcludeEndpoint,
@@ -21,7 +29,10 @@ import {
 	ExchangePendingResponseDto,
 	exchangeDesktopSchema,
 } from './dtos/exchange-desktop.dto.js'
-import { GoogleCallbackQueryDto, googleCallbackQuerySchema } from './dtos/google-callback.dto.js'
+import {
+	GoogleCallbackQueryDto,
+	googleCallbackQuerySchema,
+} from './dtos/google-callback.dto.js'
 import { ProfileResponseDto } from './dtos/public-user.dto.js'
 import {
 	RefreshTokenDto,
@@ -46,12 +57,14 @@ export class AuthController {
 	@HttpCode(200)
 	@Header('Cache-Control', 'no-store')
 	@ApiOperation({
-		summary: 'Create a five-minute login; open authorizationUrl in the system browser',
+		summary:
+			'Create a five-minute login; open authorizationUrl in the system browser',
 	})
 	@ApiResponse({ status: 200, type: StartDesktopLoginResponseDto })
 	@ApiResponse({ status: 400, type: ApiErrorResponseDto })
 	startGoogleOAuth(
-		@Body(new ZodValidationPipe(startDesktopLoginSchema)) body: StartDesktopLoginDto,
+		@Body(new ZodValidationPipe(startDesktopLoginSchema))
+		body: StartDesktopLoginDto,
 	) {
 		const { codeChallenge } = body
 
@@ -64,11 +77,16 @@ export class AuthController {
 	@HttpCode(200)
 	@HtmlPage()
 	async authenticateWithGoogle(
-		@Query(new ZodValidationPipe(googleCallbackQuerySchema)) query: GoogleCallbackQueryDto,
+		@Query(new ZodValidationPipe(googleCallbackQuerySchema))
+		query: GoogleCallbackQueryDto,
 	) {
 		const { state, code, error } = query
 
-		const success = await this.authService.completeGoogleLogin(state, code, error)
+		const success = await this.authService.completeGoogleLogin(
+			state,
+			code,
+			error,
+		)
 
 		const title = success ? 'Login concluído' : 'Falha na autenticação'
 
@@ -76,7 +94,9 @@ export class AuthController {
 			? 'Sua autenticação foi realizada com sucesso. Você já pode fechar esta aba e voltar ao Teamdrop.'
 			: 'Não foi possível concluir seu login. Volte ao Teamdrop e tente novamente.'
 
-		const icon = success ? '<path d="m5 12 4 4L19 6"/>' : '<path d="M18 6 6 18M6 6l12 12"/>'
+		const icon = success
+			? '<path d="m5 12 4 4L19 6"/>'
+			: '<path d="M18 6 6 18M6 6l12 12"/>'
 
 		return htmlPageTemplate({
 			title: `${title} - Teamdrop`,
@@ -115,7 +135,8 @@ export class AuthController {
 	@HttpCode(200)
 	@Header('Cache-Control', 'no-store')
 	@ApiOperation({
-		summary: 'Poll every two seconds; consume the completed ticket once to obtain tokens',
+		summary:
+			'Poll every two seconds; consume the completed ticket once to obtain tokens',
 	})
 	@ApiExtraModels(ExchangePendingResponseDto, ExchangeCompleteResponseDto)
 	@ApiOkResponse({
@@ -130,10 +151,13 @@ export class AuthController {
 	@ApiResponse({ status: 400, description: 'Malformed ticket or verifier' })
 	@ApiResponse({
 		status: 401,
-		description: 'Invalid, expired, denied or already consumed ticket; incorrect verifier',
+		description:
+			'Invalid, expired, denied or already consumed ticket; incorrect verifier',
 	})
 	exchange(
-		@Body(new ZodValidationPipe(exchangeDesktopSchema, 'Invalid desktop exchange'))
+		@Body(
+			new ZodValidationPipe(exchangeDesktopSchema, 'Invalid desktop exchange'),
+		)
 		body: ExchangeDesktopDto,
 	) {
 		const { ticket, codeVerifier } = body
@@ -145,15 +169,20 @@ export class AuthController {
 	@Post('refresh')
 	@HttpCode(200)
 	@Header('Cache-Control', 'no-store')
-	@ApiOperation({ summary: 'Rotate the refresh token; session expiration is never extended' })
+	@ApiOperation({
+		summary: 'Rotate the refresh token; session expiration is never extended',
+	})
 	@ApiResponse({ status: 200, type: RefreshTokenResponseDto })
 	@ApiResponse({ status: 400, description: 'Malformed refresh token' })
 	@ApiResponse({
 		status: 401,
-		description: 'INVALID_REFRESH_TOKEN: unknown, expired or already rotated refresh token',
+		description:
+			'INVALID_REFRESH_TOKEN: unknown, expired or already rotated refresh token',
 	})
 	refresh(
-		@Body(new ZodValidationPipe(refreshTokenSchema, 'Invalid refresh token format'))
+		@Body(
+			new ZodValidationPipe(refreshTokenSchema, 'Invalid refresh token format'),
+		)
 		body: RefreshTokenDto,
 	) {
 		return this.authService.refresh(body.refreshToken)
@@ -164,7 +193,8 @@ export class AuthController {
 	@HttpCode(204)
 	@Header('Cache-Control', 'no-store')
 	@ApiOperation({
-		summary: 'Revoke this session using its current refresh token; repeated calls succeed',
+		summary:
+			'Revoke this session using its current refresh token; repeated calls succeed',
 	})
 	@ApiResponse({
 		status: 204,
@@ -173,7 +203,9 @@ export class AuthController {
 	})
 	@ApiResponse({ status: 400, description: 'Malformed refresh token' })
 	logout(
-		@Body(new ZodValidationPipe(refreshTokenSchema, 'Invalid refresh token format'))
+		@Body(
+			new ZodValidationPipe(refreshTokenSchema, 'Invalid refresh token format'),
+		)
 		body: RefreshTokenDto,
 	) {
 		return this.authService.logout(body.refreshToken)
@@ -191,7 +223,8 @@ export class AuthController {
 	})
 	@ApiResponse({
 		status: 401,
-		description: 'INVALID_ACCESS_TOKEN, ACCESS_TOKEN_EXPIRED, or user no longer exists',
+		description:
+			'INVALID_ACCESS_TOKEN, ACCESS_TOKEN_EXPIRED, or user no longer exists',
 	})
 	async getProfile(@CurrentUser() user: AuthenticatedUser) {
 		const result = await this.authService.getProfile(user.userId)

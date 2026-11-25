@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { PublicFileDto } from "./file.dto.js"
+import { ApiProperty } from '@nestjs/swagger'
+import { PublicFileDto } from './file.dto.js'
 
 export interface UploadFileServiceDto {
 	userId: string

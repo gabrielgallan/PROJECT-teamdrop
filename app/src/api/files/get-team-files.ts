@@ -16,8 +16,11 @@ export async function getTeamFiles(
 	{ teamId, cursor, limit = 10 }: GetTeamFilesRequest,
 	signal?: AbortSignal,
 ) {
-	const response = await api.get(`api/teams/${encodeURIComponent(teamId)}/files`, {
-		searchParams: { limit, ...(cursor ? { cursor } : {}) }, signal,
-	}).json<GetTeamFilesResponse>()
+	const response = await api
+		.get(`api/teams/${encodeURIComponent(teamId)}/files`, {
+			searchParams: { limit, ...(cursor ? { cursor } : {}) },
+			signal,
+		})
+		.json<GetTeamFilesResponse>()
 	return response
 }

@@ -7,7 +7,10 @@ export class CryptographyService {
 		return randomBytes(32).toString('base64url')
 	}
 
-	hashToken(value: string, encoding: 'base64url' | 'hex' = 'base64url'): string {
+	hashToken(
+		value: string,
+		encoding: 'base64url' | 'hex' = 'base64url',
+	): string {
 		return createHash('sha256').update(value).digest(encoding)
 	}
 }

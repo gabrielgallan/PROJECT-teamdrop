@@ -1,4 +1,4 @@
-name: teamdrop
+name: teamdrop-api
 
 services:
   postgres:
@@ -8,7 +8,7 @@ services:
     environment:
       - POSTGRESQL_USERNAME=docker
       - POSTGRESQL_PASSWORD=docker
-      - POSTGRESQL_DATABASE=teamdrop
+      - POSTGRESQL_DATABASE=teamdrop-db
 
   redis:
     image: redis

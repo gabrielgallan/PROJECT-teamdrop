@@ -18,7 +18,8 @@ export function authFailure(error: unknown): AuthFailure {
 
 	return {
 		code: 'NETWORK_ERROR',
-		message: 'Não foi possível concluir a solicitação. Verifique sua conexão e tente novamente.',
+		message:
+			'Não foi possível concluir a solicitação. Verifique sua conexão e tente novamente.',
 	}
 }
 

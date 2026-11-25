@@ -1,5 +1,19 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common'
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	HttpCode,
+	Param,
+	Patch,
+	Post,
+} from '@nestjs/common'
+import {
+	ApiBearerAuth,
+	ApiOperation,
+	ApiResponse,
+	ApiTags,
+} from '@nestjs/swagger'
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
@@ -9,7 +23,10 @@ import { ZodValidationPipe } from '../../pipes/zod-validation.pipe.js'
 import { TeamsService } from '../application/teams.service.js'
 import { CreateTeamDto, createTeamSchema } from './dtos/create-team.dto.js'
 import { GetMembersResponseDto } from './dtos/member.dto.js'
-import { RemoveMemberDto, removeMemberSchema } from './dtos/remove-member.dto.js'
+import {
+	RemoveMemberDto,
+	removeMemberSchema,
+} from './dtos/remove-member.dto.js'
 import { CreateTeamResponseDto, GetTeamsResponseDto } from './dtos/team.dto.js'
 import { UpdateTeamDto, updateTeamSchema } from './dtos/update-team.dto.js'
 import { TeamsPresenter } from './teams.presenter.js'
@@ -250,7 +267,8 @@ export class TeamsController {
 	})
 	@ApiResponse({
 		status: 404,
-		description: 'Team or member not found or inaccessible to the authenticated user.',
+		description:
+			'Team or member not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
 	@ApiResponse({

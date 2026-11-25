@@ -1,17 +1,16 @@
 import {
 	ConflictException,
-	ForbiddenException,
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common'
-import { slugify } from '../../common/utils/slugify.js'
-import { PrismaService } from '../../database/prisma/prisma.service.js'
-import { CreateTeamServiceDto } from './dtos/create-team.dto.js'
-import { LeaveTeamServiceDto } from './dtos/leave-team.dto.js'
-import { ListTeamMembersServiceDto } from './dtos/list-teams-members.dto.js'
-import { ListUserTeamsServiceDto } from './dtos/list-user-teams.dto.js'
-import { RemoveMemberServiceDto } from './dtos/remove-member.dto.js'
-import { UpdateTeamServiceDto } from './dtos/update-team.dto.js'
+import { slugify } from '../../../common/utils/slugify.js'
+import { PrismaService } from '../../../database/prisma/prisma.service.js'
+import { CreateTeamServiceDto } from '../presentation/dtos/create-team.dto.js'
+import { LeaveTeamServiceDto } from '../presentation/dtos/leave-team.dto.js'
+import { ListTeamMembersServiceDto } from '../presentation/dtos/list-teams-members.dto.js'
+import { ListUserTeamsServiceDto } from '../presentation/dtos/list-user-teams.dto.js'
+import { RemoveMemberServiceDto } from '../presentation/dtos/remove-member.dto.js'
+import { UpdateTeamServiceDto } from '../presentation/dtos/update-team.dto.js'
 
 @Injectable()
 export class TeamsService {
@@ -75,7 +74,7 @@ export class TeamsService {
 		const team = await this.prisma.team.findUnique({
 			where: {
 				id: teamId,
-				ownerId: userId
+				ownerId: userId,
 			},
 		})
 
@@ -119,16 +118,16 @@ export class TeamsService {
 			where: {
 				teamId_userId: {
 					userId,
-					teamId
-				}
+					teamId,
+				},
 			},
 			include: {
 				team: {
 					select: {
-						ownerId: true
-					}
-				}
-			}
+						ownerId: true,
+					},
+				},
+			},
 		})
 
 		if (!membership) {
@@ -163,8 +162,8 @@ export class TeamsService {
 			where: {
 				teamId_userId: {
 					teamId,
-					userId
-				}
+					userId,
+				},
 			},
 			include: {
 				team: {
@@ -199,7 +198,11 @@ export class TeamsService {
 		return
 	}
 
-	async removeMemberFromTeam({ userId, teamId, memberId }: RemoveMemberServiceDto) {
+	async removeMemberFromTeam({
+		userId,
+		teamId,
+		memberId,
+	}: RemoveMemberServiceDto) {
 		const team = await this.prisma.team.findUnique({
 			where: {
 				id: teamId,

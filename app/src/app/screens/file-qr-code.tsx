@@ -39,9 +39,12 @@ function FileQrCode({ teamId, fileId }: { teamId: string; fileId: string }) {
 	const back = useScreenBack('/', `qr-${fileId}`)
 	const now = useNow()
 	const color = '#ffffffb0'
-	const remaining = query.data ? Math.max(0, Math.ceil((query.data.expiresAt - now) / 1000)) : 0
+	const remaining = query.data
+		? Math.max(0, Math.ceil((query.data.expiresAt - now) / 1000))
+		: 0
 	const expired = Boolean(query.data) && remaining === 0
-	const generating = canQuery && (query.isPending || (query.isFetching && expired))
+	const generating =
+		canQuery && (query.isPending || (query.isFetching && expired))
 	return (
 		<main className="flex h-full flex-col overflow-y-auto bg-zinc-900/50 text-white/90">
 			<AuthNotice />
@@ -56,7 +59,10 @@ function FileQrCode({ teamId, fileId }: { teamId: string; fileId: string }) {
 				aria-busy={query.isFetching}
 				className="mx-4 mb-4 flex flex-1 flex-col items-center justify-center gap-4 text-center"
 			>
-				<p className="w-full break-words text-ui font-medium" title={file.name}>
+				<p
+					className="w-full wrap-break-word text-ui font-medium"
+					title={file.name}
+				>
 					{file.name}
 				</p>
 				{generating ? (
@@ -90,7 +96,8 @@ function FileQrCode({ teamId, fileId }: { teamId: string; fileId: string }) {
 						<div className="space-y-1 text-xs text-white/70">
 							<p>Aponte a câmera do celular para abrir o arquivo.</p>
 							<p className="tabular-nums">
-								Expira em {Math.floor(remaining / 60)}:{String(remaining % 60).padStart(2, '0')}
+								Expira em {Math.floor(remaining / 60)}:
+								{String(remaining % 60).padStart(2, '0')}
 							</p>
 						</div>
 					</>

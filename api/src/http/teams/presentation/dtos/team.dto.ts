@@ -13,17 +13,17 @@ export class PublicTeamDto {
 		example: 'Engineering Team',
 	})
 	name!: string
-    
+
 	@ApiProperty({
-        example: 'engineering-team',
+		example: 'engineering-team',
 	})
-    slug!: string
-    
-    @ApiProperty({
+	slug!: string
+
+	@ApiProperty({
 		example: 'owner',
-        enum: ['owner', 'member']
+		enum: ['owner', 'member'],
 	})
-    role!: TeamRole
+	role!: TeamRole
 }
 
 export class GetTeamsResponseDto {

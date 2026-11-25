@@ -10,7 +10,10 @@ export class LoggingMiddleware implements NestMiddleware {
 		// OAuth callback query strings contain authorization codes and state.
 		const originalUrl = req.originalUrl
 			.split('?')[0]
-			.replace(/(\/(?:api\/)?invites\/)(?!accept(?:\/|$))[^/]+/g, '$1[redacted]')
+			.replace(
+				/(\/(?:api\/)?invites\/)(?!accept(?:\/|$))[^/]+/g,
+				'$1[redacted]',
+			)
 		const userAgent = req.get('user-agent') || ''
 		const startTime = Date.now()
 

@@ -16,7 +16,7 @@ async function bootstrap() {
 	const port = env.get('PORT')
 
 	app.enableCors({
-		origin: (origin: string, callback: any) => {
+		origin: (origin, callback) => {
 			if (!origin) return callback(null, true)
 
 			const allowedOrigins = env.get('CORS_ORIGINS').split(',')
@@ -43,7 +43,9 @@ async function bootstrap() {
 		})
 		.finally(async () => {
 			logger.log(`HTTP server running on http://localhost:${port}`)
-			logger.log(`API documentation avaliable on http://localhost:${port}/reference`)
+			logger.log(
+				`API documentation avaliable on http://localhost:${port}/reference`,
+			)
 		})
 }
 bootstrap()

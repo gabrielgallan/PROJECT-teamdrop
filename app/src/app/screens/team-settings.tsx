@@ -8,14 +8,14 @@ import { useAuth } from '../../hooks/use-auth'
 import { useScreenBack } from '../../hooks/use-navigation'
 import { errorMessage } from '../../lib/api-error'
 import { AuthNotice } from '../components/auth-notice'
+import { ConfirmationDialog } from '../components/confirmation-dialog'
+import { MenuItem } from '../components/menu-item'
 import { ScreenHeader } from '../components/screen-header'
 import { Separator } from '../components/separator'
+import { Skeleton } from '../components/skeleton'
 import { TeamInvites } from '../components/team-invites'
 import { TeamMembers } from '../components/team-members'
 import { TeamNameForm } from '../components/team-name-form'
-import { ConfirmationDialog } from '../components/confirmation-dialog'
-import { MenuItem } from '../components/menu-item'
-import { Skeleton } from '../components/skeleton'
 
 export function TeamSettingsScreen() {
 	const { teamId = '' } = useParams()
@@ -76,9 +76,17 @@ function TeamSettings({ teamId }: { teamId: string }) {
 				)}
 				{team?.role === 'member' && (
 					<div className="menu-group">
-						<MenuItem ref={leaveButton} variant="danger" disabled={!canQuery || leave.isPending}
-							onClick={() => { leave.reset(); setLeaving(true) }}>
-							<LogOut aria-hidden="true" />Sair do time
+						<MenuItem
+							ref={leaveButton}
+							variant="danger"
+							disabled={!canQuery || leave.isPending}
+							onClick={() => {
+								leave.reset()
+								setLeaving(true)
+							}}
+						>
+							<LogOut aria-hidden="true" />
+							Sair do time
 						</MenuItem>
 					</div>
 				)}
@@ -86,12 +94,20 @@ function TeamSettings({ teamId }: { teamId: string }) {
 			{team && (
 				<>
 					<Separator />
-					<TeamMembers teamId={teamId} teamName={team.name} canManage={team.role === 'owner'} />
+					<TeamMembers
+						teamId={teamId}
+						teamName={team.name}
+						canManage={team.role === 'owner'}
+					/>
 				</>
 			)}
 			{leaving && team && (
-				<ConfirmationDialog title="Sair do time" message={`Deseja sair do time ${team.name}?`}
-					confirmLabel="Sair do time" busy={leave.isPending} error={errorMessage(leave.error)}
+				<ConfirmationDialog
+					title="Sair do time"
+					message={`Deseja sair do time ${team.name}?`}
+					confirmLabel="Sair do time"
+					busy={leave.isPending}
+					error={errorMessage(leave.error)}
 					onCancel={() => {
 						if (leave.isPending) return
 						setLeaving(false)
@@ -99,10 +115,19 @@ function TeamSettings({ teamId }: { teamId: string }) {
 					}}
 					onConfirm={() => {
 						if (!canQuery || leave.isPending || team.role !== 'member') return
-						leave.mutate({ teamId }, { onSuccess: () => {
-							void navigate('/settings', { replace: true, state: { focusId: 'settings-teams-title' } })
-						} })
-					}} />
+						leave.mutate(
+							{ teamId },
+							{
+								onSuccess: () => {
+									void navigate('/settings', {
+										replace: true,
+										state: { focusId: 'settings-teams-title' },
+									})
+								},
+							},
+						)
+					}}
+				/>
 			)}
 		</main>
 	)

@@ -11,6 +11,7 @@ export function useAuth() {
 		...auth,
 		session: auth.session,
 		user: auth.session.user,
-		canQuery: auth.status === 'authenticated' && !auth.needsLogin && auth.busy === null,
+		canQuery:
+			auth.status === 'authenticated' && !auth.needsLogin && auth.busy === null,
 	}
 }

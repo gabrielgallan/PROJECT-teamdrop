@@ -1,6 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { CacheRepository, DEFAULT_CACHE_TTL_SECONDS } from '../cache.interface.js';
-import { RedisService } from './redis.service.js';
+import { Inject, Injectable } from '@nestjs/common'
+import {
+	CacheRepository,
+	DEFAULT_CACHE_TTL_SECONDS,
+} from '../cache.interface.js'
+import { RedisService } from './redis.service.js'
 
 @Injectable()
 export class RedisCacheRepository implements CacheRepository {
@@ -11,15 +14,15 @@ export class RedisCacheRepository implements CacheRepository {
 		value: string,
 		ttlSeconds: number = DEFAULT_CACHE_TTL_SECONDS,
 	): Promise<void> {
-		await this.redis.set(key, value, 'EX', ttlSeconds);
+		await this.redis.set(key, value, 'EX', ttlSeconds)
 	}
 
 	get(key: string): Promise<string | null> {
-		return this.redis.get(key);
+		return this.redis.get(key)
 	}
 
 	async delete(key: string): Promise<void> {
-		await this.redis.del(key);
+		await this.redis.del(key)
 	}
 
 	async getDel(key: string): Promise<string | null> {

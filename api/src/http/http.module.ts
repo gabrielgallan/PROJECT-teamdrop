@@ -8,7 +8,14 @@ import { LoggingMiddleware } from './middlewares/logging/logging.middleware.js'
 import { TeamsModule } from './teams/teams.module.js'
 
 @Module({
-	imports: [StorageModule, DatabaseModule, HealthModule, TeamsModule, InvitesModule, FilesModule],
+	imports: [
+		StorageModule,
+		DatabaseModule,
+		HealthModule,
+		TeamsModule,
+		InvitesModule,
+		FilesModule,
+	],
 })
 export class HttpMoodule {
 	configure(consumer: MiddlewareConsumer): void {

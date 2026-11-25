@@ -1,16 +1,15 @@
 import {
-	BadGatewayException,
 	Injectable,
 	NotFoundException,
 	ServiceUnavailableException,
 } from '@nestjs/common'
 import { v7 as uuidv7 } from 'uuid'
-import { PrismaService } from '../../database/prisma/prisma.service.js'
-import { StorageService } from '../../storage/storage.interface.js'
-import { FilesEmitterService } from '../../websocket/events/files/files-emitter.service.js'
-import { DeleteFileServiceDto } from './dtos/delete-file.dto.js'
-import { ListFilesServiceDto } from './dtos/list-files.dto.js'
-import { UploadFileServiceDto } from './dtos/upload-file.dto.js'
+import { PrismaService } from '../../../database/prisma/prisma.service.js'
+import { StorageService } from '../../../storage/storage.interface.js'
+import { FilesEmitterService } from '../../../websocket/events/files/files-emitter.service.js'
+import { DeleteFileServiceDto } from '../presentation/dtos/delete-file.dto.js'
+import { ListFilesServiceDto } from '../presentation/dtos/list-files.dto.js'
+import { UploadFileServiceDto } from '../presentation/dtos/upload-file.dto.js'
 
 @Injectable()
 export class FilesService {
@@ -146,7 +145,11 @@ export class FilesService {
 			})
 		}
 
-		const { url } = await this.storageService.generateUrl(file.storageKey, 'download', file.name)
+		const { url } = await this.storageService.generateUrl(
+			file.storageKey,
+			'download',
+			file.name,
+		)
 
 		return {
 			url,
@@ -166,7 +169,10 @@ export class FilesService {
 			})
 		}
 
-		const { url } = await this.storageService.generateUrl(file.storageKey, 'preview')
+		const { url } = await this.storageService.generateUrl(
+			file.storageKey,
+			'preview',
+		)
 
 		return {
 			url,

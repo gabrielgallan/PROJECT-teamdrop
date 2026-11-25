@@ -4,11 +4,15 @@ import { EnvService } from '../../common/env/env.service.js'
 import { PrismaClient } from './client/client.js'
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+	extends PrismaClient
+	implements OnModuleInit, OnModuleDestroy
+{
 	constructor(env: EnvService) {
 		super({
 			adapter: new PrismaPg({ connectionString: env.get('DATABASE_URL') }),
-			log: env.get('NODE_ENV') === 'production' ? ['error'] : ['query', 'error'],
+			log:
+				env.get('NODE_ENV') === 'production' ? ['error'] : ['query', 'error'],
 		})
 	}
 

@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-	--font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-sans:
+		ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+		"Segoe UI Symbol", "Noto Color Emoji";
 	--radius-md: 7px;
 	--text-ui: 0.8125rem;
 	--text-ui--line-height: 1.25rem;
@@ -113,13 +115,22 @@ a {
 }
 
 @keyframes upload-progress {
-	from { transform: translateX(-100%); }
-	to { transform: translateX(250%); }
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(250%);
+	}
 }
 
 @keyframes skeleton-pulse {
-	0%, 100% { opacity: 0.4; }
-	50% { opacity: 1; }
+	0%,
+	100% {
+		opacity: 0.4;
+	}
+	50% {
+		opacity: 1;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {

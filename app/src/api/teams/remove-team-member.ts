@@ -9,5 +9,8 @@ export async function removeTeamMember(
 	{ teamId, memberId }: RemoveTeamMemberRequest,
 	signal?: AbortSignal,
 ) {
-	await api.delete(`api/teams/${encodeURIComponent(teamId)}/members/${encodeURIComponent(memberId)}`, { signal })
+	await api.delete(
+		`api/teams/${encodeURIComponent(teamId)}/members/${encodeURIComponent(memberId)}`,
+		{ signal },
+	)
 }

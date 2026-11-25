@@ -1,7 +1,8 @@
 export const queryKeys = {
 	account: (userId: string) => ['account', userId] as const,
 	teams: (userId: string) => [...queryKeys.account(userId), 'teams'] as const,
-	team: (userId: string, teamId: string) => [...queryKeys.teams(userId), teamId] as const,
+	team: (userId: string, teamId: string) =>
+		[...queryKeys.teams(userId), teamId] as const,
 	members: (userId: string, teamId: string) =>
 		[...queryKeys.team(userId, teamId), 'members'] as const,
 	files: (userId: string, teamId: string, limit = 10) =>

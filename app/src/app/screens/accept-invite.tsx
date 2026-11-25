@@ -5,7 +5,11 @@ import { useNavigate, useParams } from 'react-router'
 import { getInviteDetails } from '../../api/invites/get-invite-details'
 import { useAcceptTeamInvite } from '../../api/invites/mutations'
 import { queryKeys } from '../../api/query-keys'
-import { getPendingInvite, parseInviteLink, setPendingInvite } from '../../desktop/invite-links'
+import {
+	getPendingInvite,
+	parseInviteLink,
+	setPendingInvite,
+} from '../../desktop/invite-links'
 import { useAuth } from '../../hooks/use-auth'
 import { useScreenBack } from '../../hooks/use-navigation'
 import { errorMessage } from '../../lib/api-error'
@@ -68,14 +72,18 @@ function AcceptInvite({ token }: { token: string }) {
 				aria-busy={busy || loading}
 			>
 				{token && !loading && (preview || success) && (
-					<Box className="mx-auto mb-8 size-14 stroke-[1.5] text-indigo-400" aria-hidden="true" />
+					<Box
+						className="mx-auto mb-8 size-14 stroke-[1.5] text-indigo-400"
+						aria-hidden="true"
+					/>
 				)}
 				{!token ? (
 					<form
 						onSubmit={(event) => {
 							event.preventDefault()
 							const value = parseInviteLink(link)
-							if (value) void navigate(`/invites/${encodeURIComponent(value)}/accept`)
+							if (value)
+								void navigate(`/invites/${encodeURIComponent(value)}/accept`)
 							else setInputError('Cole um link de convite válido do Teamdrop.')
 						}}
 					>
@@ -109,8 +117,12 @@ function AcceptInvite({ token }: { token: string }) {
 						<Skeleton className="mb-4 size-14 rounded-xl" />
 						<Skeleton className="h-3 w-4/5" />
 						<Skeleton className="h-3 w-1/2" />
-						<div aria-hidden="true" className="mt-2 flex w-full justify-center gap-2">
-							<Skeleton className="h-8 w-20" /><Skeleton className="h-8 w-24" />
+						<div
+							aria-hidden="true"
+							className="mt-2 flex w-full justify-center gap-2"
+						>
+							<Skeleton className="h-8 w-20" />
+							<Skeleton className="h-8 w-24" />
 						</div>
 					</div>
 				) : success || preview?.alreadyMember ? (
@@ -130,7 +142,8 @@ function AcceptInvite({ token }: { token: string }) {
 				) : preview ? (
 					<>
 						<p>
-							Você foi convidado para o time <strong>{preview.team.name}</strong>.
+							Você foi convidado para o time{' '}
+							<strong>{preview.team.name}</strong>.
 						</p>
 						<div className="mt-4 flex justify-center gap-2">
 							<button

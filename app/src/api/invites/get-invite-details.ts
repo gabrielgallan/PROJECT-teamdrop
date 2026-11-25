@@ -14,6 +14,8 @@ export async function getInviteDetails(
 	{ token }: GetInviteDetailsRequest,
 	signal?: AbortSignal,
 ) {
-	const response = await api.get(`api/invites/${encodeURIComponent(token)}`, { signal }).json<GetInviteDetailsResponse>()
+	const response = await api
+		.get(`api/invites/${encodeURIComponent(token)}`, { signal })
+		.json<GetInviteDetailsResponse>()
 	return response
 }

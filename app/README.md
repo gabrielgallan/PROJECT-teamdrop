@@ -36,16 +36,16 @@ The `auth/` module owns session state, login and recovery. Its React hooks live 
 
 Frontend responsibilities:
 
-| Directory | Responsibility |
-| --- | --- |
-| `lib/` | Ky client, HTTP errors and React Query client configuration |
-| `api/` | Typed HTTP operations grouped by resource, query keys, shared query options and mutations that maintain account-scoped caches |
-| `api/auth/` | Public HTTP login start; exchange, profile restoration and refresh stay native |
-| `desktop/` | All Tauri integrations: auth, file picker, filesystem/download, app commands and invitation links |
-| `auth/` | Session store, authentication workflow, domain errors and session types |
-| `hooks/` | Auth access, workspace access, upload queue, file selection/actions, navigation and timers |
-| `app/` | Components, screens, layouts, router, workspace provider/context and presentation helpers |
-| `global.css` | Global styles at the root of `src/` |
+| Directory    | Responsibility                                                                                                                |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `lib/`       | Ky client, HTTP errors and React Query client configuration                                                                   |
+| `api/`       | Typed HTTP operations grouped by resource, query keys, shared query options and mutations that maintain account-scoped caches |
+| `api/auth/`  | Public HTTP login start; exchange, profile restoration and refresh stay native                                                |
+| `desktop/`   | All Tauri integrations: auth, file picker, filesystem/download, app commands and invitation links                             |
+| `auth/`      | Session store, authentication workflow, domain errors and session types                                                       |
+| `hooks/`     | Auth access, workspace access, upload queue, file selection/actions, navigation and timers                                    |
+| `app/`       | Components, screens, layouts, router, workspace provider/context and presentation helpers                                     |
+| `global.css` | Global styles at the root of `src/`                                                                                           |
 
 Authenticated calls use `api` from `lib/ky.ts`. Public endpoints explicitly set `context: { public: true }`. Response types reflect the HTTP envelope; presentation helpers format members, sizes and dates separately. Calls returning 204 do not parse JSON. The old `services/` directory is removed.
 
@@ -59,13 +59,13 @@ The Rust auth module separates commands, session coordination, HTTP access, vaul
 
 Commands:
 
-| Command | Input | Output |
-| --- | --- | --- |
-| `auth_restore_session` | `apiBaseUrl` | `{ user }` or null |
-| `auth_exchange_login` | `ticket, codeVerifier, generation` | pending or complete with `{ user }` |
-| `auth_get_access_token` | optional `rejectedToken` | access JWT |
-| `auth_cancel_login` | none | next login generation |
-| `auth_logout` | none | success or structured error |
+| Command                 | Input                              | Output                              |
+| ----------------------- | ---------------------------------- | ----------------------------------- |
+| `auth_restore_session`  | `apiBaseUrl`                       | `{ user }` or null                  |
+| `auth_exchange_login`   | `ticket, codeVerifier, generation` | pending or complete with `{ user }` |
+| `auth_get_access_token` | optional `rejectedToken`           | access JWT                          |
+| `auth_cancel_login`     | none                               | next login generation               |
+| `auth_logout`           | none                               | success or structured error         |
 
 Cancel invalidates a generation before waiting for any in-flight exchange. Late credentials are revoked on a best-effort basis and discarded. Revocation may fail offline; those server sessions then expire naturally. The backend's exchange ticket is single-use, so an exchange with a lost response is not automatically repeated.
 
@@ -108,7 +108,6 @@ Manual acceptance with the configured API:
 4. Use an expired access token and verify one refresh restores access.
 5. Disconnect the API and attempt logout; an error should preserve the local session.
 6. Reconnect, log out and restart; the login screen should appear.
-
 
 ## Teams and invitation links
 

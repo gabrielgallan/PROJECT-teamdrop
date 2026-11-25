@@ -13,6 +13,8 @@ export async function getTeamMembers(
 	{ teamId }: GetTeamMembersRequest,
 	signal?: AbortSignal,
 ) {
-	const response = await api.get(`api/teams/${encodeURIComponent(teamId)}/members`, { signal }).json<GetTeamMembersResponse>()
+	const response = await api
+		.get(`api/teams/${encodeURIComponent(teamId)}/members`, { signal })
+		.json<GetTeamMembersResponse>()
 	return response
 }

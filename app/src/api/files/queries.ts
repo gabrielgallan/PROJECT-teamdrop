@@ -1,13 +1,14 @@
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query'
+import { queryKeys } from '../query-keys'
 import { getFileUrl } from './get-file-url'
 import { getTeamFiles } from './get-team-files'
-import { queryKeys } from '../query-keys'
 
 export const teamFilesQuery = (userId: string, teamId: string, limit = 10) =>
 	infiniteQueryOptions({
 		queryKey: queryKeys.files(userId, teamId, limit),
 		initialPageParam: undefined as string | undefined,
-		queryFn: ({ pageParam, signal }) => getTeamFiles({ teamId, limit, cursor: pageParam }, signal),
+		queryFn: ({ pageParam, signal }) =>
+			getTeamFiles({ teamId, limit, cursor: pageParam }, signal),
 		getNextPageParam: (page) => page.nextCursor ?? undefined,
 	})
 

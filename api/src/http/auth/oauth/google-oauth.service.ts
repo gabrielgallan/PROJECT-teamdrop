@@ -1,5 +1,10 @@
 import { setTimeout as delay } from 'node:timers/promises'
-import { BadGatewayException, BadRequestException, Injectable, Logger } from '@nestjs/common'
+import {
+	BadGatewayException,
+	BadRequestException,
+	Injectable,
+	Logger,
+} from '@nestjs/common'
 import { z } from 'zod'
 import { EnvService } from '../../../common/env/env.service.js'
 
@@ -23,7 +28,10 @@ export class GoogleOAuthService {
 
 	constructor(private env: EnvService) {}
 
-	async authenticate({ code: OAuthCode, codeVerifier }: GoogleOAuthCallbackData) {
+	async authenticate({
+		code: OAuthCode,
+		codeVerifier,
+	}: GoogleOAuthCallbackData) {
 		const googleOAuthBody = new URLSearchParams({
 			code: OAuthCode,
 			client_id: this.env.get('GOOGLE_OAUTH_CLIENT_ID'),
@@ -106,7 +114,10 @@ export class GoogleOAuthService {
 		const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
 
 		url.searchParams.set('client_id', this.env.get('GOOGLE_OAUTH_CLIENT_ID'))
-		url.searchParams.set('redirect_uri', this.env.get('GOOGLE_OAUTH_CLIENT_REDIRECT_URI'))
+		url.searchParams.set(
+			'redirect_uri',
+			this.env.get('GOOGLE_OAUTH_CLIENT_REDIRECT_URI'),
+		)
 		url.searchParams.set('response_type', 'code')
 		url.searchParams.set('scope', 'openid email profile')
 		url.searchParams.set('state', state)
@@ -128,7 +139,9 @@ export class GoogleOAuthService {
 					method,
 					headers: {
 						Accept: 'application/json',
-						...(body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+						...(body
+							? { 'Content-Type': 'application/x-www-form-urlencoded' }
+							: {}),
 						...headers,
 					},
 					body,
@@ -144,7 +157,9 @@ export class GoogleOAuthService {
 					error instanceof Error &&
 					error.name === 'TimeoutError'
 				) {
-					this.logger.warn('Google profile request timed out; retrying in 1s with a 20s timeout')
+					this.logger.warn(
+						'Google profile request timed out; retrying in 1s with a 20s timeout',
+					)
 					await delay(1_000)
 					continue
 				}

@@ -1,0 +1,12 @@
+{
+	"private": true,
+	"scripts": {
+		"lint": "biome lint .",
+		"format": "biome format --write .",
+		"check": "biome check .",
+		"check:fix": "biome check --write ."
+	},
+	"dependencies": {
+		"@biomejs/biome": "2.6.8"
+	}
+}

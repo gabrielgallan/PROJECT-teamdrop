@@ -9,7 +9,13 @@ interface ScreenHeaderProps {
 	disabled?: boolean
 }
 
-export function ScreenHeader({ title, backLabel, onBack, backRef, disabled }: ScreenHeaderProps) {
+export function ScreenHeader({
+	title,
+	backLabel,
+	onBack,
+	backRef,
+	disabled,
+}: ScreenHeaderProps) {
 	return (
 		<div className="m-4 flex min-w-0 shrink-0 items-center gap-2">
 			<button
@@ -22,7 +28,9 @@ export function ScreenHeader({ title, backLabel, onBack, backRef, disabled }: Sc
 			>
 				<ArrowLeft aria-hidden="true" />
 			</button>
-			<h1 className="min-w-0 truncate text-sm font-medium" title={title}>{title}</h1>
+			<h1 className="min-w-0 truncate text-sm font-medium" title={title}>
+				{title}
+			</h1>
 		</div>
 	)
 }

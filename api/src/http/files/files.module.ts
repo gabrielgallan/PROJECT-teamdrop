@@ -3,7 +3,7 @@ import { EnvModule } from '../../common/env/env.module.js'
 import { DatabaseModule } from '../../database/database.module.js'
 import { StorageModule } from '../../storage/storage.module.js'
 import { WebSocketModule } from '../../websocket/websocket.module.js'
-import { FilesService } from './files.service.js'
+import { FilesService } from './application/files.service.js'
 import { FilesController } from './presentation/files.controller.js'
 
 @Module({

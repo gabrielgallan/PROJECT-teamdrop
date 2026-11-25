@@ -3,7 +3,10 @@ import type { DropzoneState } from 'react-dropzone'
 import { Progress } from './progress'
 
 interface FileDropzoneProps {
-	dropzone: Pick<DropzoneState, 'getRootProps' | 'getInputProps' | 'isDragActive'>
+	dropzone: Pick<
+		DropzoneState,
+		'getRootProps' | 'getInputProps' | 'isDragActive'
+	>
 	files: { name: string }[]
 	error: string
 	onSelect: () => void
@@ -56,7 +59,10 @@ export function FileDropzone({
 						aria-label="Selecionar arquivos"
 						className="grid size-12 place-items-center text-indigo-300 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-indigo-300"
 					>
-						<CheckCircle2 className="size-8 text-indigo-400" aria-hidden="true" />
+						<CheckCircle2
+							className="size-8 text-indigo-400"
+							aria-hidden="true"
+						/>
 					</button>
 				</div>
 			) : progress !== undefined ? (
@@ -75,7 +81,10 @@ export function FileDropzone({
 						aria-label="Selecionar arquivos"
 						className="flex min-w-0 items-center gap-2 text-white/90 before:absolute before:inset-0 before:rounded-md hover:before:bg-white/5"
 					>
-						<CloudUpload aria-hidden="true" className="size-4 shrink-0 stroke-2" />
+						<CloudUpload
+							aria-hidden="true"
+							className="size-4 shrink-0 stroke-2"
+						/>
 						{files.length > 1 ? (
 							<span>{files.length} arquivos carregados</span>
 						) : firstFile ? (

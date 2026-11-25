@@ -19,10 +19,19 @@ export function Router() {
 				<Route element={<WorkspaceLayout />}>
 					<Route index element={<DropsScreen />} />
 					<Route path="/settings" element={<SettingsScreen />} />
-					<Route path="/settings/teams/:teamId" element={<TeamSettingsScreen />} />
+					<Route
+						path="/settings/teams/:teamId"
+						element={<TeamSettingsScreen />}
+					/>
 					<Route path="/invites/accept" element={<AcceptInviteScreen />} />
-					<Route path="/invites/:token/accept" element={<AcceptInviteScreen />} />
-					<Route path="/teams/:teamId/files/:fileId/qr" element={<FileQrCodeScreen />} />
+					<Route
+						path="/invites/:token/accept"
+						element={<AcceptInviteScreen />}
+					/>
+					<Route
+						path="/teams/:teamId/files/:fileId/qr"
+						element={<FileQrCodeScreen />}
+					/>
 					<Route path="*" element={<Navigate to="/" replace />} />
 				</Route>
 			</Route>

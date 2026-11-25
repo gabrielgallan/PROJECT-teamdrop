@@ -19,7 +19,10 @@ export function LoginScreen() {
 			<Package className="mx-auto size-14 stroke-[1.5]" />
 
 			{isRestoring ? (
-				<ProfileSkeleton label="Restaurando sessão…" className="mt-8 justify-center" />
+				<ProfileSkeleton
+					label="Restaurando sessão…"
+					className="mt-8 justify-center"
+				/>
 			) : (
 				<div className="mt-8 space-y-4">
 					{canLogin && (

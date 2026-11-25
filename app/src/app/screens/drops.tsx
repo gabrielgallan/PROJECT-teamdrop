@@ -6,8 +6,8 @@ import { AuthNotice } from '../components/auth-notice'
 import { MenuItem } from '../components/menu-item'
 import { RecentFiles } from '../components/recent-files'
 import { Separator } from '../components/separator'
-import { UploadPanel } from '../components/upload-panel'
 import { ToastViewport } from '../components/toast'
+import { UploadPanel } from '../components/upload-panel'
 
 export function DropsScreen() {
 	const navigate = useNavigate()
@@ -39,7 +39,10 @@ export function DropsScreen() {
 		<main className="relative h-full flex flex-col overflow-hidden bg-zinc-900/50 text-white/90">
 			<div className="shrink-0 space-y-4 pt-4">
 				<UploadPanel>
-					<MenuItem id="settings-button" onClick={() => void navigate('/settings')}>
+					<MenuItem
+						id="settings-button"
+						onClick={() => void navigate('/settings')}
+					>
 						<Settings aria-hidden="true" className="size-4" />
 						Configurações
 					</MenuItem>

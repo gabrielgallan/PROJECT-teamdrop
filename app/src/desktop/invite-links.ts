@@ -18,8 +18,12 @@ export function parseInviteLink(input: string): string | null {
 			[...url.searchParams.keys()].length === 1
 		) {
 			token = url.searchParams.get('token')
-		} else if ((url.protocol === 'https:' || url.protocol === 'http:') && !url.search) {
-			token = /^\/invites\/([A-Za-z0-9_-]{43})\/?$/.exec(url.pathname)?.[1] ?? null
+		} else if (
+			(url.protocol === 'https:' || url.protocol === 'http:') &&
+			!url.search
+		) {
+			token =
+				/^\/invites\/([A-Za-z0-9_-]{43})\/?$/.exec(url.pathname)?.[1] ?? null
 		}
 		return token && /^[A-Za-z0-9_-]{43}$/.test(token) ? token : null
 	} catch {
@@ -59,7 +63,9 @@ export function initializeInvites(): Promise<void> {
 	})().catch(() => {
 		initialization = undefined
 		// Manual paste remains available if the OS integration cannot initialize.
-		console.warn('Could not initialize invitation links; use manual paste in settings.')
+		console.warn(
+			'Could not initialize invitation links; use manual paste in settings.',
+		)
 	})
 	return initialization
 }

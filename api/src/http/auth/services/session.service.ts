@@ -18,7 +18,11 @@ export class SessionService {
 
 		return this.prisma.$transaction(async (db) => {
 			const session = await db.session.create({
-				data: { userId, refreshTokenHash: this.cryptoService.hashToken(refreshToken), expiresAt },
+				data: {
+					userId,
+					refreshTokenHash: this.cryptoService.hashToken(refreshToken),
+					expiresAt,
+				},
 			})
 			return {
 				...(await this.accessTokens.sign(userId, session.id, expiresAt)),
@@ -40,14 +44,20 @@ export class SessionService {
 
 		const nextRefreshToken = this.cryptoService.generateToken()
 		// Sign before consuming the refresh so a signing failure does not destroy the session.
-		const access = await this.accessTokens.sign(session.userId, session.id, session.expiresAt)
+		const access = await this.accessTokens.sign(
+			session.userId,
+			session.id,
+			session.expiresAt,
+		)
 		const updated = await this.prisma.session.updateMany({
 			where: {
 				id: session.id,
 				refreshTokenHash: previousHash,
 				expiresAt: { gt: new Date() },
 			},
-			data: { refreshTokenHash: this.cryptoService.hashToken(nextRefreshToken) },
+			data: {
+				refreshTokenHash: this.cryptoService.hashToken(nextRefreshToken),
+			},
 		})
 		// PostgreSQL rechecks this condition after concurrent updates: only one refresh wins.
 		if (updated.count !== 1) throw this.invalidRefreshToken()

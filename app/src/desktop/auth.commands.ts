@@ -14,19 +14,17 @@ export type ExchangeLoginResponse =
 
 export const authCommands = {
 	async restoreSession() {
-		const response = await invoke<Session | null>(
-			'auth_restore_session',
-			{ apiBaseUrl: env.VITE_API_URL },
-		)
+		const response = await invoke<Session | null>('auth_restore_session', {
+			apiBaseUrl: env.VITE_API_URL,
+		})
 
 		return response
 	},
 
 	async getAccessToken(rejectedToken?: string) {
-		const response = await invoke<string>(
-			'auth_get_access_token',
-			{ rejectedToken },
-		)
+		const response = await invoke<string>('auth_get_access_token', {
+			rejectedToken,
+		})
 
 		return response
 	},
@@ -56,5 +54,5 @@ export const authCommands = {
 
 	async logout() {
 		await invoke('auth_logout')
-	}
+	},
 }

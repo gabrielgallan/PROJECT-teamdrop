@@ -39,7 +39,8 @@ export class GetInviteDetailsResponseDto {
 
 	@ApiProperty({
 		example: false,
-		description: 'Indicates whether the authenticated user is already a member of the team.',
+		description:
+			'Indicates whether the authenticated user is already a member of the team.',
 	})
 	alreadyMember!: boolean
 }

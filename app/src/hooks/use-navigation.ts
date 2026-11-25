@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 
-export function useScreenBack(path: string, focusId?: string, disabled = false) {
+export function useScreenBack(
+	path: string,
+	focusId?: string,
+	disabled = false,
+) {
 	const navigate = useNavigate()
 	const backRef = useRef<HTMLButtonElement>(null)
 	const onBack = () => {
@@ -11,14 +15,14 @@ export function useScreenBack(path: string, focusId?: string, disabled = false) 
 		backRef.current?.focus()
 	}, [])
 	useEffect(() => {
-		const escape = (event: KeyboardEvent) => {
+		const handleEscape = (event: KeyboardEvent) => {
 			if (event.key === 'Escape' && !event.defaultPrevented && !disabled) {
 				event.preventDefault()
 				onBack()
 			}
 		}
-		window.addEventListener('keydown', escape)
-		return () => window.removeEventListener('keydown', escape)
+		window.addEventListener('keydown', handleEscape)
+		return () => window.removeEventListener('keydown', handleEscape)
 	})
 	return { onBack, backRef }
 }
@@ -30,7 +34,8 @@ export function useRestoreFocus() {
 		if (typeof id !== 'string') return
 		const frame = requestAnimationFrame(() => {
 			const target =
-				document.getElementById(id) ?? document.querySelector<HTMLElement>('main button')
+				document.getElementById(id) ??
+				document.querySelector<HTMLElement>('main button')
 			target?.focus({ preventScroll: true })
 		})
 		return () => cancelAnimationFrame(frame)

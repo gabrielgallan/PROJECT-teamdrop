@@ -21,8 +21,10 @@ export function InlineConfirmation({
 	useEffect(() => cancelButton.current?.focus(), [])
 
 	return (
-		<div role="group" aria-label={message} className="w-full rounded-md bg-white/5 p-3">
-			<p className="break-words text-xs leading-relaxed text-white/85">{message}</p>
+		<fieldset aria-label={message} className="w-full rounded-md bg-white/5 p-3">
+			<p className="wrap-break-word text-xs leading-relaxed text-white/85">
+				{message}
+			</p>
 			{error && (
 				<p role="alert" className="mt-2 text-xs text-red-300">
 					{error}
@@ -47,6 +49,6 @@ export function InlineConfirmation({
 					{busy ? 'Aguarde…' : confirmLabel}
 				</button>
 			</div>
-		</div>
+		</fieldset>
 	)
 }

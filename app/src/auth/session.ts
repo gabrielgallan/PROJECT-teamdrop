@@ -1,5 +1,5 @@
-import { isDesktop } from '../desktop/app.commands'
 import { startDesktopLogin } from '../api/auth/start-desktop-login'
+import { isDesktop } from '../desktop/app.commands'
 import { authCommands } from '../desktop/auth.commands'
 import { authFailure, handleAuthFailure } from './auth.errors'
 import { authStore } from './auth.store'
@@ -50,7 +50,8 @@ export function restoreSession(): Promise<void> {
 			status: 'unsupported',
 			session: null,
 			busy: null,
-			error: 'Abra o aplicativo Tauri para entrar e manter sua sessão no Windows.',
+			error:
+				'Abra o aplicativo Tauri para entrar e manter sua sessão no Windows.',
 			needsLogin: false,
 		})
 
@@ -117,9 +118,7 @@ export async function signInWithGoogle() {
 
 		controller.signal.throwIfAborted()
 
-		const verifier = base64url(
-			crypto.getRandomValues(new Uint8Array(32)),
-		)
+		const verifier = base64url(crypto.getRandomValues(new Uint8Array(32)))
 
 		const challenge = base64url(
 			new Uint8Array(
@@ -150,14 +149,10 @@ export async function signInWithGoogle() {
 
 		await authCommands.openGoogleLogin(url.toString())
 
-		const deadline =
-			Date.now() + Math.min(attempt.expiresIn, 300) * 1000
+		const deadline = Date.now() + Math.min(attempt.expiresIn, 300) * 1000
 
 		while (Date.now() < deadline) {
-			await pause(
-				Math.max(2, attempt.interval) * 1000,
-				controller.signal,
-			)
+			await pause(Math.max(2, attempt.interval) * 1000, controller.signal)
 
 			const result = await authCommands.exchangeLogin({
 				ticket: attempt.ticket,

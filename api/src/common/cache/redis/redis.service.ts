@@ -1,6 +1,6 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import { Redis } from 'ioredis';
-import { EnvService } from '../../env/env.service.js';
+import { Injectable, OnModuleDestroy } from '@nestjs/common'
+import { Redis } from 'ioredis'
+import { EnvService } from '../../env/env.service.js'
 
 @Injectable()
 export class RedisService extends Redis implements OnModuleDestroy {
@@ -8,14 +8,14 @@ export class RedisService extends Redis implements OnModuleDestroy {
 		super(env.get('REDIS_URL'), {
 			maxRetriesPerRequest: 3,
 			enableReadyCheck: true,
-		});
+		})
 
 		this.on('error', (err) => {
-			console.error(err);
-		});
+			console.error(err)
+		})
 	}
 
 	onModuleDestroy() {
-		this.disconnect();
+		this.disconnect()
 	}
 }

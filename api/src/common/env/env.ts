@@ -3,7 +3,9 @@ import z from 'zod'
 
 export const envSchema = z
 	.object({
-		NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
+		NODE_ENV: z
+			.enum(['development', 'test', 'production'])
+			.default('production'),
 		PORT: z.coerce.number().default(8430),
 		CORS_ORIGINS: z.string().default('*'),
 		PUBLIC_BASE_URL: z.url().optional(),

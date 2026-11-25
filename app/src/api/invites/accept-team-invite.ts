@@ -9,7 +9,10 @@ export interface AcceptTeamInviteResponse {
 	team: Team
 }
 
-export async function acceptTeamInvite({ token }: AcceptTeamInviteRequest, signal?: AbortSignal) {
+export async function acceptTeamInvite(
+	{ token }: AcceptTeamInviteRequest,
+	signal?: AbortSignal,
+) {
 	const response = await api
 		.post(`api/invites/${encodeURIComponent(token)}/accept`, { signal })
 		.json<AcceptTeamInviteResponse>()

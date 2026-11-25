@@ -4,7 +4,11 @@ import { CryptographyService } from '../../../common/cryptography/cryptography.s
 
 export const LOGIN_TTL_SECONDS = 300
 
-type Ticket = { challenge: string; status: 'pending' | 'complete' | 'denied'; userId?: string }
+type Ticket = {
+	challenge: string
+	status: 'pending' | 'complete' | 'denied'
+	userId?: string
+}
 
 @Injectable()
 export class DesktopTicketService {
@@ -29,7 +33,11 @@ export class DesktopTicketService {
 		const record: Ticket = JSON.parse(value)
 		await this.cache.set(
 			this.key(ticket),
-			JSON.stringify({ ...record, status: userId ? 'complete' : 'denied', userId }),
+			JSON.stringify({
+				...record,
+				status: userId ? 'complete' : 'denied',
+				userId,
+			}),
 			60,
 		)
 		return true

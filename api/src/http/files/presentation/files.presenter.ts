@@ -4,8 +4,8 @@ export type PrismaFileWithAuthor = Prisma.FileGetPayload<{
 	include: {
 		author: {
 			select: {
-				name: true,
-				email: true,
+				name: true
+				email: true
 				avatarUrl: true
 			}
 		}
@@ -13,31 +13,21 @@ export type PrismaFileWithAuthor = Prisma.FileGetPayload<{
 }>
 
 export class FilesPresenter {
-  static toHTTP(file: File) {
-    const {
-      authorId,
-      teamId,
-      storageKey,
-      ...data
-    } = file
+	static toHTTP(file: File) {
+		const { authorId, teamId, storageKey, ...data } = file
 
-    return {
-      ...data,
-      size: Number(file.size),
-    }
-  }
+		return {
+			...data,
+			size: Number(file.size),
+		}
+	}
 
-  static fileWithAuthorToHTTP(fileWithAuthor: PrismaFileWithAuthor) {
-    const {
-        authorId,
-        teamId,
-        storageKey,
-        ...data
-      } = fileWithAuthor
+	static fileWithAuthorToHTTP(fileWithAuthor: PrismaFileWithAuthor) {
+		const { authorId, teamId, storageKey, ...data } = fileWithAuthor
 
-      return {
-        ...data,
-        size: Number(fileWithAuthor.size),
-      }
-  }
+		return {
+			...data,
+			size: Number(fileWithAuthor.size),
+		}
+	}
 }

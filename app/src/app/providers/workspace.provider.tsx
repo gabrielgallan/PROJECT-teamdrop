@@ -17,7 +17,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 		}
 	})
 	const teams = listing.data?.teams ?? []
-	const team = teams.find((value) => value.id === selectedId) ?? teams[0] ?? null
+	const team =
+		teams.find((value) => value.id === selectedId) ?? teams[0] ?? null
 	const queue = useUploadQueue(team?.id ?? null)
 	const scroll = useRef(new Map<string, number>())
 
@@ -33,11 +34,20 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 	}, [listing.isSuccess, storageKey, team?.id])
 
 	function selectTeam(id: string) {
-		if (!queue.isUploading() && teams.some((value) => value.id === id)) setSelectedId(id)
+		if (!queue.isUploading() && teams.some((value) => value.id === id))
+			setSelectedId(id)
 	}
 
 	return (
-		<WorkspaceContext value={{ team, teamsLoading: canQuery && listing.isPending, selectTeam, queue, scroll: scroll.current }}>
+		<WorkspaceContext
+			value={{
+				team,
+				teamsLoading: canQuery && listing.isPending,
+				selectTeam,
+				queue,
+				scroll: scroll.current,
+			}}
+		>
 			{children}
 		</WorkspaceContext>
 	)

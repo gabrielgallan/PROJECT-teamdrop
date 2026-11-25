@@ -1,10 +1,27 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, Param, Post } from '@nestjs/common'
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Header,
+	HttpCode,
+	Param,
+	Post,
+} from '@nestjs/common'
+import {
+	ApiBearerAuth,
+	ApiOperation,
+	ApiResponse,
+	ApiTags,
+} from '@nestjs/swagger'
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js'
 import { AuthenticatedUser } from '../../auth/services/auth.service.js'
 import { ApiErrorResponseDto } from '../../dtos/api-error-response.dto.js'
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe.js'
-import { TeamIdDto, teamIdSchema } from '../../teams/presentation/teams.controller.js'
+import {
+	TeamIdDto,
+	teamIdSchema,
+} from '../../teams/presentation/teams.controller.js'
 import { TeamsPresenter } from '../../teams/presentation/teams.presenter.js'
 import { InvitesService } from '../application/invites.service.js'
 import {
@@ -55,7 +72,8 @@ export class InvitesController {
 	})
 	@ApiResponse({
 		status: 404,
-		description: 'Resource not found or inaccessible to the authenticated user.',
+		description:
+			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
 	@Post()
@@ -63,7 +81,8 @@ export class InvitesController {
 	@Header('Cache-Control', 'no-store')
 	async createTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
-		@Body(new ZodValidationPipe(createTeamInviteSchema)) body: CreateTeamInviteDto,
+		@Body(new ZodValidationPipe(createTeamInviteSchema))
+		body: CreateTeamInviteDto,
 	) {
 		const { teamId, maxUses, expiresIn } = body
 
@@ -104,7 +123,8 @@ export class InvitesController {
 	})
 	@ApiResponse({
 		status: 404,
-		description: 'Resource not found or inaccessible to the authenticated user.',
+		description:
+			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
 	@Delete()
@@ -129,7 +149,8 @@ export class InvitesController {
 	})
 	@ApiResponse({
 		status: 200,
-		description: 'Invite details and user membership status retrieved successfully.',
+		description:
+			'Invite details and user membership status retrieved successfully.',
 		type: GetInviteDetailsResponseDto,
 	})
 	@ApiResponse({
@@ -152,7 +173,8 @@ export class InvitesController {
 	@Header('Cache-Control', 'no-store')
 	async getInviteDetails(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(getInviteDetailsSchema)) param: GetInviteDetailsDto,
+		@Param(new ZodValidationPipe(getInviteDetailsSchema))
+		param: GetInviteDetailsDto,
 	) {
 		const { team, alreadyMember } = await this.invitesService.getInviteDetails({
 			userId: user.userId,
@@ -194,7 +216,8 @@ export class InvitesController {
 	@Header('Cache-Control', 'no-store')
 	async acceptTeamInvite(
 		@CurrentUser() user: AuthenticatedUser,
-		@Param(new ZodValidationPipe(acceptTeamInviteSchema)) param: AcceptTeamInviteDto,
+		@Param(new ZodValidationPipe(acceptTeamInviteSchema))
+		param: AcceptTeamInviteDto,
 	) {
 		const { team } = await this.invitesService.acceptInvite({
 			userId: user.userId,
