@@ -29,12 +29,11 @@ export class WebSocketGatewayService
 	afterInit(server: Namespace) {
 		server.use(async (socket, next) => {
 			try {
-				const token = socket.handshake.headers.authorization?.replace(
-					/^Bearer\s+/i,
-					'',
-				)
+				const token = Object.hasOwn(socket.handshake.auth, 'token')
+					? socket.handshake.auth.token
+					: socket.handshake.headers.authorization?.replace(/^Bearer\s+/i, '')
 
-				if (typeof token !== 'string' || !token) {
+				if (typeof token !== 'string' || !token.trim()) {
 					return next(new Error('Unauthorized'))
 				}
 

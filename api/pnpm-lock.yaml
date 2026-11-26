@@ -7,153 +7,172 @@ importers:
     configDependencies: {}
     packageManagerDependencies:
       pnpm:
-        specifier: 12.16.1
-        version: 12.16.1
+        specifier: 12.23.0
+        version: 12.23.0
 
 packages:
 
-  '@pnpm/exe.android-arm64@12.16.1':
-    resolution: {integrity: sha512-PKf78Ew+i0CBYf0Xc+eMcqQiqyBT+u8XCVg1F5roc98/6wWfdYlWhrUMmEBiKWaJ3JqHxrtt8l1NwZ7qfJt2/Q==}
+  '@pnpm/exe.android-arm64@12.23.0':
+    resolution: {integrity: sha512-oqZu9yFInENTRA9BKiOnEqOcpr5dNMDbquxq9zKFKJy0nEC385Vw0e4wlsOAlDh90iX94GND6Fc22FVL2O2SmQ==}
     cpu: [arm64]
     os: [android]
 
-  '@pnpm/exe.android-x64@12.16.1':
-    resolution: {integrity: sha512-xdu7gMbB98pdvhwMeA6612Of515FDlRUtfA/1f7nWPZfPLnEdSRBO2u+1N0XBtQ/ennhPH/lrxB1gC6gnR/cdg==}
+  '@pnpm/exe.android-x64@12.23.0':
+    resolution: {integrity: sha512-fQRjE4Wno8ye0lxhYGmyqdcc6tv+tDGktEmgFzffZ7flp4BG/84VtdXn3i/O4BazgMbNuPdbM75aj7uDZwL7GQ==}
     cpu: [x64]
     os: [android]
 
-  '@pnpm/exe.darwin-arm64@12.16.1':
-    resolution: {integrity: sha512-pVbmIIbhixiLvADLu1WA3TaW8FZy/D72R1De27WbbFx8/2mxvnsTyFVm4fO9kjpjMY7RzJd48CiQ96p8fO3ebQ==}
+  '@pnpm/exe.darwin-arm64@12.23.0':
+    resolution: {integrity: sha512-ny5+L92frsfyV3/B3zadYQuU5kBV8o2TXB5WnhBUoJ/9Mz32FVglMr8g1HmUc01yfKkjopZ4rmF1G7vs68JxIg==}
     cpu: [arm64]
     os: [darwin]
 
-  '@pnpm/exe.darwin-x64@12.16.1':
-    resolution: {integrity: sha512-xZvQBFqcZjO7vFKTK3XsJpqY6lnBL9EWSLCzVUPq3kZ94+D96gwJCa76xxGNK8Cj32f4eeM91Qg+yNRR4sRpDw==}
+  '@pnpm/exe.darwin-x64@12.23.0':
+    resolution: {integrity: sha512-+MNmpJSAzb9yc80d5l4VbZ/3Teh8xtlacATUyTAx6fELUK0xwmgFi05hqzg1sXLdAPij5gcIp82VvrqY5tzPrQ==}
     cpu: [x64]
     os: [darwin]
 
-  '@pnpm/exe.freebsd-x64@12.16.1':
-    resolution: {integrity: sha512-zTtunfi9mBhRXiXEJYfwiJj0tk7MgTSfqDSRh+Az9FZ9THazVIiQiVNS8jpcsftDOqu7LKNffQdjmgwHDThfUg==}
+  '@pnpm/exe.freebsd-x64@12.23.0':
+    resolution: {integrity: sha512-AGfkooje58I9hh4xdSDyZCPLKvjrjuvlkKTK2gsTtj6wfhVTw1jz33wB1XbERt2/0odJdEfgnBPUIdalRnb7Fw==}
     cpu: [x64]
     os: [freebsd]
 
-  '@pnpm/exe.linux-arm64-musl@12.16.1':
-    resolution: {integrity: sha512-BJ3mOmcmQgcUo92Ee/WfEOt1pRiv3y2MMAkhEiYHd85UiPpHTfFhv+SpCbALmfExzXk3UlaRtMYwHlkQymc4VA==}
+  '@pnpm/exe.linux-arm64-musl@12.23.0':
+    resolution: {integrity: sha512-C09Z3tFnPz7CYiae326dGlJcRUNCBtlJvMc04S9M8YKACebHHyamxCItLAisvGdHVf1BawtU9shV0FngjYxMwA==}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@pnpm/exe.linux-arm64@12.16.1':
-    resolution: {integrity: sha512-JaRd5gNxwdNGBBkrZFt8bknrK4YmHVJBW0JMhUQ0fJ0dEYp6C2GT9ExaCqOO8EwYEyqM+jpKgJIK+8WFaJy3ew==}
+  '@pnpm/exe.linux-arm64@12.23.0':
+    resolution: {integrity: sha512-RLby8T0CIWAbljrbmjaX6S3PYhMHnLbUp+IDcOmZIY1/+wy8hJoQpjMPZlV4VJIGl8lZKUXtxJcLJ2XZ1z2SVw==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.linux-ppc64@12.16.1':
-    resolution: {integrity: sha512-FnSV0Jv40S1cMv7vFNWwvu0X567Lec4L4HCRead3CFcD6zQDNbGw81s8N5bcKPahtPD9ApVuhsbmFCx4rw6RMw==}
+  '@pnpm/exe.linux-loong64@12.23.0':
+    resolution: {integrity: sha512-XytxNoKD9/PcugxRHmBptRNDxUYwBtQZwBauJ3lKXFJ3sqHPZSjjFxIMX4HTWQn7FqCVnQlF+tbewjUnvQz0dQ==}
+    cpu: [loong64]
+    os: [linux]
+    libc: [glibc]
+
+  '@pnpm/exe.linux-ppc64@12.23.0':
+    resolution: {integrity: sha512-1h9+mBpdmlFA5LW6fAfd5UnLgHakNkEsS1R67mEXY1J6WLLnZcWFJs7Cbde0BD034CRTUa99MaILAuSs2ERf7Q==}
     cpu: [ppc64]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.linux-riscv64@12.16.1':
-    resolution: {integrity: sha512-C1Sww4FN5IttD4atRRhAKmQtSGWVp04ZAKNxO8pfu2bkRPwOW+7v+2DH1Xs1W+kZYYpO86BYDvUcadefF+AgaQ==}
+  '@pnpm/exe.linux-riscv64@12.23.0':
+    resolution: {integrity: sha512-SlPz2UxUshIxgyBRKT0PHncYr2pIoFOxf6WR68HCkhGmASGljYlYYwRVfefgoIPM603x4Fcge9/B1Z3aIq1bSQ==}
     cpu: [riscv64]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.linux-s390x@12.16.1':
-    resolution: {integrity: sha512-kn2fautsTcxIMODoovQVqZyfpDRdNgGkoeVqNdrKqbeBBvrEl+fXLkmZiq5xDht1LMr4sYiCNcsMfNMT6JPFmg==}
+  '@pnpm/exe.linux-s390x@12.23.0':
+    resolution: {integrity: sha512-Hk8jKY0i9sjyKPJFYC71lu7Mq5ahb5sWT2zCqNxzzBCrivvCqv5GVfZurLETC5TsSusE9TRWFpynLgG+iaXmSA==}
     cpu: [s390x]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.linux-x64-musl@12.16.1':
-    resolution: {integrity: sha512-PM6ccHCOe/O9SsTflTJTYWfwogJZa6EmUvpnwZgiPguJBddh20wDQKgxUPXf48rDsPm9vMsIij0uHswwwbXL8g==}
+  '@pnpm/exe.linux-x64-musl@12.23.0':
+    resolution: {integrity: sha512-7+9bD4LBQ5r+7nLnIhDgMnvMm7a7cfc28NogU3NY1sM0+0Jz7K+IwxZb4BJDY/AN1s3F26TgZ3az/bjeCshmXA==}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@pnpm/exe.linux-x64@12.16.1':
-    resolution: {integrity: sha512-RK//8ZLcXGW8A2k8bQOXZDBN1Qu92zN4dYnG1bzj1zoQ1fkZ6jNzZ1AvXtsfGVma795CJtvoaF5bLXf4l/FIUw==}
+  '@pnpm/exe.linux-x64@12.23.0':
+    resolution: {integrity: sha512-vu/N1nUJxLA0IIumbxL/rR6leGA+++SQY0XL+5KPJ1O2kyvzJoLQYL1ibLGO7TRqsZ90wclboEdhIIWvr3Qsig==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.win32-arm64@12.16.1':
-    resolution: {integrity: sha512-Ox3kNNVxtGw6pK7SVejmeOUgHhUTZgAM7NQQ6cU7frPw3ix9+j7d2MGbRg3fyEFAaKWq8ZAZLTQGcDyLnAu+qA==}
+  '@pnpm/exe.netbsd-x64@12.23.0':
+    resolution: {integrity: sha512-c85UPtAJfPR5+ghXS8UGRQlgxwqvz2PFaPaEzIVwUdBU+5DB4X2iuMAMlMXWS6hJ/OjqhKM6tpwyEc4Kkz40Fg==}
+    cpu: [x64]
+    os: [netbsd]
+
+  '@pnpm/exe.win32-arm64@12.23.0':
+    resolution: {integrity: sha512-lx0B8HPaUEG/ovIC0PmA6HhMhXh6ud0pAWVTDNxZvAfAzuGm0RM78SCT/oBY80lbJnwA9al4sTUroqozZK9hVA==}
     cpu: [arm64]
     os: [win32]
 
-  '@pnpm/exe.win32-x64@12.16.1':
-    resolution: {integrity: sha512-k+FhRJ0ttphFoFIVB1Sk4v76YJAulafmA/Ly57cysesUhhIzVlApeOShUz0jXubKx317TThlEfpQrukldnqORA==}
+  '@pnpm/exe.win32-x64@12.23.0':
+    resolution: {integrity: sha512-OnbBaQWQcw31m5APFNKcM8kdmM6H7k8MoaOnA2m1LsWAHX7AZKB5cdJfNwhHGBfkURcwWk1bnMXBdllujMiCFw==}
     cpu: [x64]
     os: [win32]
 
-  pnpm@12.16.1:
-    resolution: {integrity: sha512-CR0d7nknV1Zhsl2rPCrjHK/BxU1rce1qZgDPDByxBDSkR+rhQBXxsj4ua+3u1535SpMuIWTSgyKA3OP7MvZW0Q==}
+  pnpm@12.23.0:
+    resolution: {integrity: sha512-AtqU/68TP0YHQyKv5VL5DUC19xriWa77zNrMUIWx1hfpjWXgEx9XSLm2dEWXjuUFXX1ZpHPx7vDVBIVP781ZdQ==}
     engines: {node: '>=18'}
     hasBin: true
 
 snapshots:
 
-  '@pnpm/exe.android-arm64@12.16.1':
+  '@pnpm/exe.android-arm64@12.23.0':
     optional: true
 
-  '@pnpm/exe.android-x64@12.16.1':
+  '@pnpm/exe.android-x64@12.23.0':
     optional: true
 
-  '@pnpm/exe.darwin-arm64@12.16.1':
+  '@pnpm/exe.darwin-arm64@12.23.0':
     optional: true
 
-  '@pnpm/exe.darwin-x64@12.16.1':
+  '@pnpm/exe.darwin-x64@12.23.0':
     optional: true
 
-  '@pnpm/exe.freebsd-x64@12.16.1':
+  '@pnpm/exe.freebsd-x64@12.23.0':
     optional: true
 
-  '@pnpm/exe.linux-arm64-musl@12.16.1':
+  '@pnpm/exe.linux-arm64-musl@12.23.0':
     optional: true
 
-  '@pnpm/exe.linux-arm64@12.16.1':
+  '@pnpm/exe.linux-arm64@12.23.0':
     optional: true
 
-  '@pnpm/exe.linux-ppc64@12.16.1':
+  '@pnpm/exe.linux-loong64@12.23.0':
     optional: true
 
-  '@pnpm/exe.linux-riscv64@12.16.1':
+  '@pnpm/exe.linux-ppc64@12.23.0':
     optional: true
 
-  '@pnpm/exe.linux-s390x@12.16.1':
+  '@pnpm/exe.linux-riscv64@12.23.0':
     optional: true
 
-  '@pnpm/exe.linux-x64-musl@12.16.1':
+  '@pnpm/exe.linux-s390x@12.23.0':
     optional: true
 
-  '@pnpm/exe.linux-x64@12.16.1':
+  '@pnpm/exe.linux-x64-musl@12.23.0':
     optional: true
 
-  '@pnpm/exe.win32-arm64@12.16.1':
+  '@pnpm/exe.linux-x64@12.23.0':
     optional: true
 
-  '@pnpm/exe.win32-x64@12.16.1':
+  '@pnpm/exe.netbsd-x64@12.23.0':
     optional: true
 
-  pnpm@12.16.1:
+  '@pnpm/exe.win32-arm64@12.23.0':
+    optional: true
+
+  '@pnpm/exe.win32-x64@12.23.0':
+    optional: true
+
+  pnpm@12.23.0:
     optionalDependencies:
-      '@pnpm/exe.android-arm64': 12.16.1
-      '@pnpm/exe.android-x64': 12.16.1
-      '@pnpm/exe.darwin-arm64': 12.16.1
-      '@pnpm/exe.darwin-x64': 12.16.1
-      '@pnpm/exe.freebsd-x64': 12.16.1
-      '@pnpm/exe.linux-arm64': 12.16.1
-      '@pnpm/exe.linux-arm64-musl': 12.16.1
-      '@pnpm/exe.linux-ppc64': 12.16.1
-      '@pnpm/exe.linux-riscv64': 12.16.1
-      '@pnpm/exe.linux-s390x': 12.16.1
-      '@pnpm/exe.linux-x64': 12.16.1
-      '@pnpm/exe.linux-x64-musl': 12.16.1
-      '@pnpm/exe.win32-arm64': 12.16.1
-      '@pnpm/exe.win32-x64': 12.16.1
+      '@pnpm/exe.android-arm64': 12.23.0
+      '@pnpm/exe.android-x64': 12.23.0
+      '@pnpm/exe.darwin-arm64': 12.23.0
+      '@pnpm/exe.darwin-x64': 12.23.0
+      '@pnpm/exe.freebsd-x64': 12.23.0
+      '@pnpm/exe.linux-arm64': 12.23.0
+      '@pnpm/exe.linux-arm64-musl': 12.23.0
+      '@pnpm/exe.linux-loong64': 12.23.0
+      '@pnpm/exe.linux-ppc64': 12.23.0
+      '@pnpm/exe.linux-riscv64': 12.23.0
+      '@pnpm/exe.linux-s390x': 12.23.0
+      '@pnpm/exe.linux-x64': 12.23.0
+      '@pnpm/exe.linux-x64-musl': 12.23.0
+      '@pnpm/exe.netbsd-x64': 12.23.0
+      '@pnpm/exe.win32-arm64': 12.23.0
+      '@pnpm/exe.win32-x64': 12.23.0
 
 ---
 lockfileVersion: '9.0'
@@ -168,7 +187,7 @@ importers:
     dependencies:
       '@azure/storage-blob':
         specifier: 12.34.0
-        version: 12.34.0(supports-color@8.1.1)
+        version: 12.34.0
       '@nestjs/common':
         specifier: 11.0.1
         version: 11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -186,10 +205,10 @@ importers:
         version: 12.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)
       '@nestjs/platform-express':
         specifier: 11.0.1
-        version: 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1)(supports-color@8.1.1)
+        version: 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1)
       '@nestjs/platform-socket.io':
         specifier: 11.0.1
-        version: 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/websockets@11.0.1)(rxjs@7.8.1)(supports-color@8.1.1)
+        version: 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/websockets@11.0.1)(rxjs@7.8.1)
       '@nestjs/swagger':
         specifier: 11.2.0
         version: 11.2.0(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1)(reflect-metadata@0.2.2)
@@ -213,7 +232,7 @@ importers:
         version: 18.0.10
       ioredis:
         specifier: 6.0.0
-        version: 6.0.0(supports-color@8.1.1)
+        version: 6.0.0
       multer:
         specifier: 2.5.0
         version: 2.5.0
@@ -231,7 +250,7 @@ importers:
         version: 7.8.1
       socket.io:
         specifier: 4.8.4
-        version: 4.8.4(supports-color@8.1.1)
+        version: 4.8.4
       uuid:
         specifier: 14.0.3
         version: 14.0.3
@@ -2845,7 +2864,7 @@ snapshots:
   '@angular-devkit/core@19.0.1(chokidar@4.0.3)':
     dependencies:
       ajv: 8.17.1
-      ajv-formats: 3.0.1
+      ajv-formats: 3.0.1(ajv@8.17.1)
       jsonc-parser: 3.3.1
       picomatch: 4.0.2
       rxjs: 7.8.1
@@ -2856,7 +2875,7 @@ snapshots:
   '@angular-devkit/core@19.1.2(chokidar@4.0.3)':
     dependencies:
       ajv: 8.17.1
-      ajv-formats: 3.0.1
+      ajv-formats: 3.0.1(ajv@8.17.1)
       jsonc-parser: 3.3.1
       picomatch: 4.0.2
       rxjs: 7.8.1
@@ -2900,39 +2919,39 @@ snapshots:
     dependencies:
       tslib: 2.9.1
 
-  '@azure/core-auth@1.11.0(supports-color@8.1.1)':
+  '@azure/core-auth@1.11.0':
     dependencies:
       '@azure/abort-controller': 2.2.0
-      '@azure/core-util': 1.14.0(supports-color@8.1.1)
+      '@azure/core-util': 1.14.0
       tslib: 2.9.1
     transitivePeerDependencies:
       - kerberos
       - supports-color
 
-  '@azure/core-client@1.11.2(supports-color@8.1.1)':
+  '@azure/core-client@1.11.2':
     dependencies:
       '@azure/abort-controller': 2.2.0
-      '@azure/core-auth': 1.11.0(supports-color@8.1.1)
-      '@azure/core-rest-pipeline': 1.25.1(supports-color@8.1.1)
+      '@azure/core-auth': 1.11.0
+      '@azure/core-rest-pipeline': 1.25.1
       '@azure/core-tracing': 1.4.0
-      '@azure/core-util': 1.14.0(supports-color@8.1.1)
-      '@azure/logger': 1.4.0(supports-color@8.1.1)
+      '@azure/core-util': 1.14.0
+      '@azure/logger': 1.4.0
       tslib: 2.9.1
     transitivePeerDependencies:
       - kerberos
       - supports-color
 
-  '@azure/core-http-compat@2.5.0(@azure/core-client@1.11.2(supports-color@8.1.1))(@azure/core-rest-pipeline@1.25.1(supports-color@8.1.1))':
+  '@azure/core-http-compat@2.5.0(@azure/core-client@1.11.2)(@azure/core-rest-pipeline@1.25.1)':
     dependencies:
       '@azure/abort-controller': 2.2.0
-      '@azure/core-client': 1.11.2(supports-color@8.1.1)
-      '@azure/core-rest-pipeline': 1.25.1(supports-color@8.1.1)
+      '@azure/core-client': 1.11.2
+      '@azure/core-rest-pipeline': 1.25.1
 
-  '@azure/core-lro@2.7.2(supports-color@8.1.1)':
+  '@azure/core-lro@2.7.2':
     dependencies:
       '@azure/abort-controller': 2.2.0
-      '@azure/core-util': 1.14.0(supports-color@8.1.1)
-      '@azure/logger': 1.4.0(supports-color@8.1.1)
+      '@azure/core-util': 1.14.0
+      '@azure/logger': 1.4.0
       tslib: 2.9.1
     transitivePeerDependencies:
       - kerberos
@@ -2942,14 +2961,14 @@ snapshots:
     dependencies:
       tslib: 2.9.1
 
-  '@azure/core-rest-pipeline@1.25.1(supports-color@8.1.1)':
+  '@azure/core-rest-pipeline@1.25.1':
     dependencies:
       '@azure/abort-controller': 2.2.0
-      '@azure/core-auth': 1.11.0(supports-color@8.1.1)
+      '@azure/core-auth': 1.11.0
       '@azure/core-tracing': 1.4.0
-      '@azure/core-util': 1.14.0(supports-color@8.1.1)
-      '@azure/logger': 1.4.0(supports-color@8.1.1)
-      '@typespec/ts-http-runtime': 0.3.10(supports-color@8.1.1)
+      '@azure/core-util': 1.14.0
+      '@azure/logger': 1.4.0
+      '@typespec/ts-http-runtime': 0.3.10
       tslib: 2.9.1
     transitivePeerDependencies:
       - kerberos
@@ -2959,10 +2978,10 @@ snapshots:
     dependencies:
       tslib: 2.9.1
 
-  '@azure/core-util@1.14.0(supports-color@8.1.1)':
+  '@azure/core-util@1.14.0':
     dependencies:
       '@azure/abort-controller': 2.2.0
-      '@typespec/ts-http-runtime': 0.3.10(supports-color@8.1.1)
+      '@typespec/ts-http-runtime': 0.3.10
       tslib: 2.9.1
     transitivePeerDependencies:
       - kerberos
@@ -2973,28 +2992,28 @@ snapshots:
       fast-xml-parser: 5.12.1
       tslib: 2.9.1
 
-  '@azure/logger@1.4.0(supports-color@8.1.1)':
+  '@azure/logger@1.4.0':
     dependencies:
-      '@typespec/ts-http-runtime': 0.3.10(supports-color@8.1.1)
+      '@typespec/ts-http-runtime': 0.3.10
       tslib: 2.9.1
     transitivePeerDependencies:
       - kerberos
       - supports-color
 
-  '@azure/storage-blob@12.34.0(supports-color@8.1.1)':
+  '@azure/storage-blob@12.34.0':
     dependencies:
       '@azure/abort-controller': 2.2.0
-      '@azure/core-auth': 1.11.0(supports-color@8.1.1)
-      '@azure/core-client': 1.11.2(supports-color@8.1.1)
-      '@azure/core-http-compat': 2.5.0(@azure/core-client@1.11.2(supports-color@8.1.1))(@azure/core-rest-pipeline@1.25.1(supports-color@8.1.1))
-      '@azure/core-lro': 2.7.2(supports-color@8.1.1)
+      '@azure/core-auth': 1.11.0
+      '@azure/core-client': 1.11.2
+      '@azure/core-http-compat': 2.5.0(@azure/core-client@1.11.2)(@azure/core-rest-pipeline@1.25.1)
+      '@azure/core-lro': 2.7.2
       '@azure/core-paging': 1.7.0
-      '@azure/core-rest-pipeline': 1.25.1(supports-color@8.1.1)
+      '@azure/core-rest-pipeline': 1.25.1
       '@azure/core-tracing': 1.4.0
-      '@azure/core-util': 1.14.0(supports-color@8.1.1)
+      '@azure/core-util': 1.14.0
       '@azure/core-xml': 1.6.1
-      '@azure/logger': 1.4.0(supports-color@8.1.1)
-      '@azure/storage-common': 12.5.0(@azure/core-client@1.11.2(supports-color@8.1.1))(supports-color@8.1.1)
+      '@azure/logger': 1.4.0
+      '@azure/storage-common': 12.5.0(@azure/core-client@1.11.2)
       apache-arrow: 21.2.0
       events: 3.3.0
       tslib: 2.9.1
@@ -3002,15 +3021,15 @@ snapshots:
       - kerberos
       - supports-color
 
-  '@azure/storage-common@12.5.0(@azure/core-client@1.11.2(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@azure/storage-common@12.5.0(@azure/core-client@1.11.2)':
     dependencies:
       '@azure/abort-controller': 2.2.0
-      '@azure/core-auth': 1.11.0(supports-color@8.1.1)
-      '@azure/core-http-compat': 2.5.0(@azure/core-client@1.11.2(supports-color@8.1.1))(@azure/core-rest-pipeline@1.25.1(supports-color@8.1.1))
-      '@azure/core-rest-pipeline': 1.25.1(supports-color@8.1.1)
+      '@azure/core-auth': 1.11.0
+      '@azure/core-http-compat': 2.5.0(@azure/core-client@1.11.2)(@azure/core-rest-pipeline@1.25.1)
+      '@azure/core-rest-pipeline': 1.25.1
       '@azure/core-tracing': 1.4.0
-      '@azure/core-util': 1.14.0(supports-color@8.1.1)
-      '@azure/logger': 1.4.0(supports-color@8.1.1)
+      '@azure/core-util': 1.14.0
+      '@azure/logger': 1.4.0
       events: 3.3.0
       tslib: 2.9.1
     transitivePeerDependencies:
@@ -3278,7 +3297,7 @@ snapshots:
       tslib: 2.8.1
       uid: 2.0.2
     optionalDependencies:
-      '@nestjs/platform-express': 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1)(supports-color@8.1.1)
+      '@nestjs/platform-express': 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1)
       '@nestjs/websockets': 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1)(@nestjs/platform-socket.io@11.0.1)(reflect-metadata@0.2.2)(rxjs@7.8.1)
 
   '@nestjs/jwt@12.0.5(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))':
@@ -3297,24 +3316,24 @@ snapshots:
       '@nestjs/common': 11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1)
       reflect-metadata: 0.2.2
 
-  '@nestjs/platform-express@11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1)(supports-color@8.1.1)':
+  '@nestjs/platform-express@11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1)':
     dependencies:
       '@nestjs/common': 11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1)
       '@nestjs/core': 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(@nestjs/websockets@11.0.1)(reflect-metadata@0.2.2)(rxjs@7.8.1)
-      body-parser: 1.20.3(supports-color@8.1.1)
+      body-parser: 1.20.3
       cors: 2.8.5
-      express: 5.0.1(supports-color@8.1.1)
+      express: 5.0.1
       multer: 1.4.5-lts.1
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
 
-  '@nestjs/platform-socket.io@11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/websockets@11.0.1)(rxjs@7.8.1)(supports-color@8.1.1)':
+  '@nestjs/platform-socket.io@11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/websockets@11.0.1)(rxjs@7.8.1)':
     dependencies:
       '@nestjs/common': 11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1)
       '@nestjs/websockets': 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1)(@nestjs/platform-socket.io@11.0.1)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       rxjs: 7.8.1
-      socket.io: 4.8.1(supports-color@8.1.1)
+      socket.io: 4.8.1
       tslib: 2.8.1
     transitivePeerDependencies:
       - bufferutil
@@ -3360,7 +3379,7 @@ snapshots:
       rxjs: 7.8.1
       tslib: 2.8.1
     optionalDependencies:
-      '@nestjs/platform-socket.io': 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/websockets@11.0.1)(rxjs@7.8.1)(supports-color@8.1.1)
+      '@nestjs/platform-socket.io': 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/websockets@11.0.1)(rxjs@7.8.1)
 
   '@nodable/entities@3.1.0': {}
 
@@ -3692,10 +3711,10 @@ snapshots:
     dependencies:
       '@types/node': 24.0.0
 
-  '@typespec/ts-http-runtime@0.3.10(supports-color@8.1.1)':
+  '@typespec/ts-http-runtime@0.3.10':
     dependencies:
-      http-proxy-agent: 9.1.0(supports-color@8.1.1)
-      https-proxy-agent: 9.1.0(supports-color@8.1.1)
+      http-proxy-agent: 9.1.0
+      https-proxy-agent: 9.1.0
       tslib: 2.9.1
     transitivePeerDependencies:
       - kerberos
@@ -3876,9 +3895,13 @@ snapshots:
 
   agent-base@9.0.0: {}
 
-  ajv-formats@3.0.1:
-    dependencies:
+  ajv-formats@3.0.1(ajv@8.17.1):
+    optionalDependencies:
       ajv: 8.17.1
+
+  ajv-formats@3.0.1(ajv@8.20.0):
+    optionalDependencies:
+      ajv: 8.20.0
 
   ajv-keywords@3.5.2(ajv@6.15.0):
     dependencies:
@@ -3964,11 +3987,11 @@ snapshots:
       inherits: 2.0.4
       readable-stream: 3.6.2
 
-  body-parser@1.20.3(supports-color@8.1.1):
+  body-parser@1.20.3:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
-      debug: 2.6.9(supports-color@8.1.1)
+      debug: 2.6.9
       depd: 2.0.0
       destroy: 1.2.0
       http-errors: 2.0.0
@@ -3981,11 +4004,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  body-parser@2.4.0(supports-color@8.1.1):
+  body-parser@2.4.0:
     dependencies:
       bytes: 3.1.2
       content-type: 2.1.0
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       http-errors: 2.0.1
       iconv-lite: 0.7.3
       on-finished: 2.4.1
@@ -4228,23 +4251,17 @@ snapshots:
     dependencies:
       d3-array: 3.2.4
 
-  debug@2.6.9(supports-color@8.1.1):
+  debug@2.6.9:
     dependencies:
       ms: 2.0.0
-    optionalDependencies:
-      supports-color: 8.1.1
 
-  debug@4.3.6(supports-color@8.1.1):
+  debug@4.3.6:
     dependencies:
       ms: 2.1.2
-    optionalDependencies:
-      supports-color: 8.1.1
 
-  debug@4.4.3(supports-color@8.1.1):
+  debug@4.4.3:
     dependencies:
       ms: 2.1.3
-    optionalDependencies:
-      supports-color: 8.1.1
 
   deepmerge-ts@8.0.2: {}
 
@@ -4309,7 +4326,7 @@ snapshots:
 
   engine.io-parser@5.2.3: {}
 
-  engine.io@6.6.12(supports-color@8.1.1):
+  engine.io@6.6.12:
     dependencies:
       '@types/cors': 2.8.19
       '@types/node': 24.0.0
@@ -4317,7 +4334,7 @@ snapshots:
       accepts: 1.3.8
       cookie: 0.7.2
       cors: 2.8.5
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       engine.io-parser: 5.2.3
       ws: 8.21.3
     transitivePeerDependencies:
@@ -4371,20 +4388,20 @@ snapshots:
 
   events@3.3.0: {}
 
-  express@5.0.1(supports-color@8.1.1):
+  express@5.0.1:
     dependencies:
       accepts: 2.0.0
-      body-parser: 2.4.0(supports-color@8.1.1)
+      body-parser: 2.4.0
       content-disposition: 1.1.0
       content-type: 1.0.5
       cookie: 0.7.1
       cookie-signature: 1.2.2
-      debug: 4.3.6(supports-color@8.1.1)
+      debug: 4.3.6
       depd: 2.0.0
       encodeurl: 2.0.3
       escape-html: 1.0.3
       etag: 1.8.1
-      finalhandler: 2.1.1(supports-color@8.1.1)
+      finalhandler: 2.1.1
       fresh: 2.0.0
       http-errors: 2.0.0
       merge-descriptors: 2.0.0
@@ -4396,10 +4413,10 @@ snapshots:
       proxy-addr: 2.0.8
       qs: 6.13.0
       range-parser: 1.2.1
-      router: 2.3.0(supports-color@8.1.1)
+      router: 2.3.0
       safe-buffer: 5.2.1
-      send: 1.2.1(supports-color@8.1.1)
-      serve-static: 2.2.1(supports-color@8.1.1)
+      send: 1.2.1
+      serve-static: 2.2.1
       setprototypeof: 1.2.0
       statuses: 2.0.1
       type-is: 2.1.0
@@ -4446,9 +4463,9 @@ snapshots:
     dependencies:
       to-regex-range: 5.0.1
 
-  finalhandler@2.1.1(supports-color@8.1.1):
+  finalhandler@2.1.1:
     dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       encodeurl: 2.0.3
       escape-html: 1.0.3
       on-finished: 2.4.1
@@ -4579,19 +4596,19 @@ snapshots:
       statuses: 2.0.2
       toidentifier: 1.0.1
 
-  http-proxy-agent@9.1.0(supports-color@8.1.1):
+  http-proxy-agent@9.1.0:
     dependencies:
       agent-base: 9.0.0
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       proxy-agent-negotiate: 1.1.0
     transitivePeerDependencies:
       - kerberos
       - supports-color
 
-  https-proxy-agent@9.1.0(supports-color@8.1.1):
+  https-proxy-agent@9.1.0:
     dependencies:
       agent-base: 9.0.0
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       proxy-agent-negotiate: 1.1.0
     transitivePeerDependencies:
       - kerberos
@@ -4616,11 +4633,11 @@ snapshots:
 
   internmap@2.0.3: {}
 
-  ioredis@6.0.0(supports-color@8.1.1):
+  ioredis@6.0.0:
     dependencies:
       '@ioredis/commands': 2.0.0
       cluster-key-slot: 1.1.1
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       denque: 2.1.0
       redis-errors: 1.2.0
       standard-as-callback: 2.1.0
@@ -5137,9 +5154,9 @@ snapshots:
 
   robust-predicates@3.0.3: {}
 
-  router@2.3.0(supports-color@8.1.1):
+  router@2.3.0:
     dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       depd: 2.0.0
       is-promise: 4.0.0
       parseurl: 1.3.3
@@ -5173,16 +5190,16 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
-      ajv-formats: 3.0.1
+      ajv-formats: 3.0.1(ajv@8.20.0)
       ajv-keywords: 5.1.0(ajv@8.20.0)
     optionalDependencies:
       webpack: 5.97.1
 
   semver@7.8.6: {}
 
-  send@1.2.1(supports-color@8.1.1):
+  send@1.2.1:
     dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       encodeurl: 2.0.3
       escape-html: 1.0.3
       etag: 1.8.1
@@ -5196,12 +5213,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  serve-static@2.2.1(supports-color@8.1.1):
+  serve-static@2.2.1:
     dependencies:
       encodeurl: 2.0.3
       escape-html: 1.0.3
       parseurl: 1.3.3
-      send: 1.2.1(supports-color@8.1.1)
+      send: 1.2.1
     transitivePeerDependencies:
       - supports-color
 
@@ -5245,44 +5262,44 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  socket.io-adapter@2.5.8(supports-color@8.1.1):
+  socket.io-adapter@2.5.8:
     dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
       - utf-8-validate
 
-  socket.io-parser@4.2.7(supports-color@8.1.1):
+  socket.io-parser@4.2.7:
     dependencies:
       '@socket.io/component-emitter': 3.1.2
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
-  socket.io@4.8.1(supports-color@8.1.1):
+  socket.io@4.8.1:
     dependencies:
       accepts: 1.3.8
       base64id: 2.0.0
       cors: 2.8.5
-      debug: 4.3.6(supports-color@8.1.1)
-      engine.io: 6.6.12(supports-color@8.1.1)
-      socket.io-adapter: 2.5.8(supports-color@8.1.1)
-      socket.io-parser: 4.2.7(supports-color@8.1.1)
+      debug: 4.3.6
+      engine.io: 6.6.12
+      socket.io-adapter: 2.5.8
+      socket.io-parser: 4.2.7
     transitivePeerDependencies:
       - bufferutil
       - supports-color
       - utf-8-validate
 
-  socket.io@4.8.4(supports-color@8.1.1):
+  socket.io@4.8.4:
     dependencies:
       accepts: 1.3.8
       cors: 2.8.5
-      debug: 4.4.3(supports-color@8.1.1)
-      engine.io: 6.6.12(supports-color@8.1.1)
-      socket.io-adapter: 2.5.8(supports-color@8.1.1)
-      socket.io-parser: 4.2.7(supports-color@8.1.1)
+      debug: 4.4.3
+      engine.io: 6.6.12
+      socket.io-adapter: 2.5.8
+      socket.io-parser: 4.2.7
     transitivePeerDependencies:
       - bufferutil
       - supports-color

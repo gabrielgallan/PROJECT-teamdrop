@@ -1,8 +1,7 @@
 {
 	"engines": {
-		"node": "^24.14.0"
+		"node": "^24.x"
 	},
-	"packageManager": "pnpm@12.16.1",
 	"name": "@teamdrop/app",
 	"version": "0.1.0",
 	"type": "module",
@@ -26,6 +25,7 @@
 		"react-dropzone": "20.2.0",
 		"react-icons": "5.7.0",
 		"react-router": "8.5.2",
+		"socket.io-client": "4.8.4",
 		"zod": "4.6.7"
 	},
 	"devDependencies": {

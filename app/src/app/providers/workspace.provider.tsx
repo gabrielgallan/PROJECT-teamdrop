@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { userTeamsQuery } from '../../api/teams/queries'
 import { useAuth } from '../../hooks/use-auth'
+import { useFilesRealtime } from '../../hooks/use-files-realtime'
 import { useUploadQueue } from '../../hooks/use-upload-queue'
 import { WorkspaceContext } from '../contexts/workspace.context'
 
@@ -17,6 +18,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 		}
 	})
 	const teams = listing.data?.teams ?? []
+	useFilesRealtime(teams, listing.isSuccess)
 	const team =
 		teams.find((value) => value.id === selectedId) ?? teams[0] ?? null
 	const queue = useUploadQueue(team?.id ?? null)

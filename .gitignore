@@ -37,4 +37,4 @@ target
 gen
 
 # Prisma
-/api/src/database/prisma/client
+api/src/infrastructure/database/prisma/client/
