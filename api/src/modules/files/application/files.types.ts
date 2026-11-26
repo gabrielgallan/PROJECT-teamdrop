@@ -1,3 +1,5 @@
+import { StorageUrlType } from '../../../infrastructure/storage/storage.interface.js'
+
 interface DeleteFileServiceInput {
 	userId: string
 	teamId: string
@@ -20,8 +22,15 @@ interface UploadFileServiceInput {
 	fileMimeType: string
 }
 
+interface GenerateFileUrlServiceInput {
+	userId: string
+	fileId: string
+	urlType: StorageUrlType
+}
+
 export type {
 	DeleteFileServiceInput,
+	GenerateFileUrlServiceInput,
 	ListFilesServiceInput,
 	UploadFileServiceInput,
 }

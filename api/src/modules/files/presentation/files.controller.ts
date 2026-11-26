@@ -17,12 +17,11 @@ import {
 	ApiResponse,
 	ApiTags,
 } from '@nestjs/swagger'
-import { Response } from 'express'
+import type { Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
 import { ApiErrorResponseDto } from '../../../common/http/dtos/api-error-response.dto.js'
 import { CurrentUser } from '../../auth/presentation/decorators/current-user.decorator.js'
-import { Public } from '../../auth/presentation/decorators/public.decorator.js'
 import { AuthenticatedUser } from '../../auth/services/auth.service.js'
 import { TeamIdDto } from '../../teams/presentation/teams.controller.js'
 import { FilesService } from '../application/files.service.js'
@@ -38,6 +37,13 @@ class FileIdDto extends createZodDto(
 	}),
 ) {}
 
+class UrlTypeDto extends createZodDto(
+	z.object({
+		type: z.enum(['download', 'preview']).default('preview'),
+	}),
+) {}
+
+@ApiBearerAuth()
 @ApiTags('Files')
 @Controller('api')
 export class FilesController {
@@ -73,7 +79,6 @@ export class FilesController {
 		description: 'File storage service is unavailable.',
 		type: ApiErrorResponseDto,
 	})
-	@ApiBearerAuth()
 	@Post('teams/:teamId/files')
 	@HttpCode(201)
 	@UseInterceptors(FileInterceptor('file'))
@@ -123,7 +128,6 @@ export class FilesController {
 			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
-	@ApiBearerAuth()
 	@Get('teams/:teamId/files')
 	@HttpCode(200)
 	async listFiles(
@@ -166,49 +170,28 @@ export class FilesController {
 			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
-	@Public()
 	@Get('files/:fileId/preview')
 	@HttpCode(302)
-	async previewFile(@Param() param: FileIdDto, @Res() response: Response) {
-		const { url } = await this.filesService.getFilePreviewUrl(param.fileId)
+	async previewFile(
+		@CurrentUser() user: AuthenticatedUser,
+		@Param() param: FileIdDto,
+		@Res() response: Response,
+	) {
+		const { url } = await this.filesService.generateFileUrl({
+			userId: user.userId,
+			fileId: param.fileId,
+			urlType: 'preview',
+		})
 
 		return response.redirect(url)
 	}
 
-	// Download file
+	// Generate file URL
 	@ApiOperation({
-		summary: 'Download file',
+		summary: 'Generate file URL',
 	})
 	@ApiResponse({
-		status: 302,
-		description: 'Redirects to the file download URL.',
-	})
-	@ApiResponse({
-		status: 400,
-		description: 'Data validation failed.',
-		type: ApiErrorResponseDto,
-	})
-	@ApiResponse({
-		status: 404,
-		description:
-			'Resource not found or inaccessible to the authenticated user.',
-		type: ApiErrorResponseDto,
-	})
-	@Public()
-	@Get('files/:fileId/download')
-	@HttpCode(302)
-	async downloadFile(@Param() param: FileIdDto, @Res() response: Response) {
-		const { url } = await this.filesService.getFileDownloadUrl(param.fileId)
-
-		return response.redirect(url)
-	}
-
-	// Get file URL
-	@ApiOperation({
-		summary: 'Get file URL',
-	})
-	@ApiResponse({
-		status: 200,
+		status: 201,
 		description: 'File URL retrieved successfully.',
 		type: GenerateFileUrlResponseDto,
 	})
@@ -223,11 +206,18 @@ export class FilesController {
 			'Resource not found or inaccessible to the authenticated user.',
 		type: ApiErrorResponseDto,
 	})
-	@Public()
-	@Get('files/:fileId/url')
-	@HttpCode(200)
-	async generateUrl(@Param() param: FileIdDto) {
-		const { url } = await this.filesService.getFilePreviewUrl(param.fileId)
+	@Post('files/:fileId/url')
+	@HttpCode(201)
+	async generateUrl(
+		@CurrentUser() user: AuthenticatedUser,
+		@Param() param: FileIdDto,
+		@Query() query: UrlTypeDto,
+	) {
+		const { url } = await this.filesService.generateFileUrl({
+			userId: user.userId,
+			fileId: param.fileId,
+			urlType: query.type,
+		})
 
 		return {
 			url,
@@ -263,7 +253,6 @@ export class FilesController {
 		description: 'File storage service is unavailable.',
 		type: ApiErrorResponseDto,
 	})
-	@ApiBearerAuth()
 	@Delete('teams/:teamId/files/:fileId')
 	@HttpCode(204)
 	async deleteFile(

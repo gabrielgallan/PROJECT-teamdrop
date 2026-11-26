@@ -57,8 +57,7 @@ export class AuthController {
 	@HttpCode(200)
 	@Header('Cache-Control', 'no-store')
 	@ApiOperation({
-		summary:
-			'Create a five-minute login; open authorizationUrl in the system browser',
+		summary: 'Start desktop login',
 	})
 	@ApiResponse({ status: 200, type: StartDesktopLoginResponseDto })
 	@ApiResponse({ status: 400, type: ApiErrorResponseDto })
@@ -135,8 +134,7 @@ export class AuthController {
 	@HttpCode(200)
 	@Header('Cache-Control', 'no-store')
 	@ApiOperation({
-		summary:
-			'Poll every two seconds; consume the completed ticket once to obtain tokens',
+		summary: 'Exchange login ticket for tokens',
 	})
 	@ApiExtraModels(ExchangePendingResponseDto, ExchangeCompleteResponseDto)
 	@ApiOkResponse({
@@ -170,7 +168,7 @@ export class AuthController {
 	@HttpCode(200)
 	@Header('Cache-Control', 'no-store')
 	@ApiOperation({
-		summary: 'Rotate the refresh token; session expiration is never extended',
+		summary: 'Refresh authentication tokens',
 	})
 	@ApiResponse({ status: 200, type: RefreshTokenResponseDto })
 	@ApiResponse({ status: 400, description: 'Malformed refresh token' })
@@ -193,8 +191,7 @@ export class AuthController {
 	@HttpCode(204)
 	@Header('Cache-Control', 'no-store')
 	@ApiOperation({
-		summary:
-			'Revoke this session using its current refresh token; repeated calls succeed',
+		summary: 'Revoke current session',
 	})
 	@ApiResponse({
 		status: 204,

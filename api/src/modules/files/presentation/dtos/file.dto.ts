@@ -28,4 +28,12 @@ export class PublicFileDto {
 		format: 'date-time',
 	})
 	createdAt!: Date
+
+	@ApiProperty({
+		example: '2026-11-27T12:00:00.000Z',
+		type: String,
+		format: 'date-time',
+		description: 'Date when the file expires',
+	})
+	expiresAt!: Date
 }

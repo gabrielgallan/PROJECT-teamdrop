@@ -13,7 +13,10 @@
 		"db:dev": "prisma migrate dev",
 		"db:prod": "prisma migrate deploy",
 		"db:push": "prisma db push",
-		"db:generate": "prisma generate"
+		"db:generate": "prisma generate",
+		"test:up": "docker compose -f compose.test.yml up -d",
+		"test:down": "docker compose -f compose.test.yml down",
+		"test:e2e": "vitest run --config ./vitest.config.e2e.ts"
 	},
 	"dependencies": {
 		"@azure/storage-blob": "12.34.0",
@@ -26,6 +29,7 @@
 		"@nestjs/platform-socket.io": "11.0.1",
 		"@nestjs/schedule": "^12.0.4",
 		"@nestjs/swagger": "11.2.0",
+		"@nestjs/testing": "11.0.1",
 		"@nestjs/throttler": "^6.8.0",
 		"@nestjs/websockets": "11.0.1",
 		"@prisma/adapter-pg": "7.10.1",
@@ -39,20 +43,25 @@
 		"reflect-metadata": "0.2.2",
 		"rxjs": "7.8.1",
 		"socket.io": "4.8.4",
+		"supertest": "^7.3.2",
 		"uuid": "14.0.3",
+		"vitest": "^5.1.2",
 		"zod": "4.6.7"
 	},
 	"devDependencies": {
 		"@nestjs/cli": "11.0.0",
 		"@nestjs/schematics": "11.0.0",
+		"@swc/core": "^1.16.22",
 		"@types/express": "5.0.0",
 		"@types/multer": "2.3.0",
 		"@types/node": "24.0.0",
+		"@types/supertest": "^7.2.1",
 		"prisma": "7.10.1",
 		"source-map-support": "0.5.21",
 		"ts-loader": "9.5.2",
 		"ts-node": "10.9.2",
 		"tsconfig-paths": "4.2.0",
-		"typescript": "5.7.3"
+		"typescript": "5.7.3",
+		"unplugin-swc": "^2.0.0"
 	}
 }

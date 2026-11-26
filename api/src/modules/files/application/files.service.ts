@@ -1,6 +1,7 @@
 import {
 	Inject,
 	Injectable,
+	Logger,
 	NotFoundException,
 	ServiceUnavailableException,
 } from '@nestjs/common'
@@ -13,12 +14,15 @@ import {
 import { FilesEmitterService } from '../../../infrastructure/websocket/events/files/files-emitter.service.js'
 import {
 	DeleteFileServiceInput,
+	GenerateFileUrlServiceInput,
 	ListFilesServiceInput,
 	UploadFileServiceInput,
 } from './files.types.js'
 
 @Injectable()
 export class FilesService {
+	private logger = new Logger(this.constructor.name)
+
 	constructor(
 		private prisma: PrismaService,
 		@Inject(StorageService)
@@ -44,6 +48,11 @@ export class FilesService {
 			select: {
 				teamId: true,
 				userId: true,
+				team: {
+					select: {
+						storageRetentionSeconds: true,
+					},
+				},
 			},
 		})
 
@@ -64,6 +73,10 @@ export class FilesService {
 			})
 		}
 
+		const expiresAt = new Date(
+			Date.now() + membership.team.storageRetentionSeconds * 1000,
+		)
+
 		const file = await this.prisma.file.create({
 			data: {
 				id: fileId,
@@ -73,6 +86,7 @@ export class FilesService {
 				mimeType: fileMimeType,
 				size: fileSize,
 				storageKey,
+				expiresAt,
 			},
 		})
 
@@ -111,6 +125,9 @@ export class FilesService {
 		const files = await this.prisma.file.findMany({
 			where: {
 				teamId,
+				expiresAt: {
+					gt: new Date(),
+				},
 				...(cursor && {
 					id: {
 						lt: cursor,
@@ -144,46 +161,34 @@ export class FilesService {
 		}
 	}
 
-	async getFileDownloadUrl(fileId: string) {
+	async generateFileUrl({
+		userId,
+		fileId,
+		urlType,
+	}: GenerateFileUrlServiceInput) {
 		const file = await this.prisma.file.findUnique({
 			where: {
 				id: fileId,
+				team: {
+					members: {
+						some: {
+							userId,
+						},
+					},
+				},
 			},
 		})
 
-		if (!file) {
+		if (!file || file.expiresAt <= new Date()) {
 			throw new NotFoundException({
-				message: 'File not found',
+				message: 'File not found or expired',
 			})
 		}
 
 		const { url } = await this.storageService.generateUrl(
 			file.storageKey,
-			'download',
+			urlType,
 			file.name,
-		)
-
-		return {
-			url,
-		}
-	}
-
-	async getFilePreviewUrl(fileId: string) {
-		const file = await this.prisma.file.findUnique({
-			where: {
-				id: fileId,
-			},
-		})
-
-		if (!file) {
-			throw new NotFoundException({
-				message: 'File not found',
-			})
-		}
-
-		const { url } = await this.storageService.generateUrl(
-			file.storageKey,
-			'preview',
 		)
 
 		return {
@@ -223,5 +228,85 @@ export class FilesService {
 		this.filesEmitterService.fileDeleted(file.teamId, file.id)
 
 		return
+	}
+
+	async cleanupExpiredFiles() {
+		const batchSize = 100
+		const concurrency = 5
+		const expiredBefore = new Date()
+		const startedAt = Date.now()
+
+		let cursor: string | undefined
+		let totalDeleted = 0
+		let totalFailed = 0
+
+		while (true) {
+			const files = await this.prisma.file.findMany({
+				where: {
+					expiresAt: {
+						lte: expiredBefore,
+					},
+					...(cursor && {
+						id: {
+							gt: cursor,
+						},
+					}),
+				},
+				select: {
+					id: true,
+					storageKey: true,
+				},
+				orderBy: {
+					id: 'asc',
+				},
+				take: batchSize,
+			})
+
+			if (!files.length) break
+
+			const deletedFileIds: string[] = []
+
+			for (let i = 0; i < files.length; i += concurrency) {
+				const chunk = files.slice(i, i + concurrency)
+
+				const results = await Promise.allSettled(
+					chunk.map(async (file) => {
+						await this.storageService.delete(file.storageKey)
+
+						return file.id
+					}),
+				)
+
+				for (const result of results) {
+					if (result.status === 'fulfilled') {
+						deletedFileIds.push(result.value)
+					} else {
+						totalFailed++
+
+						this.logger.error('Failed to delete expired file', result.reason)
+					}
+				}
+			}
+
+			if (deletedFileIds.length) {
+				const { count } = await this.prisma.file.deleteMany({
+					where: {
+						id: {
+							in: deletedFileIds,
+						},
+					},
+				})
+
+				totalDeleted += count
+			}
+
+			cursor = files[files.length - 1]?.id
+
+			if (files.length < batchSize) break
+		}
+
+		this.logger.log(
+			`Expired files cleanup completed: ${totalDeleted} deleted, ${totalFailed} failed (${Date.now() - startedAt}ms)`,
+		)
 	}
 }

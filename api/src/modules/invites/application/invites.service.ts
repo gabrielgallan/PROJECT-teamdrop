@@ -7,6 +7,7 @@ import {
 import { CryptographyService } from '../../../common/cryptography/cryptography.service.js'
 import { PrismaService } from '../../../infrastructure/database/prisma/prisma.service.js'
 import { EnvService } from '../../../infrastructure/env/env.service.js'
+import { Role } from '../../teams/presentation/dtos/team.dto.js'
 import {
 	AcceptTeamInviteServiceInput,
 	CreateTeamInviteServiceInput,
@@ -186,7 +187,7 @@ export class InvitesService {
 						? 'owner'
 						: membership
 							? 'member'
-							: 'invited',
+							: ('invited' as Role),
 			},
 		}
 	}
