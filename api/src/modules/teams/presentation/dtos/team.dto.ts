@@ -29,6 +29,16 @@ export class TeamDto {
 		example: '2026-11-25T15:30:00.000Z',
 	})
 	updatedAt!: Date
+
+	@ApiProperty({
+		type: 'integer',
+		description: 'File retention period in seconds',
+		minimum: 900,
+		maximum: 259200,
+		default: 86400,
+		example: 86400,
+	})
+	storageRetentionSeconds!: number
 }
 
 export class PublicTeamDto extends TeamDto {
@@ -36,5 +46,5 @@ export class PublicTeamDto extends TeamDto {
 		enum: ['owner', 'member', 'invited'],
 		example: 'owner',
 	})
-	role!: string
+	role!: Role
 }

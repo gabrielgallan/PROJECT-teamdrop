@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD, APP_PIPE } from '@nestjs/core'
+import { ScheduleModule } from '@nestjs/schedule'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { ZodValidationPipe } from 'nestjs-zod'
 import { RateLimitGuard } from './common/http/guards/rate-limit.guard.js'
@@ -36,6 +37,7 @@ import { TeamsModule } from './modules/teams/teams.module.js'
 				limit: 100,
 			},
 		]),
+		ScheduleModule.forRoot(),
 		HealthModule,
 		AuthModule,
 		TeamsModule,

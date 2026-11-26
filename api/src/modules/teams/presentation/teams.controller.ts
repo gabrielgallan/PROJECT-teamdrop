@@ -84,6 +84,11 @@ export class TeamsController {
 		type: ApiErrorResponseDto,
 	})
 	@ApiResponse({
+		status: 403,
+		description: 'Team memberships limit reached.',
+		type: ApiErrorResponseDto,
+	})
+	@ApiResponse({
 		status: 409,
 		description: 'A team with the provided slug already exists.',
 		type: ApiErrorResponseDto,
@@ -94,11 +99,12 @@ export class TeamsController {
 		@Body() body: CreateTeamDto,
 		@CurrentUser() user: AuthenticatedUser,
 	) {
-		const { name } = body
+		const { name, storageRetentionSeconds } = body
 
 		const { team } = await this.teamsService.createTeam({
-			name,
 			userId: user.userId,
+			name,
+			storageRetentionSeconds,
 		})
 
 		return TeamsPresenter.toHTTP(team)
@@ -140,13 +146,14 @@ export class TeamsController {
 		@Body() body: UpdateTeamDto,
 		@Param() param: TeamIdDto,
 	) {
-		const { newName } = body
+		const { name, storageRetentionSeconds } = body
 		const { teamId } = param
 
 		const { team } = await this.teamsService.updateTeam({
 			userId: user.userId,
 			teamId,
-			newName,
+			name,
+			storageRetentionSeconds,
 		})
 
 		return TeamsPresenter.toHTTP(team)

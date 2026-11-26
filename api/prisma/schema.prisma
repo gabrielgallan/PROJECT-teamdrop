@@ -63,6 +63,7 @@ model Team {
   id        String   @id @default(uuid(7)) @db.Uuid
   name      String
   slug      String   @unique
+  storageRetentionSeconds Int @default(86400) @map("storage_retention_seconds")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -118,6 +119,8 @@ model File {
   mimeType   String   @map("mime_type")
   size       BigInt
   createdAt  DateTime @default(now()) @map("created_at")
+  expiresAt  DateTime @map("expires_at")
+
 
   team   Team   @relation(fields: [teamId], references: [id])
   teamId String @map("team_id") @db.Uuid
@@ -125,6 +128,7 @@ model File {
   author   User   @relation(fields: [authorId], references: [id])
   authorId String @map("author_id") @db.Uuid
 
+  @@index([expiresAt])
   @@index([teamId, createdAt])
   @@map("files")
 }

@@ -1,10 +1,13 @@
 import {
+	BadRequestException,
 	ConflictException,
+	ForbiddenException,
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common'
 import { slugify } from '../../../common/utils/slugify.js'
 import { PrismaService } from '../../../infrastructure/database/prisma/prisma.service.js'
+import { Role } from '../presentation/dtos/team.dto.js'
 import {
 	CreateTeamServiceInput,
 	LeaveTeamServiceInput,
@@ -18,7 +21,31 @@ import {
 export class TeamsService {
 	constructor(private prisma: PrismaService) {}
 
-	async createTeam({ name, userId }: CreateTeamServiceInput) {
+	async createTeam({
+		userId,
+		name,
+		storageRetentionSeconds = 86400,
+	}: CreateTeamServiceInput) {
+		const userMemberships = await this.prisma.member.count({
+			where: {
+				userId,
+			},
+		})
+
+		if (userMemberships >= 5) {
+			throw new ForbiddenException({
+				message: 'Team membership limit reached',
+			})
+		}
+
+		// if storage retention is less than 15m or greater than 72h (3 days)
+		if (storageRetentionSeconds < 900 || storageRetentionSeconds > 259200) {
+			throw new BadRequestException({
+				message:
+					'Team storage retention must be between 15 minutes and 72 hours',
+			})
+		}
+
 		const slug = slugify(name)
 
 		const teamAlreadyExists = await this.prisma.team.findUnique({
@@ -38,6 +65,7 @@ export class TeamsService {
 				name,
 				slug,
 				ownerId: userId,
+				storageRetentionSeconds,
 				members: {
 					create: {
 						userId,
@@ -49,33 +77,50 @@ export class TeamsService {
 		return {
 			team: {
 				...team,
-				role: 'owner',
+				role: 'owner' as Role,
 			},
 		}
 	}
 
 	async listUserTeams({ userId }: ListUserTeamsServiceInput) {
-		const teams = await this.prisma.team.findMany({
+		const memberships = await this.prisma.member.findMany({
 			where: {
-				members: {
-					some: {
-						userId,
-					},
-				},
+				userId,
+			},
+			select: {
+				team: true,
 			},
 		})
 
 		return {
-			teams: teams.map((team) => {
+			teams: memberships.map((membership) => {
 				return {
-					...team,
-					role: team.ownerId === userId ? 'owner' : 'member',
+					...membership.team,
+					role:
+						membership.team.ownerId === userId ? 'owner' : ('member' as Role),
 				}
 			}),
 		}
 	}
 
-	async updateTeam({ userId, teamId, newName }: UpdateTeamServiceInput) {
+	async updateTeam({
+		userId,
+		teamId,
+		name,
+		storageRetentionSeconds,
+	}: UpdateTeamServiceInput) {
+		if (
+			storageRetentionSeconds !== undefined &&
+			(!Number.isInteger(storageRetentionSeconds) ||
+				storageRetentionSeconds < 900 ||
+				storageRetentionSeconds > 259200)
+		) {
+			throw new BadRequestException({
+				message:
+					'Team storage retention must be between 15 minutes and 72 hours',
+			})
+		}
+
 		const team = await this.prisma.team.findUnique({
 			where: {
 				id: teamId,
@@ -89,18 +134,20 @@ export class TeamsService {
 			})
 		}
 
-		const slug = slugify(newName)
+		const slug = name !== undefined ? slugify(name) : undefined
 
-		const teamAlreadyExists = await this.prisma.team.findUnique({
-			where: {
-				slug,
-			},
-		})
-
-		if (teamAlreadyExists && teamAlreadyExists.id !== team.id) {
-			throw new ConflictException({
-				message: 'Team name already exists',
+		if (slug !== undefined && slug !== team.slug) {
+			const teamAlreadyExists = await this.prisma.team.findUnique({
+				where: {
+					slug,
+				},
 			})
+
+			if (teamAlreadyExists) {
+				throw new ConflictException({
+					message: 'Team name already exists',
+				})
+			}
 		}
 
 		const updatedTeam = await this.prisma.team.update({
@@ -108,15 +155,16 @@ export class TeamsService {
 				id: team.id,
 			},
 			data: {
-				name: newName,
+				name,
 				slug,
+				storageRetentionSeconds,
 			},
 		})
 
 		return {
 			team: {
 				...updatedTeam,
-				role: 'owner',
+				role: 'owner' as Role,
 			},
 		}
 	}

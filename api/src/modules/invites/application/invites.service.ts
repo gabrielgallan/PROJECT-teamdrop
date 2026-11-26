@@ -212,10 +212,16 @@ export class InvitesService {
 			}
 
 			await db.$queryRaw`
-				SELECT id FROM teams
-				WHERE id = ${inviteRef.teamId}::uuid
-				FOR UPDATE
-			`
+			SELECT id FROM users
+			WHERE id = ${userId}::uuid
+			FOR UPDATE
+		`
+
+			await db.$queryRaw`
+			SELECT id FROM teams
+			WHERE id = ${inviteRef.teamId}::uuid
+			FOR UPDATE
+		`
 
 			const invite = await db.invite.findUnique({
 				where: {
@@ -243,11 +249,16 @@ export class InvitesService {
 			})
 
 			const team = await db.team.findUniqueOrThrow({
-				where: { id: invite.teamId },
+				where: {
+					id: invite.teamId,
+				},
 			})
 
 			const result = {
-				team: { ...team, role: team.ownerId === userId ? 'owner' : 'member' },
+				team: {
+					...team,
+					role: team.ownerId === userId ? 'owner' : 'member',
+				},
 			}
 
 			if (membership) return result
@@ -255,6 +266,18 @@ export class InvitesService {
 			if (invite.uses >= invite.maxUses) {
 				throw new GoneException({
 					message: 'Invitation usage limit reached',
+				})
+			}
+
+			const userMemberships = await db.member.count({
+				where: {
+					userId,
+				},
+			})
+
+			if (userMemberships >= 5) {
+				throw new ForbiddenException({
+					message: 'Team membership limit reached',
 				})
 			}
 

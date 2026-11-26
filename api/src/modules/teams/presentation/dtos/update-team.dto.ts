@@ -3,6 +3,7 @@ import z from 'zod'
 
 export class UpdateTeamDto extends createZodDto(
 	z.object({
-		newName: z.string().trim().nonempty(),
+		name: z.string().trim().nonempty().optional(),
+		storageRetentionSeconds: z.number().int().min(900).max(259200).optional(),
 	}),
 ) {}

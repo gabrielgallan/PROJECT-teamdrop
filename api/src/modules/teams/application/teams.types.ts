@@ -1,6 +1,7 @@
 interface CreateTeamServiceInput {
 	name: string
 	userId: string
+	storageRetentionSeconds?: number
 }
 
 interface ListUserTeamsServiceInput {
@@ -10,7 +11,8 @@ interface ListUserTeamsServiceInput {
 interface UpdateTeamServiceInput {
 	userId: string
 	teamId: string
-	newName: string
+	name?: string
+	storageRetentionSeconds?: number
 }
 
 interface ListTeamMembersServiceInput {
