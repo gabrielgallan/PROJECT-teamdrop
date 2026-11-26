@@ -1,4 +1,4 @@
-<img alt="teamdrop" src="https://github.com/user-attachments/assets/809bdef0-c0c8-4d42-90e7-035f8087ce7a" />
+<img alt="teamdrop" width="100%" src="https://github.com/user-attachments/assets/809bdef0-c0c8-4d42-90e7-035f8087ce7a" />
 
 **A lightweight desktop widget for cloud-based file sharing**
 
