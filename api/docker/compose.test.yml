@@ -12,10 +12,10 @@ services:
       POSTGRESQL_PASSWORD: docker
       POSTGRESQL_DATABASE: teamdrop
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U docker -d teamdrop"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U docker -d teamdrop"]
       interval: 2s
       timeout: 5s
-      retries: 10
+      retries: 15
 
   redis:
     container_name: teamdrop-redis-test
@@ -23,3 +23,8 @@ services:
     restart: unless-stopped
     ports:
       - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
