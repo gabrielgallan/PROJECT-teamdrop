@@ -2,6 +2,7 @@ import { api } from '../../lib/ky'
 
 export interface GetFileUrlRequest {
 	fileId: string
+	type: 'preview' | 'download'
 }
 
 export interface GetFileUrlResponse {
@@ -9,13 +10,13 @@ export interface GetFileUrlResponse {
 }
 
 export async function getFileUrl(
-	{ fileId }: GetFileUrlRequest,
+	{ fileId, type }: GetFileUrlRequest,
 	signal?: AbortSignal,
 ) {
 	const response = await api
-		.get(`api/files/${encodeURIComponent(fileId)}/url`, {
+		.post(`api/files/${encodeURIComponent(fileId)}/url`, {
+			searchParams: { type },
 			signal,
-			context: { public: true },
 		})
 		.json<GetFileUrlResponse>()
 	return response

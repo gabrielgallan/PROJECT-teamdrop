@@ -1,7 +1,6 @@
 import { invoke, isTauri } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from '@tauri-apps/plugin-fs'
-import { env } from '../env'
 import type { PendingFile, TeamFile } from '../types/file'
 
 export const openFiles = () => open({ multiple: true })
@@ -33,14 +32,17 @@ export async function uploadContent(item: PendingFile): Promise<File> {
 	})
 }
 
-export async function downloadFile(file: TeamFile): Promise<boolean> {
+export async function downloadFile(
+	file: TeamFile,
+	url: string,
+): Promise<boolean> {
 	if (isTauri())
 		return invoke<boolean>('download_file', {
-			fileId: file.id,
+			url,
 			fileName: file.name,
 		})
 	const anchor = document.createElement('a')
-	anchor.href = `${env.VITE_API_URL.replace(/\/+$/, '')}/api/files/${encodeURIComponent(file.id)}/download`
+	anchor.href = url
 	anchor.download = file.name
 	anchor.target = '_blank'
 	anchor.rel = 'noopener'

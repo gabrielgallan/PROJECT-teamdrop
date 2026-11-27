@@ -12,9 +12,31 @@ import ts from 'typescript'
 registerHooks({
 	resolve(specifier, context, nextResolve) {
 		if (context.parentURL?.includes('/src/')) {
+			const mocks = {
+				'../hooks/use-auth':
+					'export const useAuth = () => globalThis.fileActionAuth',
+				'./use-auth': 'export const useAuth = () => globalThis.fileActionAuth',
+				'../auth/auth.store':
+					'export const authStore = {getSnapshot: () => globalThis.fileActionAuth}',
+				'../desktop/app.commands':
+					'export const copyText = (text) => globalThis.fileActionCopies.push(text)',
+			}
+			if (mocks[specifier])
+				return {
+					url: `data:text/javascript,${encodeURIComponent(mocks[specifier])}`,
+					shortCircuit: true,
+				}
+			if (
+				context.parentURL.endsWith('/desktop/files.commands.ts') &&
+				specifier === '@tauri-apps/api/core'
+			)
+				return {
+					url: 'data:text/javascript,export const isTauri = () => globalThis.fileActionDesktop; export const invoke = (...args) => globalThis.fileActionInvoke(...args)',
+					shortCircuit: true,
+				}
 			if (specifier.endsWith('/lib/ky')) {
 				return {
-					url: 'data:text/javascript,export const api = globalThis.contractApi',
+					url: 'data:text/javascript,export const api = new Proxy({}, {get: (_, key) => {const client = globalThis.contractApi; const value = client[key]; return typeof value === "function" ? value.bind(client) : value}})',
 					shortCircuit: true,
 				}
 			}
@@ -82,9 +104,13 @@ test('desktop adapters consume the current backend HTTP contracts', async (t) =>
 			headers: req.headers,
 			body: Buffer.concat(chunks).toString(),
 		})
-		res.writeHead(respond.status ?? 200, { 'Content-Type': 'application/json' })
+		const response = typeof respond === 'function' ? respond(req) : respond
+		response.beforeResponse?.()
+		res.writeHead(response.status ?? 200, {
+			'Content-Type': 'application/json',
+		})
 		res.end(
-			respond.body === undefined ? undefined : JSON.stringify(respond.body),
+			response.body === undefined ? undefined : JSON.stringify(response.body),
 		)
 	})
 	await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
@@ -110,6 +136,136 @@ test('desktop adapters consume the current backend HTTP contracts', async (t) =>
 	)
 	const { uploadTeamFile } = await import(
 		'../src/api/files/upload-team-file.ts'
+	)
+
+	await t.test(
+		'file actions request private typed URLs and pass only signed URLs to the desktop',
+		async (t) => {
+			const originalApi = globalThis.contractApi
+			const originalDocument = Object.getOwnPropertyDescriptor(
+				globalThis,
+				'document',
+			)
+			const { createApiClient } = await import('../src/lib/api-client.ts')
+			const session = { user: { id: 'user-1' } }
+			globalThis.fileActionAuth = { session, busy: null, needsLogin: false }
+			globalThis.fileActionCopies = []
+			globalThis.fileActionDesktop = true
+			const downloads = []
+			globalThis.fileActionInvoke = async (...args) => {
+				downloads.push(args)
+				return true
+			}
+			t.after(() => {
+				globalThis.contractApi = originalApi
+				delete globalThis.fileActionAuth
+				delete globalThis.fileActionCopies
+				delete globalThis.fileActionDesktop
+				delete globalThis.fileActionInvoke
+				if (originalDocument)
+					Object.defineProperty(globalThis, 'document', originalDocument)
+				else delete globalThis.document
+			})
+			const authenticatedApi = createApiClient({
+				baseUrl: `http://127.0.0.1:${server.address().port}`,
+				getAccessToken: async (rejected) =>
+					rejected ? 'renewed-access-token' : 'test-access-token',
+				getSession: () => globalThis.fileActionAuth.session,
+				canRequest: () => !globalThis.fileActionAuth.needsLogin,
+				onAuthFailure: () => {},
+			})
+			globalThis.contractApi = authenticatedApi
+			const { useFileActions } = await import(
+				'../src/hooks/use-file-actions.ts'
+			)
+			const { fileUrlQuery } = await import('../src/api/files/queries.ts')
+			const preview = 'https://storage.example/report.txt?sig=preview'
+			const attachment = 'https://storage.example/report.txt?sig=download'
+			respond = { status: 201, body: { url: preview } }
+			const actions = useFileActions()
+			await actions.copy.mutationFn({ fileId: file.id })
+			assert.deepEqual(globalThis.fileActionCopies, [preview])
+			assert.equal(requests.at(-1).method, 'POST')
+			assert.equal(
+				requests.at(-1).url,
+				`/api/files/${file.id}/url?type=preview`,
+			)
+			assert.equal(
+				requests.at(-1).headers.authorization,
+				'Bearer test-access-token',
+			)
+			const qr = await fileUrlQuery('user-1', team.id, file.id).queryFn({})
+			assert.equal(qr.url, preview)
+			assert.equal(
+				requests.at(-1).url,
+				`/api/files/${file.id}/url?type=preview`,
+			)
+			respond = { status: 201, body: { url: attachment } }
+			assert.equal(await actions.download.mutationFn(file), true)
+			assert.equal(
+				requests.at(-1).url,
+				`/api/files/${file.id}/url?type=download`,
+			)
+			assert.deepEqual(downloads, [
+				['download_file', { url: attachment, fileName: file.name }],
+			])
+			let attempts = 0
+			respond = () =>
+				++attempts === 1
+					? { status: 401, body: { code: 'ACCESS_TOKEN_EXPIRED' } }
+					: { status: 201, body: { url: preview } }
+			await actions.copy.mutationFn({ fileId: file.id })
+			assert.equal(attempts, 2)
+			assert.equal(
+				requests.at(-1).headers.authorization,
+				'Bearer renewed-access-token',
+			)
+			assert.deepEqual(globalThis.fileActionCopies, [preview, preview])
+			globalThis.fileActionDesktop = false
+			let clicked = false
+			let removed = false
+			const anchor = {
+				click: () => {
+					clicked = true
+				},
+				remove: () => {
+					removed = true
+				},
+			}
+			Object.defineProperty(globalThis, 'document', {
+				configurable: true,
+				value: {
+					createElement: (tag) => {
+						assert.equal(tag, 'a')
+						return anchor
+					},
+					body: { append: (element) => assert.equal(element, anchor) },
+				},
+			})
+			respond = { status: 201, body: { url: attachment } }
+			assert.equal(await actions.download.mutationFn(file), true)
+			assert.equal(anchor.href, attachment)
+			assert.equal(anchor.download, file.name)
+			assert.ok(clicked && removed)
+			assert.equal(downloads.length, 1)
+			respond = { status: 404, body: { message: 'File not found or expired' } }
+			await assert.rejects(
+				actions.download.mutationFn(file),
+				(error) => error.status === 404,
+			)
+			assert.equal(downloads.length, 1)
+			respond = {
+				status: 201,
+				body: { url: preview },
+				beforeResponse: () => {
+					globalThis.fileActionAuth.session = {}
+				},
+			}
+			await assert.rejects(actions.copy.mutationFn({ fileId: file.id }), {
+				name: 'AbortError',
+			})
+			assert.deepEqual(globalThis.fileActionCopies, [preview, preview])
+		},
 	)
 
 	await t.test(

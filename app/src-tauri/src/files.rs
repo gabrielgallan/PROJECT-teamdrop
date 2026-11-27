@@ -1,15 +1,7 @@
-use crate::auth::SessionManager;
 use std::{path::Path, time::Duration};
-use tauri::{AppHandle, State};
+use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
 use tokio::io::AsyncWriteExt;
-
-fn valid_file_id(id: &str) -> bool {
-    id.len() == 36
-        && id
-            .bytes()
-            .all(|byte| byte.is_ascii_hexdigit() || byte == b'-')
-}
 
 async fn save_download(url: &str, target: &Path) -> Result<(), String> {
     let client = reqwest::Client::builder()
@@ -17,7 +9,7 @@ async fn save_download(url: &str, target: &Path) -> Result<(), String> {
         .redirect(reqwest::redirect::Policy::limited(5))
         .build()
         .map_err(|_| "Não foi possível iniciar o download.")?;
-    // The endpoint and its storage redirect are public; never forward a Bearer token.
+    // The API already authorized this signed storage URL; never send a Bearer token here.
     let mut response = client
         .get(url)
         .send()
@@ -60,19 +52,15 @@ async fn save_download(url: &str, target: &Path) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn download_file(
-    app: AppHandle,
-    state: State<'_, SessionManager>,
-    file_id: String,
-    file_name: String,
-) -> Result<bool, String> {
-    if !valid_file_id(&file_id) {
-        return Err("Identificador de arquivo inválido.".into());
+pub async fn download_file(app: AppHandle, url: String, file_name: String) -> Result<bool, String> {
+    let parsed_url = reqwest::Url::parse(&url).map_err(|_| "URL de download inválida.")?;
+    if !matches!(parsed_url.scheme(), "http" | "https")
+        || parsed_url.host_str().is_none()
+        || !parsed_url.username().is_empty()
+        || parsed_url.password().is_some()
+    {
+        return Err("URL de download inválida.".into());
     }
-    let base = state
-        .api_base_url()
-        .await
-        .map_err(|_| "Inicialize a sessão antes de baixar arquivos.")?;
     let name = Path::new(&file_name)
         .file_name()
         .and_then(|name| name.to_str())
@@ -87,7 +75,7 @@ pub async fn download_file(
         return Ok(false);
     };
     let path = destination.into_path().map_err(|_| "Destino inválido.")?;
-    save_download(&format!("{base}/api/files/{file_id}/download"), &path).await?;
+    save_download(parsed_url.as_str(), &path).await?;
     Ok(true)
 }
 

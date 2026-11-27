@@ -17,7 +17,7 @@ export const fileUrlQuery = (userId: string, teamId: string, fileId: string) =>
 		queryKey: queryKeys.fileUrl(userId, teamId, fileId),
 		queryFn: async ({ signal }) => {
 			const startedAt = Date.now()
-			const { url } = await getFileUrl({ fileId }, signal)
+			const { url } = await getFileUrl({ fileId, type: 'preview' }, signal)
 			return { url, expiresAt: startedAt + 5 * 60_000 }
 		},
 		staleTime: Infinity,
