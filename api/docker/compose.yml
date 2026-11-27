@@ -1,0 +1,20 @@
+name: teamdrop
+
+services:
+  postgres:
+    container_name: teamdrop-postgres
+    image: bitnami/postgresql
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRESQL_USERNAME=docker
+      - POSTGRESQL_PASSWORD=docker
+      - POSTGRESQL_DATABASE=teamdrop
+
+  redis:
+    container_name: teamdrop-redis
+    image: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
