@@ -8,7 +8,7 @@ export function HtmlPage() {
 		Header('X-Content-Type-Options', 'nosniff'),
 		Header(
 			'Content-Security-Policy',
-			"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
+			"default-src 'none'; img-src https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/package.svg; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
 		),
 	)
 }

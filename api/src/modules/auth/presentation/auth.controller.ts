@@ -84,15 +84,15 @@ export class AuthController {
 		const title = success ? 'Login concluído' : 'Falha na autenticação'
 
 		const description = success
-			? 'Sua autenticação foi realizada com sucesso. Você já pode fechar esta aba e voltar ao Teamdrop.'
-			: 'Não foi possível concluir seu login. Volte ao Teamdrop e tente novamente.'
+			? 'Tudo pronto. Volte ao TeamDrop para compartilhar arquivos com sua equipe.'
+			: 'Não foi possível concluir seu login. Volte ao TeamDrop e tente novamente.'
 
 		const icon = success
 			? '<path d="m5 12 4 4L19 6"/>'
 			: '<path d="M18 6 6 18M6 6l12 12"/>'
 
 		return htmlPageTemplate({
-			title: `${title} - Teamdrop`,
+			title: `${title} - TeamDrop`,
 			content: `
 				<div class="icon ${success ? 'icon-success' : 'icon-error'}">
 					<svg
@@ -114,10 +114,8 @@ export class AuthController {
 
 				<p class="description">${description}</p>
 
-				<div class="divider"></div>
-
 				<p class="help-text">
-					${success ? 'Continue no aplicativo.' : 'Tente novamente pelo aplicativo.'}
+					${success ? 'Você já pode fechar esta aba.' : 'Você pode fechar esta aba e iniciar um novo login no aplicativo.'}
 				</p>
 			`,
 		})

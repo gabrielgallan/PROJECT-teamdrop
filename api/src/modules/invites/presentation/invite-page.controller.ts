@@ -28,8 +28,8 @@ export class InvitePageController {
 				</a>
 
 				<p class="muted">
-					Não abriu? No widget, acesse Configurações →
-					Entrar com convite e cole o link desta página.
+					Não abriu? No TeamDrop, vá em Configurações →
+					Seus times → + → Entrar com convite e cole o link desta página.
 				</p>
 			`,
 		})
