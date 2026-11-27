@@ -11,12 +11,13 @@ if (existsSync('.env.test')) {
 export default defineConfig({
 	test: {
 		name: 'E2E',
-		include: ['./test/e2e/**/*.spec.ts'],
+		include: ['./test/e2e/**/*.e2e-spec.ts'],
 		fileParallelism: false,
 		globalSetup: ['test/e2e/setup.ts'],
 		globals: true,
 		root: './',
 		hookTimeout: 15000,
+		reporters: ['tree'],
 	},
 	plugins: [
 		// This is required to build the test files with SWC
