@@ -10,6 +10,8 @@ export const teamFilesQuery = (userId: string, teamId: string, limit = 10) =>
 		queryFn: ({ pageParam, signal }) =>
 			getTeamFiles({ teamId, limit, cursor: pageParam }, signal),
 		getNextPageParam: (page) => page.nextCursor ?? undefined,
+		refetchInterval: 5 * 60_000,
+		refetchIntervalInBackground: false,
 	})
 
 export const fileUrlQuery = (userId: string, teamId: string, fileId: string) =>

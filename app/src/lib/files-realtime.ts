@@ -69,6 +69,43 @@ export function connectFilesRealtime(options: FilesRealtimeOptions) {
 		socket.disconnect()
 	}
 
+	function invalidateTeamFiles(teamId: string) {
+		void options.client.invalidateQueries({
+			queryKey: [...queryKeys.team(options.userId, teamId), 'files'],
+		})
+	}
+
+	socket.on('files.expired', (payload: unknown) => {
+		if (
+			!active() ||
+			!payload ||
+			typeof payload !== 'object' ||
+			!('teamId' in payload) ||
+			typeof payload.teamId !== 'string' ||
+			!payload.teamId.trim() ||
+			!teams.has(payload.teamId)
+		)
+			return
+		invalidateTeamFiles(payload.teamId)
+	})
+
+	socket.on('file:deleted', (payload: unknown) => {
+		if (
+			!active() ||
+			!payload ||
+			typeof payload !== 'object' ||
+			!('teamId' in payload) ||
+			typeof payload.teamId !== 'string' ||
+			!payload.teamId.trim() ||
+			!('fileId' in payload) ||
+			typeof payload.fileId !== 'string' ||
+			!payload.fileId.trim() ||
+			!teams.has(payload.teamId)
+		)
+			return
+		invalidateTeamFiles(payload.teamId)
+	})
+
 	socket.on('file:uploaded', (payload: unknown) => {
 		if (
 			!active() ||
@@ -87,9 +124,7 @@ export function connectFilesRealtime(options: FilesRealtimeOptions) {
 			payload.teamId,
 			payload.fileId,
 		)
-		void options.client.invalidateQueries({
-			queryKey: [...queryKeys.team(options.userId, payload.teamId), 'files'],
-		})
+		invalidateTeamFiles(payload.teamId)
 	})
 
 	socket.on('files.ready', () => {
