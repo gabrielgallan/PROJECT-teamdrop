@@ -19,4 +19,8 @@ export class FilesEmitterService {
 			fileId,
 		})
 	}
+
+	filesExpired(teamId: string) {
+		this.gateway.emitToTeam(teamId, FilesEvents.expired, { teamId })
+	}
 }

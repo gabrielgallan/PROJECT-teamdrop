@@ -235,6 +235,7 @@ export class FilesService {
 		const concurrency = 5
 		const expiredBefore = new Date()
 		const startedAt = Date.now()
+		const notifiedTeamIds = new Set<string>()
 
 		let cursor: string | undefined
 		let totalDeleted = 0
@@ -255,6 +256,7 @@ export class FilesService {
 				select: {
 					id: true,
 					storageKey: true,
+					teamId: true,
 				},
 				orderBy: {
 					id: 'asc',
@@ -266,38 +268,47 @@ export class FilesService {
 
 			const deletedFileIds: string[] = []
 
-			for (let i = 0; i < files.length; i += concurrency) {
-				const chunk = files.slice(i, i + concurrency)
+			try {
+				for (let i = 0; i < files.length; i += concurrency) {
+					const chunk = files.slice(i, i + concurrency)
 
-				const results = await Promise.allSettled(
-					chunk.map(async (file) => {
-						await this.storageService.delete(file.storageKey)
+					const results = await Promise.allSettled(
+						chunk.map(async (file) => {
+							await this.storageService.delete(file.storageKey)
 
-						return file.id
-					}),
-				)
+							return file.id
+						}),
+					)
 
-				for (const result of results) {
-					if (result.status === 'fulfilled') {
-						deletedFileIds.push(result.value)
-					} else {
-						totalFailed++
+					for (const result of results) {
+						if (result.status === 'fulfilled') {
+							deletedFileIds.push(result.value)
+						} else {
+							totalFailed++
 
-						this.logger.error('Failed to delete expired file', result.reason)
+							this.logger.error('Failed to delete expired file', result.reason)
+						}
 					}
 				}
-			}
 
-			if (deletedFileIds.length) {
-				const { count } = await this.prisma.file.deleteMany({
-					where: {
-						id: {
-							in: deletedFileIds,
+				if (deletedFileIds.length) {
+					const { count } = await this.prisma.file.deleteMany({
+						where: {
+							id: {
+								in: deletedFileIds,
+							},
 						},
-					},
-				})
+					})
 
-				totalDeleted += count
+					totalDeleted += count
+				}
+			} finally {
+				// Expiration affects listing even if storage or database cleanup fails.
+				for (const { teamId } of files) {
+					if (notifiedTeamIds.has(teamId)) continue
+					this.filesEmitterService.filesExpired(teamId)
+					notifiedTeamIds.add(teamId)
+				}
 			}
 
 			cursor = files[files.length - 1]?.id
