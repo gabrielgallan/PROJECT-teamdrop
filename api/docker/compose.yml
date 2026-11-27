@@ -6,15 +6,20 @@ services:
     image: bitnami/postgresql
     restart: unless-stopped
     ports:
-      - 5432:5432
+      - "5432:5432"
     environment:
-      - POSTGRESQL_USERNAME=docker
-      - POSTGRESQL_PASSWORD=docker
-      - POSTGRESQL_DATABASE=teamdrop
+      POSTGRESQL_USERNAME: docker
+      POSTGRESQL_PASSWORD: docker
+      POSTGRESQL_DATABASE: teamdrop
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docker -d teamdrop"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
 
   redis:
     container_name: teamdrop-redis
     image: redis
     restart: unless-stopped
     ports:
-      - 6379:6379
+      - "6379:6379"
