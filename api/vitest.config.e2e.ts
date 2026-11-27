@@ -1,18 +1,19 @@
-import { config } from 'dotenv'
+import { existsSync } from 'node:fs'
+import { loadEnvFile } from 'node:process'
 import swc from 'unplugin-swc'
 import { defineConfig } from 'vitest/config'
 
-config({
-	path: '.env.test',
-	override: false,
-})
+if (existsSync('.env.test')) {
+	console.log('loading env from .env.test')
+	loadEnvFile('.env.test')
+}
 
 export default defineConfig({
 	test: {
 		name: 'E2E',
 		include: ['./test/e2e/**/*.spec.ts'],
 		fileParallelism: false,
-		setupFiles: ['test/e2e/setup'],
+		globalSetup: ['test/e2e/setup.ts'],
 		globals: true,
 		root: './',
 		hookTimeout: 15000,

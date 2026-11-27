@@ -7,7 +7,12 @@
 			"!**/dist",
 			"!**/build",
 			"!**/coverage",
-			"!**/prisma/client"
+			"!**/prisma/client",
+			"!**/docker",
+			"!**/.github",
+			"!**/src-tauri",
+			"!**/*.md",
+			"!**/*.lock"
 		]
 	},
 	"formatter": {
