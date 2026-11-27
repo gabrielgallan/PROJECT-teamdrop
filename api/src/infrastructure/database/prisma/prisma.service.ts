@@ -11,8 +11,7 @@ export class PrismaService
 	constructor(env: EnvService) {
 		super({
 			adapter: new PrismaPg({ connectionString: env.get('DATABASE_URL') }),
-			log:
-				env.get('NODE_ENV') === 'production' ? ['error'] : ['query', 'error'],
+			log: env.get('NODE_ENV') === 'dev' ? ['query', 'error'] : ['error'],
 		})
 	}
 
