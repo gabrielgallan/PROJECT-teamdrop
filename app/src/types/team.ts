@@ -10,6 +10,7 @@ export interface Team {
 	id: string
 	name: string
 	slug: string
+	storageRetentionSeconds: number
 	createdAt: string
 	updatedAt: string
 	role: 'owner' | 'member'

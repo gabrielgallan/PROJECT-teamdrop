@@ -3,7 +3,8 @@ import type { Team } from '../../types/team'
 
 export interface UpdateTeamRequest {
 	teamId: string
-	newName: string
+	name?: string
+	storageRetentionSeconds?: number
 }
 
 export interface UpdateTeamResponse {
@@ -11,12 +12,12 @@ export interface UpdateTeamResponse {
 }
 
 export async function updateTeam(
-	{ teamId, newName }: UpdateTeamRequest,
+	{ teamId, name, storageRetentionSeconds }: UpdateTeamRequest,
 	signal?: AbortSignal,
 ): Promise<UpdateTeamResponse> {
 	const response = await api
 		.patch(`api/teams/${encodeURIComponent(teamId)}`, {
-			json: { newName },
+			json: { name, storageRetentionSeconds },
 			signal,
 		})
 		.json<Team>()

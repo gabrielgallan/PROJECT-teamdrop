@@ -27,7 +27,7 @@ export function TeamNameForm({ team }: { team: Team }) {
 				)
 					return
 				mutation.mutate(
-					{ teamId: team.id, newName: draft.trim() },
+					{ teamId: team.id, name: draft.trim() },
 					{ onSuccess: ({ team: updated }) => setDraft(updated.name) },
 				)
 			}}

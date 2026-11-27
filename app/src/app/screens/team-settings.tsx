@@ -16,6 +16,7 @@ import { Skeleton } from '../components/skeleton'
 import { TeamInvites } from '../components/team-invites'
 import { TeamMembers } from '../components/team-members'
 import { TeamNameForm } from '../components/team-name-form'
+import { TeamRetentionForm } from '../components/team-retention-form'
 
 export function TeamSettingsScreen() {
 	const { teamId = '' } = useParams()
@@ -71,6 +72,7 @@ function TeamSettings({ teamId }: { teamId: string }) {
 				{team?.role === 'owner' && (
 					<>
 						<TeamNameForm team={team} />
+						<TeamRetentionForm team={team} />
 						<TeamInvites teamId={teamId} />
 					</>
 				)}

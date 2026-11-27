@@ -50,6 +50,7 @@ test('desktop adapters consume the current backend HTTP contracts', async (t) =>
 		id: '019af000-0000-7000-8000-000000000001',
 		name: 'Product',
 		slug: 'product',
+		storageRetentionSeconds: 86400,
 		createdAt: '2026-11-25T12:00:00.000Z',
 		updatedAt: '2026-11-25T12:00:00.000Z',
 		role: 'owner',
@@ -122,18 +123,58 @@ test('desktop adapters consume the current backend HTTP contracts', async (t) =>
 			const renamed = { ...team, name: 'Design', slug: 'design' }
 			respond = { body: renamed }
 			assert.deepEqual(
-				await updateTeam({ teamId: team.id, newName: renamed.name }),
+				await updateTeam({ teamId: team.id, name: renamed.name }),
 				{ team: renamed },
 			)
 			assert.equal(requests.at(-1).method, 'PATCH')
 			assert.deepEqual(JSON.parse(requests.at(-1).body), {
-				newName: renamed.name,
+				name: renamed.name,
 			})
 			respond = { body: users }
 			assert.deepEqual(await getTeamMembers({ teamId: team.id }), { users })
 			respond = { body: [] }
 			assert.deepEqual(await getUserTeams(), { teams: [] })
 			assert.deepEqual(await getTeamMembers({ teamId: team.id }), { users: [] })
+		},
+	)
+
+	await t.test(
+		'retention updates preserve the team and refresh its account cache',
+		async () => {
+			const { useUpdateTeam } = await import('../src/api/teams/mutations.ts')
+			for (const storageRetentionSeconds of [900, 86400, 259200]) {
+				const updated = { ...team, storageRetentionSeconds }
+				respond = { body: updated }
+				const mutation = useUpdateTeam()
+				const variables = { teamId: team.id, storageRetentionSeconds }
+				const data = await mutation.mutationFn(variables)
+				assert.deepEqual(data, { team: updated })
+				assert.equal(requests.at(-1).method, 'PATCH')
+				assert.equal(requests.at(-1).url, `/api/teams/${team.id}`)
+				assert.deepEqual(JSON.parse(requests.at(-1).body), {
+					storageRetentionSeconds,
+				})
+				const otherTeam = { ...team, id: 'other-team' }
+				let cached = { teams: [team, otherTeam] }
+				const invalidated = []
+				await mutation.onSuccess(
+					{
+						cancelQueries: async () => {},
+						setQueryData: (key, updater) => {
+							assert.deepEqual(key, ['account', 'user-1', 'teams'])
+							cached = updater(cached)
+						},
+						invalidateQueries: async (options) => invalidated.push(options),
+					},
+					data,
+					variables,
+					'user-1',
+				)
+				assert.deepEqual(cached, { teams: [updated, otherTeam] })
+				assert.deepEqual(invalidated, [
+					{ queryKey: ['account', 'user-1', 'teams'], exact: true },
+				])
+			}
 		},
 	)
 

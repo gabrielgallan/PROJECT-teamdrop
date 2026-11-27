@@ -169,6 +169,9 @@ importers:
       '@lglab/react-qr-code':
         specifier: 1.9.0
         version: 1.9.0(react@19.1.0)
+      '@ncdai/react-wheel-picker':
+        specifier: 1.2.3
+        version: 1.2.3(react@19.1.0)
       '@tanstack/react-query':
         specifier: 5.108.4
         version: 5.108.4(@types/react@19.1.8)(react@19.1.0)
@@ -297,6 +300,11 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1 || 2.0.0-beta.2
       '@emnapi/runtime': ^1.7.1 || 2.0.0-beta.2
+
+  '@ncdai/react-wheel-picker@1.2.3':
+    resolution: {integrity: sha512-TQjDfuDH9Ss7sgacSRPnakqWfkR8E1w6g7Pkt7bTYX35SfdHbGSzC8g/lXKFeMyNIikOWD9wC3uFPLy+Ui/R0g==}
+    peerDependencies:
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc
 
   '@oxc-project/types@0.133.0':
     resolution: {integrity: sha512-KzkdCd6Uxqnf6l3HOw1xfatAlUURA0g14cvBYFyJ5SaNOQbOUvBr9PKArcPcrNIeRsBdgcUzOGrhKveVpvOIGA==}
@@ -1085,6 +1093,10 @@ snapshots:
       '@emnapi/runtime': 1.10.0
       '@tybys/wasm-util': 0.10.5
     optional: true
+
+  '@ncdai/react-wheel-picker@1.2.3(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
 
   '@oxc-project/types@0.133.0': {}
 
