@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Box, Crown, Link, Loader2, LogOut, Plus } from 'lucide-react'
+import { Box, Link, Loader2, Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { userTeamsQuery } from '../../api/teams/queries'
@@ -10,6 +10,7 @@ import { AuthNotice } from '../components/auth-notice'
 import { Avatar } from '../components/avatar'
 import { CreateTeamDialog } from '../components/create-team-dialog'
 import { Dialog } from '../components/dialog'
+import { LogoutIcon, type LogoutIconHandle } from '../components/icons/logout'
 import { InviteLinkDialog } from '../components/invite-link-dialog'
 import { MenuItem } from '../components/menu-item'
 import { ScreenHeader } from '../components/screen-header'
@@ -20,6 +21,7 @@ import { memberView } from '../utils/presentation'
 
 export function SettingsScreen() {
 	const auth = useAuth()
+	const logoutIcon = useRef<LogoutIconHandle>(null)
 	const listing = useQuery({
 		...userTeamsQuery(auth.user.id),
 		enabled: auth.canQuery,
@@ -57,12 +59,19 @@ export function SettingsScreen() {
 						variant="danger"
 						disabled={auth.busy !== null}
 						onClick={() => void auth.logout()}
+						onMouseEnter={() => logoutIcon.current?.startAnimation()}
+						onMouseLeave={() => logoutIcon.current?.stopAnimation()}
 					>
 						{auth.busy === 'logout' ? (
 							<Loader2 className="size-4 animate-spin" />
 						) : (
 							<>
-								<LogOut className="size-4" />
+								<LogoutIcon
+									ref={logoutIcon}
+									aria-hidden="true"
+									size={16}
+									className="shrink-0"
+								/>
 								Logout
 							</>
 						)}
@@ -150,11 +159,12 @@ export function SettingsScreen() {
 										</span>
 										{team.role === 'owner' && (
 											<span
-												className="shrink-0 text-indigo-400"
+												className="shrink-0 text-indigo-300 text-xs font-bold"
 												title="Você é proprietário"
 											>
-												<Crown size={16} aria-hidden="true" />
-												<span className="sr-only">Você é proprietário</span>
+												{/*<Crown size={16} aria-hidden="true" />
+												<span className="sr-only">Você é proprietário</span>*/}
+												Seu time
 											</span>
 										)}
 									</button>

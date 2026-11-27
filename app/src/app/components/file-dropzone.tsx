@@ -1,7 +1,13 @@
-import { CheckCircle2, CloudUpload, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
+import { useRef } from 'react'
 import type { DropzoneState } from 'react-dropzone'
+import {
+	CloudUploadIcon,
+	type CloudUploadIconHandle,
+} from './icons/cloud-upload'
+import { FileCheck2Icon, type FileCheck2IconHandle } from './icons/file-check'
 import { Progress } from './progress'
 
 interface FileDropzoneProps {
@@ -33,6 +39,8 @@ export function FileDropzone({
 	success,
 }: FileDropzoneProps) {
 	const { getRootProps, getInputProps, isDragActive } = dropzone
+	const uploadIcon = useRef<CloudUploadIconHandle>(null)
+	const successIcon = useRef<FileCheck2IconHandle>(null)
 	const firstFile = files[0]
 	const border = isDragActive ? 'border-white/20 bg-white/5' : 'border-white/10'
 
@@ -40,6 +48,15 @@ export function FileDropzone({
 		<section
 			{...getRootProps({
 				'aria-label': 'Seleção de arquivos',
+				onMouseEnter: () => {
+					if (disabled) return
+					uploadIcon.current?.startAnimation()
+					successIcon.current?.startAnimation()
+				},
+				onMouseLeave: () => {
+					uploadIcon.current?.stopAnimation()
+					successIcon.current?.stopAnimation()
+				},
 				className: `relative mx-4 flex h-38 flex-col rounded-md border-2 border-dashed ${border}`,
 			})}
 		>
@@ -75,10 +92,12 @@ export function FileDropzone({
 							onClick={onSelect}
 							disabled={disabled}
 							aria-label="Selecionar arquivos"
-							className="grid size-12 place-items-center text-indigo-300 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-indigo-300"
+							className="grid size-12 place-items-center hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-indigo-300"
 						>
-							<CheckCircle2
-								className="size-8 text-indigo-400"
+							<FileCheck2Icon
+								ref={successIcon}
+								size={32}
+								className="text-indigo-300"
 								aria-hidden="true"
 							/>
 						</button>
@@ -117,9 +136,11 @@ export function FileDropzone({
 							aria-label="Selecionar arquivos"
 							className="flex min-w-0 items-center gap-2 text-white/90 before:absolute before:inset-0 before:rounded-md hover:before:bg-white/5"
 						>
-							<CloudUpload
+							<CloudUploadIcon
+								ref={uploadIcon}
+								size={16}
 								aria-hidden="true"
-								className="size-4 shrink-0 stroke-2"
+								className="shrink-0"
 							/>
 							{files.length > 1 ? (
 								<span>{files.length} arquivos carregados</span>

@@ -1,4 +1,4 @@
-import { ChevronDown, Clock3 } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import { useUpdateTeam } from '../../api/teams/mutations'
 import { useAuth } from '../../hooks/use-auth'
@@ -49,11 +49,6 @@ export function TeamRetentionForm({ team }: { team: Team }) {
 				}}
 				className="flex min-h-10 w-full items-center gap-2.5 rounded-md bg-white/5 px-3 text-xs text-white/85 transition-colors duration-150 enabled:hover:bg-white/10 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-300 motion-reduce:transition-none"
 			>
-				<Clock3
-					size={16}
-					className="shrink-0 text-white/60"
-					aria-hidden="true"
-				/>
 				<span id={`${id}-value`} className="flex-1 text-left">
 					{formatExpiration(team.storageRetentionSeconds)}
 				</span>

@@ -1,8 +1,11 @@
-import { Settings } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { quitApp } from '../../desktop/app.commands'
 import { AuthNotice } from '../components/auth-notice'
+import {
+	SettingsIcon,
+	type SettingsIconHandle,
+} from '../components/icons/settings'
 import { MenuItem } from '../components/menu-item'
 import { RealtimeNotice } from '../components/realtime-notice'
 import { RecentFiles } from '../components/recent-files'
@@ -12,6 +15,7 @@ import { UploadPanel } from '../components/upload-panel'
 
 export function DropsScreen() {
 	const navigate = useNavigate()
+	const settingsIcon = useRef<SettingsIconHandle>(null)
 	const [error, setError] = useState('')
 	async function quit() {
 		try {
@@ -43,8 +47,15 @@ export function DropsScreen() {
 					<MenuItem
 						id="settings-button"
 						onClick={() => void navigate('/settings')}
+						onMouseEnter={() => settingsIcon.current?.startAnimation()}
+						onMouseLeave={() => settingsIcon.current?.stopAnimation()}
 					>
-						<Settings aria-hidden="true" className="size-4" />
+						<SettingsIcon
+							ref={settingsIcon}
+							aria-hidden="true"
+							size={16}
+							className="shrink-0"
+						/>
 						Configurações
 					</MenuItem>
 				</UploadPanel>

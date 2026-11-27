@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Crown, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useState } from 'react'
 import { queryKeys } from '../../api/query-keys'
 import { getTeamMembers } from '../../api/teams/get-team-members'
@@ -75,11 +75,10 @@ export function TeamMembers({
 									</span>
 									{member.role === 'owner' ? (
 										<span
-											className="grid size-8 shrink-0 place-items-center text-indigo-400"
+											className="text-xs font-bold text-indigo-300"
 											title="Proprietário"
 										>
-											<Crown size={16} aria-hidden="true" />
-											<span className="sr-only">Proprietário</span>
+											Dono do time
 										</span>
 									) : canManage ? (
 										<button

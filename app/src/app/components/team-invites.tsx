@@ -1,13 +1,13 @@
 import { useMutation } from '@tanstack/react-query'
 import { Check, Copy, Link, RefreshCw, Unlink } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { createTeamInvite } from '../../api/invites/create-team-invite'
 import { revokeTeamInvites } from '../../api/invites/revoke-team-invites'
 import { useAccountMutation } from '../../api/use-account-mutation'
 import { copyText } from '../../desktop/app.commands'
 import { useAuth } from '../../hooks/use-auth'
 import { errorMessage } from '../../lib/api-error'
-import { InlineConfirmation } from './inline-confirmation'
+import { ConfirmationDialog } from './confirmation-dialog'
 import { MenuItem } from './menu-item'
 import { OperationFeedback } from './operation-feedback'
 
@@ -29,17 +29,7 @@ export function TeamInvites({ teamId }: { teamId: string }) {
 		setConfirmation(null)
 		requestAnimationFrame(() => trigger.current?.focus())
 	}
-	useEffect(() => {
-		if (!confirmation) return
-		const handleEscape = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') {
-				event.preventDefault()
-				cancel()
-			}
-		}
-		window.addEventListener('keydown', handleEscape)
-		return () => window.removeEventListener('keydown', handleEscape)
-	})
+
 	return (
 		<>
 			<h2 className="mx-4 mb-2 text-xs font-medium text-white/75">
@@ -64,10 +54,7 @@ export function TeamInvites({ teamId }: { teamId: string }) {
 							{copy.isSuccess ? <Check size={16} /> : <Copy size={16} />}
 						</button>
 					</div>
-					<p className="mt-2 text-xs leading-relaxed text-white/75">
-						Copie este link agora. Ao sair desta tela, será necessário gerar
-						outro para obter um link novamente.
-					</p>
+
 					{copy.error && (
 						<p role="alert" className="mt-2 text-xs text-red-300">
 							Não foi possível copiar. Selecione o link e copie manualmente.
@@ -102,47 +89,48 @@ export function TeamInvites({ teamId }: { teamId: string }) {
 				</MenuItem>
 			</div>
 			{confirmation && (
-				<div className="mx-4 mt-2">
-					<InlineConfirmation
-						message={
-							confirmation === 'replace'
-								? 'Gerar um convite invalida todos os links anteriores deste time. Continuar?'
-								: 'Os links anteriores deixarão de funcionar. Revogar convites?'
-						}
-						confirmLabel={confirmation === 'replace' ? 'Gerar link' : 'Revogar'}
-						onCancel={cancel}
-						busy={busy || !canQuery}
-						error={errorMessage(
-							confirmation === 'replace' ? create.error : revoke.error,
-						)}
-						onConfirm={() => {
-							if (busy || !canQuery) return
-							if (confirmation === 'replace')
-								create.mutate(
-									{ teamId },
-									{
-										onSuccess: () => {
-											setConfirmation(null)
-											copy.reset()
-											requestAnimationFrame(() => inviteButton.current?.focus())
-										},
+				<ConfirmationDialog
+					title={
+						confirmation === 'replace' ? 'Gerar novo link' : 'Revogar convites'
+					}
+					message={
+						confirmation === 'replace'
+							? 'Gerar um convite invalida todos os links anteriores deste time. Continuar?'
+							: 'Os links anteriores deixarão de funcionar. Revogar convites?'
+					}
+					confirmLabel={confirmation === 'replace' ? 'Gerar link' : 'Revogar'}
+					onCancel={cancel}
+					busy={busy || !canQuery}
+					error={errorMessage(
+						confirmation === 'replace' ? create.error : revoke.error,
+					)}
+					onConfirm={() => {
+						if (busy || !canQuery) return
+						if (confirmation === 'replace')
+							create.mutate(
+								{ teamId },
+								{
+									onSuccess: () => {
+										setConfirmation(null)
+										copy.reset()
+										requestAnimationFrame(() => inviteButton.current?.focus())
 									},
-								)
-							else
-								revoke.mutate(
-									{ teamId },
-									{
-										onSuccess: () => {
-											create.reset()
-											copy.reset()
-											setConfirmation(null)
-											requestAnimationFrame(() => inviteButton.current?.focus())
-										},
+								},
+							)
+						else
+							revoke.mutate(
+								{ teamId },
+								{
+									onSuccess: () => {
+										create.reset()
+										copy.reset()
+										setConfirmation(null)
+										requestAnimationFrame(() => inviteButton.current?.focus())
 									},
-								)
-						}}
-					/>
-				</div>
+								},
+							)
+					}}
+				/>
 			)}
 			{revoke.isSuccess && (
 				<OperationFeedback

@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { Box } from 'lucide-react'
 import { useEffect } from 'react'
 import { useParams } from 'react-router'
 import { getInviteDetails } from '../../api/invites/get-invite-details'
@@ -10,6 +9,7 @@ import { useAuth } from '../../hooks/use-auth'
 import { useScreenBack } from '../../hooks/use-navigation'
 import { errorMessage } from '../../lib/api-error'
 import { AuthNotice } from '../components/auth-notice'
+import { BoxIcon } from '../components/icons/box'
 import { ScreenHeader } from '../components/screen-header'
 import { Skeleton } from '../components/skeleton'
 
@@ -60,8 +60,10 @@ function AcceptInvite({ token }: { token: string }) {
 				aria-busy={busy || loading}
 			>
 				{token && !loading && (preview || success) && (
-					<Box
-						className="mx-auto mb-8 size-14 stroke-[1.5] text-indigo-400"
+					<BoxIcon
+						animateOnMount
+						size={56}
+						className="mx-auto mb-8 w-fit text-white"
 						aria-hidden="true"
 					/>
 				)}

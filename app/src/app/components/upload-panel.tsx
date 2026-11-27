@@ -1,14 +1,18 @@
-import { FileInput } from 'lucide-react'
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode, useEffect, useRef } from 'react'
 import { useAuth } from '../../hooks/use-auth'
 import { useFilePicker } from '../../hooks/use-file-picker'
 import { useSelectedTeam, useTeamUploadQueue } from '../../hooks/use-workspace'
 import { FileDropzone } from './file-dropzone'
+import {
+	FolderInputIcon,
+	type FolderInputIconHandle,
+} from './icons/folder-input'
 import { MenuItem } from './menu-item'
 import { TeamSwitcher } from './team-switcher'
 import { Toast } from './toast'
 
 export function UploadPanel({ children }: { children: ReactNode }) {
+	const folderIcon = useRef<FolderInputIconHandle>(null)
 	const { canQuery } = useAuth()
 	const { team } = useSelectedTeam()
 	const queue = useTeamUploadQueue()
@@ -63,9 +67,16 @@ export function UploadPanel({ children }: { children: ReactNode }) {
 				<MenuItem
 					disabled={busy || !team}
 					onClick={() => void picker.selectFiles()}
+					onMouseEnter={() => folderIcon.current?.startAnimation()}
+					onMouseLeave={() => folderIcon.current?.stopAnimation()}
 					aria-keyshortcuts="Control+O"
 				>
-					<FileInput aria-hidden="true" className="size-4" />
+					<FolderInputIcon
+						ref={folderIcon}
+						aria-hidden="true"
+						size={16}
+						className="shrink-0"
+					/>
 					Selecionar arquivos
 					<span className="ml-auto text-xs text-white/55">Ctrl+O</span>
 				</MenuItem>
