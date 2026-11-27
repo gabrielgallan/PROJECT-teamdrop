@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Box, Check, ChevronDown, Search } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { userTeamsQuery } from '../../api/teams/queries'
 import { useAuth } from '../../hooks/use-auth'
@@ -28,12 +28,6 @@ export function TeamSwitcher() {
 	const search = useRef<HTMLInputElement>(null)
 	const [open, setOpen] = useState(false)
 	const [query, setQuery] = useState('')
-	const [position, setPosition] = useState({
-		top: 0,
-		left: 8,
-		width: 0,
-		maxHeight: 240,
-	})
 	const selected = teams.find((team) => team.id === selectedId)
 	const searchable = teams.length > 5
 	const filtered = teams.filter((team) =>
@@ -47,25 +41,22 @@ export function TeamSwitcher() {
 		trigger.current?.focus()
 	}
 
-	useEffect(() => {
+	function reposition() {
+		const bounds = trigger.current?.getBoundingClientRect()
+		const menu = popup.current
+		if (!bounds || !menu) return
+		const below = Math.max(0, window.innerHeight - bounds.bottom - 12)
+		const above = Math.max(0, bounds.top - 12)
+		const width = Math.min(bounds.width, window.innerWidth - 16)
+		menu.style.width = `${width}px`
+		menu.style.maxHeight = `${Math.min(240, Math.max(below, above))}px`
+		const height = menu.getBoundingClientRect().height
+		menu.style.top = `${below >= height ? bounds.bottom + 4 : Math.max(8, bounds.top - height - 4)}px`
+		menu.style.left = `${Math.max(8, Math.min(bounds.left, window.innerWidth - width - 8))}px`
+	}
+
+	useLayoutEffect(() => {
 		if (!open) return
-		function reposition() {
-			const bounds = trigger.current?.getBoundingClientRect()
-			if (!bounds) return
-			const below = window.innerHeight - bounds.bottom - 12
-			const above = bounds.top - 12
-			const maxHeight = Math.min(240, Math.max(below, above))
-			const width = Math.min(bounds.width, window.innerWidth - 16)
-			setPosition({
-				top:
-					below >= maxHeight
-						? bounds.bottom + 4
-						: Math.max(8, bounds.top - maxHeight - 4),
-				left: Math.max(8, Math.min(bounds.left, window.innerWidth - width - 8)),
-				width,
-				maxHeight,
-			})
-		}
 		reposition()
 		window.addEventListener('resize', reposition)
 		window.addEventListener('scroll', reposition, true)
@@ -73,7 +64,7 @@ export function TeamSwitcher() {
 			window.removeEventListener('resize', reposition)
 			window.removeEventListener('scroll', reposition, true)
 		}
-	}, [open])
+	}, [open, query, teams.length, error])
 
 	useEffect(() => {
 		if (disabled || loading || single || teams.length === 0)
@@ -108,6 +99,7 @@ export function TeamSwitcher() {
 					else {
 						setQuery('')
 						popup.current?.showPopover()
+						reposition()
 					}
 				}}
 			>
@@ -137,7 +129,6 @@ export function TeamSwitcher() {
 				popover="auto"
 				role="dialog"
 				aria-label="Trocar time"
-				style={position}
 				className="team-switcher-popover fixed inset-auto m-0 flex-col overflow-hidden rounded-md border border-white/10 bg-zinc-800 p-2 text-white/90"
 				onToggle={(event) => {
 					const visible = event.newState === 'open'
