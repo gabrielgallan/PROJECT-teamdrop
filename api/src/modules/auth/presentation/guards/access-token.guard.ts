@@ -5,8 +5,8 @@ import {
 	UnauthorizedException,
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { AccessTokenService } from '../../services/access-token.service.js'
-import { AuthenticatedRequest } from '../../services/auth.service.js'
+import { AccessTokenService } from '../../application/access-token.service.js'
+import { AuthenticatedRequest } from '../../application/auth.types.js'
 import { PUBLIC_ROUTE_KEY } from '../decorators/public.decorator.js'
 
 @Injectable()

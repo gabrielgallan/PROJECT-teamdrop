@@ -2,15 +2,13 @@ import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { AppModule } from '../../../src/app.module'
-import { PrismaService } from '../../../src/infrastructure/database/prisma/prisma.service'
-import { AccessTokenService } from '../../../src/modules/auth/services/access-token.service'
-import { authHelper } from '../helpers/auth.helper'
-import { databaseHelper } from '../helpers/database.helper'
+import { AppModule } from '../../../src/app.module.js'
+import { PrismaService } from '../../../src/infrastructure/database/prisma/prisma.service.js'
+import { authHelper } from '../helpers/auth.helper.js'
+import { databaseHelper } from '../helpers/database.helper.js'
 
 describe('[GET] /api/auth/profile', () => {
 	let app: INestApplication
-	let tokenService: AccessTokenService
 	let prisma: PrismaService
 
 	beforeAll(async () => {
@@ -19,7 +17,6 @@ describe('[GET] /api/auth/profile', () => {
 		}).compile()
 
 		app = moduleRef.createNestApplication()
-		tokenService = moduleRef.get(AccessTokenService)
 		prisma = moduleRef.get(PrismaService)
 
 		await app.init()
@@ -35,10 +32,7 @@ describe('[GET] /api/auth/profile', () => {
 	})
 
 	it('should returns user authenticated profile', async () => {
-		const { user, accessToken } = await authHelper.createUserAccess(
-			prisma,
-			tokenService,
-		)
+		const { user, accessToken } = await authHelper.createUserAccess(app)
 
 		const response = await request(app.getHttpServer())
 			.get('/api/auth/profile')

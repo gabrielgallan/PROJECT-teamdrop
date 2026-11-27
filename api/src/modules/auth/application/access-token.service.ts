@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService, TokenExpiredError } from '@nestjs/jwt'
 import { z } from 'zod'
-import { AccessTokenClaims, AuthenticatedUser } from './auth.service.js'
+import { AccessTokenClaims, AuthenticatedUser } from './auth.types.js'
 
 const JWT_ALGORITHM = 'HS256'
 const JWT_ISSUER = 'teamdrop-api'

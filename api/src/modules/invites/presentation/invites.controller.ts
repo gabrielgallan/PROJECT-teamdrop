@@ -15,8 +15,8 @@ import {
 	ApiTags,
 } from '@nestjs/swagger'
 import { ApiErrorResponseDto } from '../../../common/http/dtos/api-error-response.dto.js'
+import { AuthenticatedUser } from '../../auth/application/auth.types.js'
 import { CurrentUser } from '../../auth/presentation/decorators/current-user.decorator.js'
-import { AuthenticatedUser } from '../../auth/services/auth.service.js'
 import { PublicTeamDto } from '../../teams/presentation/dtos/team.dto.js'
 import { TeamIdDto } from '../../teams/presentation/teams.controller.js'
 import { TeamsPresenter } from '../../teams/presentation/teams.presenter.js'

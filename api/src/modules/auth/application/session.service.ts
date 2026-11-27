@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { CryptographyService } from '../../../common/cryptography/cryptography.service.js'
 import { PrismaService } from '../../../infrastructure/database/prisma/prisma.service.js'
 import { AccessTokenService } from './access-token.service.js'
-import { TokenPair } from './auth.service.js'
+import { TokenPair } from './auth.types.js'
 
 @Injectable()
 export class SessionService {

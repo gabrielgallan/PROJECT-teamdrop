@@ -1,4 +1,4 @@
-import { User } from '../../../../infrastructure/database/prisma/client/client.js'
+import { User } from '../../../infrastructure/database/prisma/client/client.js'
 
 export class UserPresenter {
 	static toHTTP(user: Pick<User, 'id' | 'email' | 'name' | 'avatarUrl'>) {

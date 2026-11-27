@@ -4,15 +4,13 @@ import {
 	Logger,
 	UnauthorizedException,
 } from '@nestjs/common'
-import type { Request } from 'express'
 import { CryptographyService } from '../../../common/cryptography/cryptography.service.js'
 import {
 	CacheService,
 	ICacheService,
 } from '../../../infrastructure/cache/cache.interface.js'
 import { PrismaService } from '../../../infrastructure/database/prisma/prisma.service.js'
-import { GoogleOAuthService } from '../oauth/google-oauth.service.js'
-import { UserPresenter } from '../presentation/presenters/user.presenter.js'
+import { GoogleOAuthService } from '../infrastructure/google-oauth.service.js'
 import {
 	DesktopTicketService,
 	LOGIN_TTL_SECONDS,
@@ -25,30 +23,6 @@ const userSelect = {
 	name: true,
 	avatarUrl: true,
 } as const
-
-export interface AuthenticatedUser {
-	userId: string
-	sessionId: string
-}
-
-export interface AccessTokenClaims {
-	sub: string
-	sid: string
-	iss: string
-	aud: string
-	iat: number
-	exp: number
-}
-
-export type AuthenticatedRequest = Request & { user: AuthenticatedUser }
-
-export interface TokenPair {
-	accessToken: string
-	refreshToken: string
-	tokenType: 'Bearer'
-	expiresIn: number
-	refreshExpiresAt: string
-}
 
 @Injectable()
 export class AuthService {
@@ -178,7 +152,7 @@ export class AuthService {
 		return {
 			status: 'complete' as const,
 			...(await this.sessions.create(userId)),
-			user: UserPresenter.toHTTP(user),
+			user,
 		}
 	}
 

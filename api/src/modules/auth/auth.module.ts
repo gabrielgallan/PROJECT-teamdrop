@@ -6,13 +6,13 @@ import { CacheModule } from '../../infrastructure/cache/cache.module.js'
 import { DatabaseModule } from '../../infrastructure/database/database.module.js'
 import { EnvModule } from '../../infrastructure/env/env.module.js'
 import { EnvService } from '../../infrastructure/env/env.service.js'
-import { GoogleOAuthService } from './oauth/google-oauth.service.js'
+import { AccessTokenService } from './application/access-token.service.js'
+import { AuthService } from './application/auth.service.js'
+import { DesktopTicketService } from './application/desktop-ticket.service.js'
+import { SessionService } from './application/session.service.js'
+import { GoogleOAuthService } from './infrastructure/google-oauth.service.js'
 import { AuthController } from './presentation/auth.controller.js'
 import { AccessTokenGuard } from './presentation/guards/access-token.guard.js'
-import { AccessTokenService } from './services/access-token.service.js'
-import { AuthService } from './services/auth.service.js'
-import { DesktopTicketService } from './services/desktop-ticket.service.js'
-import { SessionService } from './services/session.service.js'
 
 @Module({
 	imports: [

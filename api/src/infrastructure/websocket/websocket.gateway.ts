@@ -6,7 +6,7 @@ import {
 	WebSocketServer,
 } from '@nestjs/websockets'
 import type { Namespace } from 'socket.io'
-import { AccessTokenService } from '../../modules/auth/services/access-token.service.js'
+import { AccessTokenService } from '../../modules/auth/application/access-token.service.js'
 import { AuthenticatedSocket } from './interfaces/authenticated-socket.interface.js'
 import { RoomsService } from './services/rooms.service.js'
 

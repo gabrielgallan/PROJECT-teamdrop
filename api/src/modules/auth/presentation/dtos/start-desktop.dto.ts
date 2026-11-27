@@ -7,8 +7,7 @@ const codeChallengeSchema = z
 	.max(128)
 	.regex(/^[A-Za-z0-9_-]+$/)
 
-// Request
-export const startDesktopLoginSchema = z.object({
+const startDesktopLoginSchema = z.object({
 	codeChallenge: codeChallengeSchema.meta({
 		description: 'BASE64URL(SHA256(desktop verifier))',
 	}),
@@ -18,8 +17,7 @@ export class StartDesktopLoginDto extends createZodDto(
 	startDesktopLoginSchema,
 ) {}
 
-// Response
-export const startDesktopLoginResponseSchema = z.object({
+const startDesktopLoginResponseSchema = z.object({
 	ticket: z.string(),
 	authorizationUrl: z.url(),
 	expiresIn: z.number().int().meta({ example: 300 }),

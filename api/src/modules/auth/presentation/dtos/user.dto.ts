@@ -1,4 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
+
+export const publicUserSchema = z.object({
+	id: z.uuid(),
+	email: z.string(),
+	name: z.string().nullable(),
+	avatarUrl: z.string().nullable(),
+})
+
+export class PublicUserDto extends createZodDto(publicUserSchema) {}
 
 export class UserDto {
 	@ApiProperty({
@@ -43,6 +54,6 @@ export class UserMembershipDto extends UserDto {
 }
 
 export class ProfileResponseDto {
-	@ApiProperty({ type: UserDto })
-	user!: UserDto
+	@ApiProperty({ type: PublicUserDto })
+	user!: PublicUserDto
 }
