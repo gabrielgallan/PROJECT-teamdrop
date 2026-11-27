@@ -73,7 +73,7 @@ export function Dialog({
 				)
 					onClose()
 			}}
-			className="m-auto max-h-[calc(100%-2rem)] w-[calc(100%-2rem)] max-w-sm overflow-y-auto rounded-xl border border-white/10 p-4 text-white/90 bg-zinc-800"
+			className="app-dialog m-auto max-h-[calc(100%-2rem)] w-[calc(100%-2rem)] max-w-sm overflow-y-auto rounded-xl border border-white/10 p-4 text-white/90 bg-zinc-800"
 		>
 			<div className="mb-4 flex items-center justify-between gap-3">
 				<h2

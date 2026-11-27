@@ -13,6 +13,8 @@ import {
 	type LucideIcon,
 	Music,
 } from 'lucide-react'
+import { useReducedMotion } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useNavigate } from 'react-router'
 import { isDesktop } from '../../desktop/app.commands'
 import { useAuth } from '../../hooks/use-auth'
@@ -52,9 +54,18 @@ const icons: Record<string, LucideIcon> = {
 
 interface RecentFileItemProps {
 	file: TeamFile
+	arriving?: boolean
+	animateLayout?: boolean
+	arrivalDelay?: number
 }
 
-export function RecentFileItem({ file }: RecentFileItemProps) {
+export function RecentFileItem({
+	file,
+	arriving = false,
+	animateLayout = false,
+	arrivalDelay = 0,
+}: RecentFileItemProps) {
+	const reducedMotion = useReducedMotion()
 	const { canQuery } = useAuth()
 	const { copy, download } = useFileActions()
 	const navigate = useNavigate()
@@ -62,7 +73,18 @@ export function RecentFileItem({ file }: RecentFileItemProps) {
 	const Icon = icons[extension] ?? (file.kind === 'image' ? Image : File)
 	const error = errorMessage(copy.error || download.error)
 	return (
-		<li className="list-row group flex-wrap transition-colors hover:bg-white/4">
+		<m.li
+			data-file-id={file.id}
+			layout={!reducedMotion && animateLayout ? 'position' : false}
+			initial={arriving && !reducedMotion ? { opacity: 0, y: -8 } : false}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{
+				duration: reducedMotion ? 0 : 0.2,
+				delay: arrivalDelay,
+				layout: { duration: 0.2, delay: 0 },
+			}}
+			className={`list-row group flex-wrap transition-colors hover:bg-white/4 ${arriving ? 'file-arrival-highlight' : ''}`}
+		>
 			<button
 				type="button"
 				onClick={() => download.mutate(file)}
@@ -132,6 +154,6 @@ export function RecentFileItem({ file }: RecentFileItemProps) {
 					message={isDesktop() ? 'Arquivo salvo' : 'Download solicitado'}
 				/>
 			)}
-		</li>
+		</m.li>
 	)
 }

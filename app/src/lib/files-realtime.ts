@@ -1,6 +1,9 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { io } from 'socket.io-client'
 import { queryKeys } from '../api/query-keys'
+import { recordFileArrival } from './file-arrivals'
+
+export type RealtimeStatus = 'connecting' | 'connected' | 'reconnecting'
 
 interface FilesRealtimeOptions {
 	baseUrl: string
@@ -20,6 +23,9 @@ export function connectFilesRealtime(options: FilesRealtimeOptions) {
 	let retryTimer: ReturnType<typeof setTimeout> | undefined
 	const teams = new Set(options.teamIds)
 	const active = () => !disposed && options.isActive()
+	const status = (value: RealtimeStatus) =>
+		options.client.setQueryData(queryKeys.realtime(options.userId), value)
+	status('connecting')
 	const socket = io(`${options.baseUrl.replace(/\/+$/, '')}/files`, {
 		transports: ['websocket'],
 		autoConnect: false,
@@ -42,6 +48,7 @@ export function connectFilesRealtime(options: FilesRealtimeOptions) {
 					'code' in error &&
 					error.code === 'NETWORK_ERROR'
 				) {
+					status('reconnecting')
 					// No namespace handshake occurred; retry fetching the native token.
 					rejectedToken = rejected
 					retryTimer = setTimeout(() => {
@@ -74,6 +81,12 @@ export function connectFilesRealtime(options: FilesRealtimeOptions) {
 			!teams.has(payload.teamId)
 		)
 			return
+		recordFileArrival(
+			options.client,
+			options.userId,
+			payload.teamId,
+			payload.fileId,
+		)
 		void options.client.invalidateQueries({
 			queryKey: [...queryKeys.team(options.userId, payload.teamId), 'files'],
 		})
@@ -81,6 +94,7 @@ export function connectFilesRealtime(options: FilesRealtimeOptions) {
 
 	socket.on('files.ready', () => {
 		if (!active()) return
+		status('connected')
 		renewed = false
 		void options.client.invalidateQueries({
 			queryKey: queryKeys.teams(options.userId),
@@ -88,8 +102,14 @@ export function connectFilesRealtime(options: FilesRealtimeOptions) {
 		})
 	})
 
+	socket.on('disconnect', () => {
+		if (active()) status('reconnecting')
+	})
+
 	socket.on('connect_error', (error: Error) => {
-		if (!active() || error.message !== 'Unauthorized') return
+		if (!active()) return
+		status('reconnecting')
+		if (error.message !== 'Unauthorized') return
 		if (renewed) {
 			stop()
 			options.onAuthFailure({

@@ -65,7 +65,7 @@ const { RoomsService } = await import(
 	'../../api/src/infrastructure/websocket/services/rooms.service.ts'
 )
 const { AccessTokenService } = await import(
-	'../../api/src/modules/auth/services/access-token.service.ts'
+	'../../api/src/modules/auth/application/access-token.service.ts'
 )
 const { FilesEmitterService } = await import(
 	'../../api/src/infrastructure/websocket/events/files/files-emitter.service.ts'
@@ -105,7 +105,7 @@ async function setup(t) {
 			findUnique: async ({ where }) => {
 				const { teamId, userId } = where.teamId_userId
 				return memberships.get(userId)?.includes(teamId)
-					? { teamId, userId }
+					? { teamId, userId, team: { storageRetentionSeconds: 86400 } }
 					: null
 			},
 		},
@@ -243,6 +243,8 @@ test('real upload refreshes two active lists and preserves unrelated queries', a
 	await until(
 		() =>
 			f.namespace.sockets.size === 2 &&
+			a.client.getQueryData(queryKeys.realtime(f.user)) === 'connected' &&
+			b.client.getQueryData(queryKeys.realtime(f.other)) === 'connected' &&
 			observers.every((o) => o.getCurrentResult().isSuccess),
 	)
 	const paged = queryKeys.files(f.user, f.team, 25)
@@ -264,6 +266,16 @@ test('real upload refreshes two active lists and preserves unrelated queries', a
 		observers.every((o) => o.getCurrentResult().data?.files.length === 1),
 	)
 	assert.equal(a.client.getQueryState(paged).isInvalidated, true)
+	const arrivalKey = queryKeys.fileArrivals(f.user, f.team)
+	assert.equal(a.client.getQueryData(arrivalKey).length, 1)
+	assert.equal(a.client.getQueryData(arrivalKey)[0].fileId, f.files[0].id)
+	assert.equal(a.client.getQueryData(queryKeys.realtime(f.user)), 'connected')
+	f.gateway.emitToTeam(f.team, 'file:uploaded', {
+		teamId: f.team,
+		fileId: f.files[0].id,
+	})
+	await delay(40)
+	assert.equal(a.client.getQueryData(arrivalKey).length, 1)
 	for (const key of [foreign, anotherTeam, members])
 		assert.equal(a.client.getQueryState(key).isInvalidated, false)
 	f.namespace.emit('file:uploaded', { teamId: 'another-team', fileId: 'file' })

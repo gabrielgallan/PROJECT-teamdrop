@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { quitApp } from '../../desktop/app.commands'
 import { AuthNotice } from '../components/auth-notice'
 import { MenuItem } from '../components/menu-item'
+import { RealtimeNotice } from '../components/realtime-notice'
 import { RecentFiles } from '../components/recent-files'
 import { Separator } from '../components/separator'
 import { ToastViewport } from '../components/toast'
@@ -53,7 +54,10 @@ export function DropsScreen() {
 				</UploadPanel>
 				<Separator />
 			</div>
-			<h2 className="section-title truncate">Recentes</h2>
+			<div className="mx-4 mb-2 mt-4 flex items-center justify-between gap-2">
+				<h2 className="truncate text-xs font-medium text-white/75">Recentes</h2>
+				<RealtimeNotice />
+			</div>
 			<RecentFiles />
 			<AuthNotice />
 			{error && (
