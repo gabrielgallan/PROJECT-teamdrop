@@ -3,6 +3,27 @@ use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
 use tokio::io::AsyncWriteExt;
 
+fn preview_url(url: &str) -> Result<reqwest::Url, String> {
+    let parsed = reqwest::Url::parse(url).map_err(|_| "URL de preview inválida.")?;
+    if !matches!(parsed.scheme(), "http" | "https")
+        || parsed.host_str().is_none()
+        || !parsed.username().is_empty()
+        || parsed.password().is_some()
+    {
+        return Err("URL de preview inválida.".into());
+    }
+    Ok(parsed)
+}
+
+#[tauri::command]
+pub fn open_file_preview(app: AppHandle, url: String) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    let parsed = preview_url(&url)?;
+    app.opener()
+        .open_url(parsed.as_str(), None::<&str>)
+        .map_err(|_| "Não foi possível abrir o preview no navegador.".into())
+}
+
 async fn save_download(url: &str, target: &Path) -> Result<(), String> {
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(120))
@@ -83,6 +104,25 @@ pub async fn download_file(app: AppHandle, url: String, file_name: String) -> Re
 mod tests {
     use super::*;
     use tokio::{io::AsyncReadExt, net::TcpListener};
+
+    #[test]
+    fn accepts_web_preview_urls_and_rejects_other_schemes_and_credentials() {
+        for url in [
+            "https://storage.example/file?signature=test",
+            "http://localhost:10000/file?signature=test",
+        ] {
+            assert!(preview_url(url).is_ok());
+        }
+        for url in [
+            "not a url",
+            "file:///C:/report.pdf",
+            "javascript:alert(1)",
+            "teamdrop://invite?token=test",
+            "https://user:password@storage.example/file",
+        ] {
+            assert!(preview_url(url).is_err());
+        }
+    }
 
     #[tokio::test]
     async fn saves_bytes_and_preserves_existing_file_when_download_fails() {

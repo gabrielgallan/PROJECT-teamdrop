@@ -67,11 +67,11 @@ export function RecentFileItem({
 }: RecentFileItemProps) {
 	const reducedMotion = useReducedMotion()
 	const { canQuery } = useAuth()
-	const { copy, download } = useFileActions()
+	const { preview, copy, download } = useFileActions()
 	const navigate = useNavigate()
 	const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
 	const Icon = icons[extension] ?? (file.kind === 'image' ? Image : File)
-	const error = errorMessage(copy.error || download.error)
+	const error = errorMessage(preview.error || copy.error || download.error)
 	return (
 		<m.li
 			data-file-id={file.id}
@@ -87,15 +87,15 @@ export function RecentFileItem({
 		>
 			<button
 				type="button"
-				onClick={() => download.mutate(file)}
-				disabled={!canQuery || download.isPending}
-				aria-label={`Baixar ${file.name}`}
-				aria-busy={download.isPending}
-				title={`Baixar ${file.name} (${file.size})`}
+				onClick={() => preview.mutate({ fileId: file.id })}
+				disabled={!canQuery || preview.isPending}
+				aria-label={`Abrir ${file.name} no navegador`}
+				aria-busy={preview.isPending}
+				title={`Abrir ${file.name} no navegador (${file.size})`}
 				className="flex min-w-0 flex-1 items-center gap-3 text-left focus-visible:ring-2 focus-visible:ring-indigo-300"
 			>
 				<span className="item-icon text-white/70">
-					{download.isPending ? (
+					{preview.isPending ? (
 						<Loader2 className="animate-spin" aria-hidden="true" />
 					) : (
 						<Icon size={18} aria-hidden="true" />

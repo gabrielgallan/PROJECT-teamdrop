@@ -2,7 +2,7 @@ import { getFileUrl } from '../api/files/get-file-url'
 import { useAccountMutation } from '../api/use-account-mutation'
 import { authStore } from '../auth/auth.store'
 import { copyText } from '../desktop/app.commands'
-import { downloadFile } from '../desktop/files.commands'
+import { downloadFile, openFilePreview } from '../desktop/files.commands'
 import type { TeamFile } from '../types/file'
 import { useAuth } from './use-auth'
 
@@ -14,6 +14,11 @@ export function useFileActions() {
 			throw new DOMException('Session changed', 'AbortError')
 		}
 	}
+	const preview = useAccountMutation(async ({ fileId }: { fileId: string }) => {
+		const { url } = await getFileUrl({ fileId, type: 'preview' })
+		assertSession()
+		await openFilePreview(url)
+	})
 	const copy = useAccountMutation(async ({ fileId }: { fileId: string }) => {
 		const { url } = await getFileUrl({ fileId, type: 'preview' })
 		assertSession()
@@ -25,5 +30,5 @@ export function useFileActions() {
 		return downloadFile(file, url)
 	})
 
-	return { copy, download }
+	return { preview, copy, download }
 }

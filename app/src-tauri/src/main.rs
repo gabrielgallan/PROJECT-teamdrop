@@ -57,6 +57,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             quit_app,
             files::download_file,
+            files::open_file_preview,
             open_google_login,
             auth::auth_restore_session,
             auth::auth_exchange_login,

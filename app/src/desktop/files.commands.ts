@@ -5,6 +5,11 @@ import type { PendingFile, TeamFile } from '../types/file'
 
 export const openFiles = () => open({ multiple: true })
 
+export async function openFilePreview(url: string): Promise<void> {
+	if (isTauri()) return invoke<void>('open_file_preview', { url })
+	window.open(url, '_blank', 'noopener,noreferrer')
+}
+
 export async function uploadContent(item: PendingFile): Promise<File> {
 	if (item.file) return item.file
 	if (!item.path) throw new Error('Arquivo indisponível.')
