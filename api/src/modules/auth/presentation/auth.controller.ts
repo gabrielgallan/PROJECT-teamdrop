@@ -96,8 +96,8 @@ export class AuthController {
 			content: `
 				<div class="icon ${success ? 'icon-success' : 'icon-error'}">
 					<svg
-						width="22"
-						height="22"
+						width="32"
+						height="32"
 						viewBox="0 0 24 24"
 						fill="none"
 						stroke="currentColor"

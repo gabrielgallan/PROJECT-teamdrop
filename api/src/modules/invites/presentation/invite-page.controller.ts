@@ -29,7 +29,7 @@ export class InvitePageController {
 
 				<p class="muted">
 					Não abriu? No TeamDrop, vá em Configurações →
-					Seus times → + → Entrar com convite e cole o link desta página.
+					Seus times → Entrar com convite e cole o link desta página.
 				</p>
 			`,
 		})

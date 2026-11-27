@@ -31,9 +31,9 @@ export const htmlPageStyles = `
     margin-bottom: 40px;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     color: #fafafa;
-    font-size: 18px;
+    font-size: 30px;
     font-weight: 600;
     letter-spacing: -0.02em;
   }

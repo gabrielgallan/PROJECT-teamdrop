@@ -24,8 +24,8 @@ export function htmlPageTemplate({ title, content }: HtmlPageTemplateOptions) {
           <header class="brand" aria-label="TeamDrop">
             <img
               src="https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/package.svg"
-              width="28"
-              height="28"
+              width="38"
+              height="38"
               alt=""
               referrerpolicy="no-referrer"
             >
