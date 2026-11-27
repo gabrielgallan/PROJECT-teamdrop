@@ -9,6 +9,7 @@ import { errorMessage } from '../../lib/api-error'
 import { AuthNotice } from '../components/auth-notice'
 import { Avatar } from '../components/avatar'
 import { CreateTeamDialog } from '../components/create-team-dialog'
+import { Dialog } from '../components/dialog'
 import { MenuItem } from '../components/menu-item'
 import { ScreenHeader } from '../components/screen-header'
 import { Separator } from '../components/separator'
@@ -23,9 +24,15 @@ export function SettingsScreen() {
 		enabled: auth.canQuery,
 	})
 	const navigate = useNavigate()
-	const [createOpen, setCreateOpen] = useState(false)
-	const createButton = useRef<HTMLButtonElement>(null)
-	const back = useScreenBack('/', 'settings-button', createOpen)
+	const [teamDialog, setTeamDialog] = useState<'options' | 'create' | null>(
+		null,
+	)
+	const teamButton = useRef<HTMLButtonElement>(null)
+	const back = useScreenBack('/', 'settings-button', teamDialog !== null)
+	function closeTeamDialog() {
+		setTeamDialog(null)
+		requestAnimationFrame(() => teamButton.current?.focus())
+	}
 	const teams = listing.data?.teams ?? []
 	return (
 		<main className="flex h-full flex-col overflow-hidden bg-zinc-800/60 text-white/90">
@@ -46,22 +53,7 @@ export function SettingsScreen() {
 				</div>
 				<div className="menu-group">
 					<MenuItem
-						ref={createButton}
-						disabled={!auth.canQuery}
-						onClick={() => setCreateOpen(true)}
-					>
-						<Plus className="size-4" />
-						Criar novo time
-					</MenuItem>
-					<MenuItem
-						id="accept-invite-button"
-						disabled={!auth.canQuery}
-						onClick={() => void navigate('/invites/accept')}
-					>
-						<Link className="size-4" />
-						Entrar com convite
-					</MenuItem>
-					<MenuItem
+						variant="danger"
 						disabled={auth.busy !== null}
 						onClick={() => void auth.logout()}
 					>
@@ -94,9 +86,27 @@ export function SettingsScreen() {
 			<div className="min-h-0 flex-1 overflow-y-auto pb-4">
 				<UserPreferences />
 				<Separator />
-				<h2 id="settings-teams-title" tabIndex={-1} className="section-title">
-					Seus times
-				</h2>
+				<div className="mx-4 mb-2 mt-4 flex items-center justify-between gap-2">
+					<h2
+						id="settings-teams-title"
+						tabIndex={-1}
+						className="text-xs font-medium text-white/75"
+					>
+						Seus times
+					</h2>
+					<button
+						ref={teamButton}
+						id="add-team-button"
+						type="button"
+						className="icon-button text-white/70 hover:bg-white/5 hover:text-white"
+						aria-label="Adicionar time"
+						aria-haspopup="dialog"
+						disabled={!auth.canQuery}
+						onClick={() => setTeamDialog('options')}
+					>
+						<Plus aria-hidden="true" />
+					</button>
+				</div>
 				<section
 					aria-labelledby="settings-teams-title"
 					aria-busy={listing.isFetching}
@@ -153,13 +163,26 @@ export function SettingsScreen() {
 					)}
 				</section>
 			</div>
-			{createOpen && (
-				<CreateTeamDialog
-					onClose={() => {
-						setCreateOpen(false)
-						requestAnimationFrame(() => createButton.current?.focus())
-					}}
-				/>
+			{teamDialog === 'options' && (
+				<Dialog open title="Adicionar time" onClose={closeTeamDialog}>
+					<MenuItem
+						disabled={!auth.canQuery}
+						onClick={() => setTeamDialog('create')}
+					>
+						<Plus aria-hidden="true" />
+						Criar novo time
+					</MenuItem>
+					<MenuItem
+						disabled={!auth.canQuery}
+						onClick={() => void navigate('/invites/accept')}
+					>
+						<Link aria-hidden="true" />
+						Entrar com convite
+					</MenuItem>
+				</Dialog>
+			)}
+			{teamDialog === 'create' && (
+				<CreateTeamDialog onClose={closeTeamDialog} />
 			)}
 		</main>
 	)

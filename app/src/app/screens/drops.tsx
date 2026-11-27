@@ -1,4 +1,4 @@
-import { Power, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { quitApp } from '../../desktop/app.commands'
@@ -46,10 +46,6 @@ export function DropsScreen() {
 					>
 						<Settings aria-hidden="true" className="size-4" />
 						Configurações
-					</MenuItem>
-					<MenuItem onClick={() => void quit()} aria-keyshortcuts="Control+Q">
-						<Power aria-hidden="true" className="size-4" />
-						Sair<span className="ml-auto text-xs text-white/55">Ctrl+Q</span>
 					</MenuItem>
 				</UploadPanel>
 				<Separator />

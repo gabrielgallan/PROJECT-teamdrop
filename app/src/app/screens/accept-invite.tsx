@@ -43,7 +43,7 @@ function AcceptInvite({ token }: { token: string }) {
 	const alreadyMember = preview?.role === 'owner' || preview?.role === 'member'
 	const error =
 		inputError || errorMessage(accept.error || (!success && query.error))
-	const back = useScreenBack('/settings', 'accept-invite-button', busy)
+	const back = useScreenBack('/settings', 'add-team-button', busy)
 	const close = () => {
 		setPendingInvite(null)
 		back.onBack()

@@ -60,7 +60,6 @@ export function UploadPanel({ children }: { children: ReactNode }) {
 				</div>
 			)}
 			<div className="menu-group">
-				<TeamSwitcher />
 				<MenuItem
 					disabled={busy || !team}
 					onClick={() => void picker.selectFiles()}
@@ -71,6 +70,7 @@ export function UploadPanel({ children }: { children: ReactNode }) {
 					<span className="ml-auto text-xs text-white/55">Ctrl+O</span>
 				</MenuItem>
 				{children}
+				<TeamSwitcher />
 			</div>
 			{queue.error && (
 				<div className="px-4 py-2 text-xs">
