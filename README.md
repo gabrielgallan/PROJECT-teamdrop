@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="teamdrop" width="100%" src="https://github.com/user-attachments/assets/809bdef0-c0c8-4d42-90e7-035f8087ce7a" />
+  <img alt="teamdrop" width="100%" src="assets/banner.png" />
 </p>
 
 <p align="center">

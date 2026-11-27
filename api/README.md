@@ -12,10 +12,11 @@ cd api
 pnpm install
 
 ```
+### Setup environment
 
 ```bash
-# 3. Start the Docker services (postgresql and redis)
-docker compose up -d
+# 3. Setup the Docker services
+pnpm docker:up
 
 # 4. Create and configure .env based on .env.example
 
