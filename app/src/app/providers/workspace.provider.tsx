@@ -4,6 +4,7 @@ import { userTeamsQuery } from '../../api/teams/queries'
 import { useAuth } from '../../hooks/use-auth'
 import { useFilesRealtime } from '../../hooks/use-files-realtime'
 import { useUploadQueue } from '../../hooks/use-upload-queue'
+import { useUserPreferences } from '../../hooks/use-user-preferences'
 import { WorkspaceContext } from '../contexts/workspace.context'
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
@@ -21,7 +22,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 	useFilesRealtime(teams, listing.isSuccess)
 	const team =
 		teams.find((value) => value.id === selectedId) ?? teams[0] ?? null
-	const queue = useUploadQueue(team?.id ?? null)
+	const preferences = useUserPreferences()
+	const queue = useUploadQueue(
+		team?.id ?? null,
+		preferences.ready && preferences.autoDrop,
+	)
 	const scroll = useRef(new Map<string, number>())
 
 	useEffect(() => {
@@ -36,7 +41,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 	}, [listing.isSuccess, storageKey, team?.id])
 
 	function selectTeam(id: string) {
-		if (!queue.isUploading() && teams.some((value) => value.id === id))
+		if (
+			!queue.isUploading() &&
+			!queue.blocked &&
+			teams.some((value) => value.id === id)
+		)
 			setSelectedId(id)
 	}
 

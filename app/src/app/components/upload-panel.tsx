@@ -1,4 +1,4 @@
-import { FileInput, Loader2 } from 'lucide-react'
+import { FileInput } from 'lucide-react'
 import { type ReactNode, useEffect } from 'react'
 import { useAuth } from '../../hooks/use-auth'
 import { useFilePicker } from '../../hooks/use-file-picker'
@@ -6,6 +6,7 @@ import { useSelectedTeam, useTeamUploadQueue } from '../../hooks/use-workspace'
 import { FileDropzone } from './file-dropzone'
 import { MenuItem } from './menu-item'
 import { TeamSwitcher } from './team-switcher'
+import { Toast } from './toast'
 
 export function UploadPanel({ children }: { children: ReactNode }) {
 	const { canQuery } = useAuth()
@@ -13,9 +14,9 @@ export function UploadPanel({ children }: { children: ReactNode }) {
 	const queue = useTeamUploadQueue()
 	const picker = useFilePicker(
 		queue.prepare,
-		!team || !canQuery || queue.sharing,
+		!team || !canQuery || queue.sharing || queue.blocked,
 	)
-	const busy = picker.choosing || queue.sharing || !canQuery
+	const busy = picker.choosing || queue.sharing || queue.blocked || !canQuery
 	useEffect(() => {
 		const shortcut = (event: KeyboardEvent) => {
 			if (
@@ -44,7 +45,7 @@ export function UploadPanel({ children }: { children: ReactNode }) {
 				status={queue.status || undefined}
 				success={queue.success || undefined}
 			/>
-			{queue.pending.length > 0 && (
+			{queue.pending.length > 0 && !queue.sharing && !queue.blocked && (
 				<div className="mx-4 flex items-center justify-between gap-2">
 					<button
 						type="button"
@@ -52,13 +53,9 @@ export function UploadPanel({ children }: { children: ReactNode }) {
 						disabled={busy || !team}
 						className="shrink-0 flex items-center gap-2 justify-center bg-indigo-400 transition-colors duration-200 w-full h-8 text-xs text-indigo-100 hover:bg-indigo-400/70"
 					>
-						{queue.sharing ? (
-							<Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-						) : (
-							<span className="truncate px-2" title={team?.name}>
-								Compartilhar em {team?.name}
-							</span>
-						)}
+						<span className="truncate px-2" title={team?.name}>
+							Compartilhar em {team?.name}
+						</span>
 					</button>
 				</div>
 			)}
@@ -76,18 +73,31 @@ export function UploadPanel({ children }: { children: ReactNode }) {
 				{children}
 			</div>
 			{queue.error && (
-				<div role="alert" className="px-4 py-2 text-xs text-red-300">
-					<button
-						type="button"
-						onClick={queue.dismissError}
-						aria-label="Fechar erro"
-						className="float-right px-1"
-					>
-						×
-					</button>
-					{queue.error}
+				<div className="px-4 py-2 text-xs">
+					<p role="alert" className="text-red-300">
+						{queue.error}
+					</p>
+					<div className="mt-2 flex gap-3">
+						<button
+							type="button"
+							disabled={!canQuery || queue.sharing}
+							onClick={queue.retry}
+							className="text-indigo-200 underline focus-visible:ring-2 focus-visible:ring-indigo-300"
+						>
+							{queue.retryLabel}
+						</button>
+						<button
+							type="button"
+							disabled={queue.sharing}
+							onClick={queue.dismissError}
+							className="text-white/75 underline focus-visible:ring-2 focus-visible:ring-indigo-300"
+						>
+							Descartar
+						</button>
+					</div>
 				</div>
 			)}
+			{queue.success && <Toast key={queue.success} message={queue.success} />}
 		</>
 	)
 }

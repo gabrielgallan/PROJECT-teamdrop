@@ -13,13 +13,13 @@ export function TeamSwitcher() {
 	const { user, canQuery } = useAuth()
 	const listing = useQuery({ ...userTeamsQuery(user.id), enabled: canQuery })
 	const { team, selectTeam: onSelect } = useSelectedTeam()
-	const { sharing } = useTeamUploadQueue()
+	const { sharing, blocked } = useTeamUploadQueue()
 	const navigate = useNavigate()
 	const teams = listing.data?.teams ?? []
 	const selectedId = team?.id ?? null
 	const loading = listing.isPending
 	const error = errorMessage(listing.error)
-	const disabled = sharing || !canQuery
+	const disabled = sharing || blocked || !canQuery
 	const onManage = () => void navigate('/settings')
 	const onRetry = () => void listing.refetch()
 	const id = useId()

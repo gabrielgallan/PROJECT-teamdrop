@@ -13,6 +13,7 @@ import { MenuItem } from '../components/menu-item'
 import { ScreenHeader } from '../components/screen-header'
 import { Separator } from '../components/separator'
 import { ListSkeleton } from '../components/skeleton'
+import { UserPreferences } from '../components/user-preferences'
 import { memberView } from '../utils/presentation'
 
 export function SettingsScreen() {
@@ -90,64 +91,68 @@ export function SettingsScreen() {
 				)}
 			</header>
 			<Separator />
-			<h2 id="settings-teams-title" tabIndex={-1} className="section-title">
-				Seus times
-			</h2>
-			<section
-				aria-labelledby="settings-teams-title"
-				aria-busy={listing.isFetching}
-				className="min-h-0 flex-1 overflow-y-auto px-2 pb-4"
-			>
-				{listing.isPending ? (
-					listing.isFetching && <ListSkeleton variant="team" />
-				) : !listing.error && teams.length === 0 ? (
-					<p className="px-2 py-4 text-xs leading-relaxed text-white/70">
-						Você ainda não participa de nenhum time.
-					</p>
-				) : (
-					<ul className="item-list">
-						{teams.map((team) => (
-							<li key={team.id}>
-								<button
-									id={`manage-team-${team.id}`}
-									type="button"
-									disabled={!auth.canQuery}
-									onClick={() =>
-										void navigate(
-											`/settings/teams/${encodeURIComponent(team.id)}`,
-										)
-									}
-									aria-label={
-										team.role === 'owner'
-											? `Gerenciar ${team.name}`
-											: `Abrir time ${team.name}`
-									}
-									className="list-row group w-full text-left transition-colors hover:bg-white/4 focus-visible:ring-2 focus-visible:ring-indigo-300"
-								>
-									<span className="item-icon text-white/70">
-										<Box size={18} aria-hidden="true" />
-									</span>
-									<span
-										className="min-w-0 flex-1 truncate text-ui"
-										title={team.name}
+			<div className="min-h-0 flex-1 overflow-y-auto pb-4">
+				<UserPreferences />
+				<Separator />
+				<h2 id="settings-teams-title" tabIndex={-1} className="section-title">
+					Seus times
+				</h2>
+				<section
+					aria-labelledby="settings-teams-title"
+					aria-busy={listing.isFetching}
+					className="px-2 pb-4"
+				>
+					{listing.isPending ? (
+						listing.isFetching && <ListSkeleton variant="team" />
+					) : !listing.error && teams.length === 0 ? (
+						<p className="px-2 py-4 text-xs leading-relaxed text-white/70">
+							Você ainda não participa de nenhum time.
+						</p>
+					) : (
+						<ul className="item-list">
+							{teams.map((team) => (
+								<li key={team.id}>
+									<button
+										id={`manage-team-${team.id}`}
+										type="button"
+										disabled={!auth.canQuery}
+										onClick={() =>
+											void navigate(
+												`/settings/teams/${encodeURIComponent(team.id)}`,
+											)
+										}
+										aria-label={
+											team.role === 'owner'
+												? `Gerenciar ${team.name}`
+												: `Abrir time ${team.name}`
+										}
+										className="list-row group w-full text-left transition-colors hover:bg-white/4 focus-visible:ring-2 focus-visible:ring-indigo-300"
 									>
-										{team.name}
-									</span>
-									{team.role === 'owner' && (
-										<span
-											className="shrink-0 text-indigo-400"
-											title="Você é proprietário"
-										>
-											<Crown size={16} aria-hidden="true" />
-											<span className="sr-only">Você é proprietário</span>
+										<span className="item-icon text-white/70">
+											<Box size={18} aria-hidden="true" />
 										</span>
-									)}
-								</button>
-							</li>
-						))}
-					</ul>
-				)}
-			</section>
+										<span
+											className="min-w-0 flex-1 truncate text-ui"
+											title={team.name}
+										>
+											{team.name}
+										</span>
+										{team.role === 'owner' && (
+											<span
+												className="shrink-0 text-indigo-400"
+												title="Você é proprietário"
+											>
+												<Crown size={16} aria-hidden="true" />
+												<span className="sr-only">Você é proprietário</span>
+											</span>
+										)}
+									</button>
+								</li>
+							))}
+						</ul>
+					)}
+				</section>
+			</div>
 			{createOpen && (
 				<CreateTeamDialog
 					onClose={() => {
