@@ -100,16 +100,16 @@ export const htmlPageStyles = `
 
   .icon {
     display: grid;
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     margin: 0 auto 16px;
     place-items: center;
   }
 
   .icon svg {
     display: block;
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
   }
 
   .icon-success {
