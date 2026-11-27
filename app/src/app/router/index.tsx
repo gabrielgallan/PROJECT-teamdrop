@@ -23,7 +23,6 @@ export function Router() {
 						path="/settings/teams/:teamId"
 						element={<TeamSettingsScreen />}
 					/>
-					<Route path="/invites/accept" element={<AcceptInviteScreen />} />
 					<Route
 						path="/invites/:token/accept"
 						element={<AcceptInviteScreen />}

@@ -10,6 +10,7 @@ import { AuthNotice } from '../components/auth-notice'
 import { Avatar } from '../components/avatar'
 import { CreateTeamDialog } from '../components/create-team-dialog'
 import { Dialog } from '../components/dialog'
+import { InviteLinkDialog } from '../components/invite-link-dialog'
 import { MenuItem } from '../components/menu-item'
 import { ScreenHeader } from '../components/screen-header'
 import { Separator } from '../components/separator'
@@ -24,9 +25,9 @@ export function SettingsScreen() {
 		enabled: auth.canQuery,
 	})
 	const navigate = useNavigate()
-	const [teamDialog, setTeamDialog] = useState<'options' | 'create' | null>(
-		null,
-	)
+	const [teamDialog, setTeamDialog] = useState<
+		'options' | 'create' | 'invite' | null
+	>(null)
 	const teamButton = useRef<HTMLButtonElement>(null)
 	const back = useScreenBack('/', 'settings-button', teamDialog !== null)
 	function closeTeamDialog() {
@@ -174,7 +175,7 @@ export function SettingsScreen() {
 					</MenuItem>
 					<MenuItem
 						disabled={!auth.canQuery}
-						onClick={() => void navigate('/invites/accept')}
+						onClick={() => setTeamDialog('invite')}
 					>
 						<Link aria-hidden="true" />
 						Entrar com convite
@@ -183,6 +184,9 @@ export function SettingsScreen() {
 			)}
 			{teamDialog === 'create' && (
 				<CreateTeamDialog onClose={closeTeamDialog} />
+			)}
+			{teamDialog === 'invite' && (
+				<InviteLinkDialog onClose={closeTeamDialog} />
 			)}
 		</main>
 	)

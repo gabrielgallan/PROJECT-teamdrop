@@ -1,15 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { Box } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useEffect } from 'react'
+import { useParams } from 'react-router'
 import { getInviteDetails } from '../../api/invites/get-invite-details'
 import { useAcceptTeamInvite } from '../../api/invites/mutations'
 import { queryKeys } from '../../api/query-keys'
-import {
-	getPendingInvite,
-	parseInviteLink,
-	setPendingInvite,
-} from '../../desktop/invite-links'
+import { getPendingInvite, setPendingInvite } from '../../desktop/invite-links'
 import { useAuth } from '../../hooks/use-auth'
 import { useScreenBack } from '../../hooks/use-navigation'
 import { errorMessage } from '../../lib/api-error'
@@ -24,10 +20,6 @@ export function AcceptInviteScreen() {
 
 function AcceptInvite({ token }: { token: string }) {
 	const { user, canQuery } = useAuth()
-	const navigate = useNavigate()
-	const [link, setLink] = useState('')
-	const [inputError, setInputError] = useState('')
-	const input = useRef<HTMLInputElement>(null)
 	const query = useQuery({
 		queryKey: queryKeys.invite(user.id, token),
 		queryFn: ({ signal }) => getInviteDetails({ token }, signal),
@@ -41,8 +33,7 @@ function AcceptInvite({ token }: { token: string }) {
 	const preview = query.data
 	const success = accept.isSuccess
 	const alreadyMember = preview?.role === 'owner' || preview?.role === 'member'
-	const error =
-		inputError || errorMessage(accept.error || (!success && query.error))
+	const error = errorMessage(accept.error || (!success && query.error))
 	const back = useScreenBack('/settings', 'add-team-button', busy)
 	const close = () => {
 		setPendingInvite(null)
@@ -51,7 +42,6 @@ function AcceptInvite({ token }: { token: string }) {
 	// Consume the pending OS link once it is represented by the internal route.
 	useEffect(() => {
 		if (getPendingInvite() === token) setPendingInvite(null)
-		if (!token) input.current?.focus()
 	}, [token])
 	return (
 		<main className="flex h-full flex-col overflow-y-auto bg-zinc-800/60 text-white/90">
@@ -66,11 +56,7 @@ function AcceptInvite({ token }: { token: string }) {
 			</header>
 			<AuthNotice />
 			<section
-				className={
-					token
-						? 'flex flex-1 flex-col justify-center px-8 pb-8 text-center text-xs leading-relaxed'
-						: 'px-4 pb-4 text-xs leading-relaxed'
-				}
+				className="flex flex-1 flex-col justify-center px-8 pb-8 text-center text-xs leading-relaxed"
 				aria-busy={busy || loading}
 			>
 				{token && !loading && (preview || success) && (
@@ -79,41 +65,7 @@ function AcceptInvite({ token }: { token: string }) {
 						aria-hidden="true"
 					/>
 				)}
-				{!token ? (
-					<form
-						onSubmit={(event) => {
-							event.preventDefault()
-							const value = parseInviteLink(link)
-							if (value)
-								void navigate(`/invites/${encodeURIComponent(value)}/accept`)
-							else setInputError('Cole um link de convite válido do Teamdrop.')
-						}}
-					>
-						<label htmlFor="invite-link" className="mb-2 block text-white/80">
-							Link de convite
-						</label>
-						<input
-							ref={input}
-							id="invite-link"
-							value={link}
-							onChange={(event) => {
-								setLink(event.target.value)
-								setInputError('')
-							}}
-							required
-							autoComplete="off"
-							spellCheck={false}
-							className="w-full min-w-0 rounded-md bg-white/5 px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-indigo-300"
-						/>
-						<button
-							type="submit"
-							disabled={!link.trim() || !canQuery}
-							className="mt-4 w-full py-1.5 bg-indigo-400 px-3 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-300"
-						>
-							Continuar
-						</button>
-					</form>
-				) : loading ? (
+				{loading ? (
 					<div role="status" className="flex flex-col items-center gap-4">
 						<span className="sr-only">Verificando convite…</span>
 						<Skeleton className="mb-4 size-14 rounded-xl" />
